@@ -152,6 +152,7 @@ android {
         def sparkChannel = System.getenv("GITHUB_REF_NAME") ?: "lokal"
         buildConfigField "String", "SPARK_COMMIT", "\"" + sparkCommit + "\""
         buildConfigField "String", "SPARK_CHANNEL", "\"" + sparkChannel + "\""
+        buildConfigField "long", "SPARK_BUILD_TIME", System.currentTimeMillis() + "L"
 
         externalNativeBuild {
             cmake {

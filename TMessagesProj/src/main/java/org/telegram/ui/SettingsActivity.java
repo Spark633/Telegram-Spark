@@ -977,7 +977,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     }
                     break;
             }
-            return formatString(R.string.TelegramVersion, String.format(Locale.US, "v%s (%d)\n%s", pInfo.versionName, code, abi));
+            // Sparkgram: eigene Versionsanzeige
+            return "Sparkgram · " + org.telegram.messenger.spark.SparkUpdater.buildLabel() + "\n" + String.format(Locale.US, "Basis: Telegram v%s (%d) · %s", pInfo.versionName, code, abi);
         } catch (Exception e) {
             FileLog.e(e);
         }

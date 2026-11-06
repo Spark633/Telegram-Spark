@@ -51,6 +51,13 @@ public class SparkUpdater {
         return BuildConfig.BUILD_VERSION_STRING + " · " + BuildConfig.SPARK_CHANNEL + (c != null && c.length() >= 7 ? " · " + c.substring(0, 7) : "");
     }
 
+    /** z. B. "entwicklung · 4993e98 · 06.11.2026 23:10" */
+    public static String buildLabel() {
+        String c = BuildConfig.SPARK_COMMIT;
+        String date = new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.GERMANY).format(new java.util.Date(BuildConfig.SPARK_BUILD_TIME));
+        return BuildConfig.SPARK_CHANNEL + (c != null && c.length() >= 7 ? " · " + c.substring(0, 7) : "") + " · " + date;
+    }
+
     private static String channel() {
         return SparkConfig.getRaw(SparkConfig.UPDATE_TEST_BUILDS) ? "entwicklung" : "main";
     }
