@@ -147,6 +147,11 @@ android {
         def sparkApiHash = System.getenv("TELEGRAM_API_HASH") ?: (project.findProperty("TELEGRAM_API_HASH") ?: "")
         buildConfigField "int", "SPARK_APP_ID", sparkApiId.toString().trim()
         buildConfigField "String", "SPARK_APP_HASH", "\"" + sparkApiHash.toString().trim() + "\""
+        // Sparkgram: Build-Infos fuer den Updater
+        def sparkCommit = System.getenv("GITHUB_SHA") ?: ""
+        def sparkChannel = System.getenv("GITHUB_REF_NAME") ?: "lokal"
+        buildConfigField "String", "SPARK_COMMIT", "\"" + sparkCommit + "\""
+        buildConfigField "String", "SPARK_CHANNEL", "\"" + sparkChannel + "\""
 
         externalNativeBuild {
             cmake {

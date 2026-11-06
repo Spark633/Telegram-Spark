@@ -4,6 +4,13 @@ import static org.telegram.messenger.LocaleController.getString;
 
 import android.view.View;
 
+import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.browser.Browser;
+import org.telegram.messenger.spark.SparkUpdater;
+import org.telegram.ui.ActionBar.AlertDialog;
+import org.telegram.ui.Components.BulletinFactory;
+
 import org.telegram.messenger.R;
 import org.telegram.messenger.spark.SparkConfig;
 import org.telegram.ui.Components.UItem;
@@ -20,6 +27,10 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_CLONE_BIO = 3;
     private static final int ID_CLONE_PHOTO = 4;
     private static final int ID_PROFILE_LIBRARY = 5;
+    private static final int ID_MASTER = 6;
+    private static final int ID_UPDATE_CHECK = 7;
+    private static final int ID_UPDATE_TEST = 8;
+    private static final int ID_REPO = 9;
 
     @Override
     protected CharSequence getTitle() {
@@ -28,19 +39,28 @@ public class SparkSettingsActivity extends UniversalFragment {
 
     @Override
     protected void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
+        items.add(UItem.asRippleCheck(ID_MASTER, getString(R.string.SparkMaster)).setChecked(SparkConfig.getRaw(SparkConfig.MASTER)));
+        items.add(UItem.asShadow(getString(R.string.SparkMasterInfo)));
+
         items.add(UItem.asHeader(getString(R.string.SparkHeaderProfile)));
-        items.add(UItem.asCheck(ID_PROFILE_TOOLS, getString(R.string.SparkProfileTools)).setChecked(SparkConfig.get(SparkConfig.PROFILE_TOOLS)));
+        items.add(UItem.asCheck(ID_PROFILE_TOOLS, getString(R.string.SparkProfileTools)).setChecked(SparkConfig.getRaw(SparkConfig.PROFILE_TOOLS)));
         items.add(UItem.asButton(ID_PROFILE_LIBRARY, R.drawable.msg_contacts, getString(R.string.SparkProfileLibrary)));
         items.add(UItem.asShadow(getString(R.string.SparkProfileToolsInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderClone)));
-        items.add(UItem.asCheck(ID_CLONE_NAME, getString(R.string.SparkCloneName)).setChecked(SparkConfig.get(SparkConfig.CLONE_NAME)));
-        items.add(UItem.asCheck(ID_CLONE_BIO, getString(R.string.SparkCloneBio)).setChecked(SparkConfig.get(SparkConfig.CLONE_BIO)));
-        items.add(UItem.asCheck(ID_CLONE_PHOTO, getString(R.string.SparkClonePhoto)).setChecked(SparkConfig.get(SparkConfig.CLONE_PHOTO)));
+        items.add(UItem.asCheck(ID_CLONE_NAME, getString(R.string.SparkCloneName)).setChecked(SparkConfig.getRaw(SparkConfig.CLONE_NAME)));
+        items.add(UItem.asCheck(ID_CLONE_BIO, getString(R.string.SparkCloneBio)).setChecked(SparkConfig.getRaw(SparkConfig.CLONE_BIO)));
+        items.add(UItem.asCheck(ID_CLONE_PHOTO, getString(R.string.SparkClonePhoto)).setChecked(SparkConfig.getRaw(SparkConfig.CLONE_PHOTO)));
         items.add(UItem.asShadow(getString(R.string.SparkCloneInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderAccounts)));
         items.add(UItem.asShadow(getString(R.string.SparkAccountsInfo)));
+
+        items.add(UItem.asHeader(getString(R.string.SparkHeaderUpdates)));
+        items.add(UItem.asButton(ID_UPDATE_CHECK, R.drawable.msg_retry, getString(R.string.SparkUpdateCheck), SparkUpdater.currentVersion()));
+        items.add(UItem.asCheck(ID_UPDATE_TEST, getString(R.string.SparkUpdateTestBuilds)).setChecked(SparkConfig.getRaw(SparkConfig.UPDATE_TEST_BUILDS)));
+        items.add(UItem.asButton(ID_REPO, R.drawable.msg_link2, getString(R.string.SparkRepo)));
+        items.add(UItem.asShadow(getString(R.string.SparkUpdateInfo)));
 
         items.add(UItem.asShadow(getString(R.string.SparkComingSoon)));
     }
@@ -60,6 +80,18 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_CLONE_PHOTO:
                 SparkConfig.toggle(SparkConfig.CLONE_PHOTO);
                 break;
+            case ID_MASTER:
+                SparkConfig.toggle(SparkConfig.MASTER);
+                break;
+            case ID_UPDATE_TEST:
+                SparkConfig.toggle(SparkConfig.UPDATE_TEST_BUILDS);
+                break;
+            case ID_UPDATE_CHECK:
+                checkForUpdate();
+                return;
+            case ID_REPO:
+                Browser.openUrl(getParentActivity(), SparkUpdater.REPO_URL);
+                return;
             case ID_PROFILE_LIBRARY:
                 presentFragment(new SparkProfileLibraryActivity());
                 return;
@@ -69,6 +101,47 @@ public class SparkSettingsActivity extends UniversalFragment {
         if (listView != null && listView.adapter != null) {
             listView.adapter.update(true);
         }
+    }
+
+    private void checkForUpdate() {
+        final AlertDialog progress = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER);
+        progress.show();
+        SparkUpdater.check((release, error) -> {
+            progress.dismiss();
+            if (getParentActivity() == null) {
+                return;
+            }
+            if (release == null) {
+                BulletinFactory.of(this).createErrorBulletin(LocaleController.formatString(R.string.SparkError, String.valueOf(error))).show();
+                return;
+            }
+            if (!release.isNewer()) {
+                BulletinFactory.of(this).createSimpleBulletin(R.raw.contact_check, getString(R.string.SparkUpdateNone)).show();
+                return;
+            }
+            AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+            builder.setTitle(getString(R.string.SparkUpdateAvailable));
+            builder.setMessage(release.apkName + "\n" + AndroidUtilities.formatFileSize(release.apkSize));
+            builder.setPositiveButton(getString(R.string.SparkUpdateInstall), (d, w) -> downloadUpdate(release));
+            builder.setNegativeButton(getString(R.string.Cancel), null);
+            showDialog(builder.create());
+        });
+    }
+
+    private void downloadUpdate(SparkUpdater.Release release) {
+        final AlertDialog progress = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER);
+        progress.setCanCancel(false);
+        progress.show();
+        SparkUpdater.download(release, null, (file, error) -> {
+            progress.dismiss();
+            if (file == null) {
+                BulletinFactory.of(this).createErrorBulletin(LocaleController.formatString(R.string.SparkError, String.valueOf(error))).show();
+                return;
+            }
+            if (getParentActivity() != null) {
+                SparkUpdater.install(getParentActivity(), file);
+            }
+        });
     }
 
     @Override

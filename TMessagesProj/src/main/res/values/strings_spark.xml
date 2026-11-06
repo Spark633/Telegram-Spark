@@ -30,5 +30,15 @@
     <string name="SparkError">Fehler: %1$s</string>
     <string name="SparkHeaderAccounts">Konten</string>
     <string name="SparkAccountsInfo">Sparkgram erlaubt bis zu 16 Konten gleichzeitig, auch ohne Premium.</string>
+    <string name="SparkMaster">Zusatzfunktionen aktiv</string>
+    <string name="SparkMasterInfo">Schaltet alle Sparkgram-Funktionen auf einmal aus oder an. Deine Einstellungen darunter bleiben dabei erhalten.</string>
+    <string name="SparkHeaderUpdates">Updates</string>
+    <string name="SparkUpdateCheck">Nach Updates suchen</string>
+    <string name="SparkUpdateTestBuilds">Auch Testversionen erhalten</string>
+    <string name="SparkRepo">Sparkgram auf GitHub öffnen</string>
+    <string name="SparkUpdateInfo">Updates kommen direkt aus dem GitHub-Repository. Ohne Testversionen bekommst du nur geprüfte Versionen (main).</string>
+    <string name="SparkUpdateNone">Du hast bereits die neueste Version</string>
+    <string name="SparkUpdateAvailable">Neue Version verfügbar</string>
+    <string name="SparkUpdateInstall">Herunterladen und installieren</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>
