@@ -2743,6 +2743,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     presentFragment(fragment);
                 } else if (id == share) {
                     onShareClicked();
+                } else if (org.telegram.ui.spark.SparkProfileMenu.isSparkItem(id)) {
+                    // Sparkgram
+                    org.telegram.ui.spark.SparkProfileMenu.handle(ProfileActivity.this, id, userId, chatId);
                 } else if (id == add_shortcut) {
                     try {
                         long did;
@@ -12376,6 +12379,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 leaveAction = true;
             }
         }
+
+        // Sparkgram: ID kopieren, Infos, Profil klonen
+        org.telegram.ui.spark.SparkProfileMenu.addItems(this, otherItem, userId, chatId);
 
         if (imageUpdater != null) {
             otherItem.addSubItem(set_as_main, R.drawable.msg_openprofile, LocaleController.getString(R.string.SetAsMain));
