@@ -74,7 +74,9 @@ jobs:
           src=$(find TMessagesProj_AppStandalone/build/outputs/apk -name '*.apk' | head -1)
           name="Sparkgram-${GITHUB_REF_NAME}-$(date -u +%Y%m%d-%H%M)-${GITHUB_SHA::7}.apk"
           cp "$src" "$name"
+          cp "$src" "Sparkgram-${GITHUB_REF_NAME}.apk"
           echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "stable=Sparkgram-${GITHUB_REF_NAME}.apk" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -88,7 +90,7 @@ jobs:
           tag="build-${GITHUB_REF_NAME}"
           gh release delete "$tag" --yes --cleanup-tag || true
           flag=""; [ "$GITHUB_REF_NAME" != "main" ] && flag="--prerelease"
-          gh release create "$tag" "${{ steps.apk.outputs.name }}" $flag \
+          gh release create "$tag" "${{ steps.apk.outputs.name }}" "${{ steps.apk.outputs.stable }}" $flag \
             --target "$GITHUB_SHA" \
             --title "Sparkgram (${GITHUB_REF_NAME}) – neuester Stand" \
             --notes "Automatisch gebaut aus ${GITHUB_SHA::7}. APK auf dem Handy herunterladen und installieren."
