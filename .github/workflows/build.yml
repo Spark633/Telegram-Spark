@@ -20,6 +20,10 @@ jobs:
       TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
       TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
       SPARK_KEYSTORE_PASSWORD: ${{ secrets.SPARK_KEYSTORE_PASSWORD }}
+      SPARK_CCACHE: '1'
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_NOHASHDIR: 'true'
+      CCACHE_COMPILERCHECK: 'string:ndk-27.2.12479018'
     steps:
       - name: Secrets pruefen
         run: |
@@ -54,6 +58,12 @@ jobs:
             -in .github/signing/sparkgram.keystore.enc \
             -out TMessagesProj/config/release.keystore \
             -pass env:SPARK_KEYSTORE_PASSWORD
+
+      - name: ccache (Zwischenspeicher fuer nativen Code)
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: native-arm64
+          max-size: 3G
 
       - uses: gradle/actions/setup-gradle@v4
 
