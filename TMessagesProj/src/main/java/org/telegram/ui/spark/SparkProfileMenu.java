@@ -12,6 +12,7 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.spark.SparkConfig;
+import org.telegram.messenger.spark.SparkNotes;
 import org.telegram.messenger.spark.SparkProfiles;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBarMenuItem;
@@ -25,13 +26,22 @@ public class SparkProfileMenu {
     public static final int ID_COPY_ID = 900;
     public static final int ID_INFO = 901;
     public static final int ID_CLONE = 902;
+    public static final int ID_NOTE = 903;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_CLONE;
+        return id >= ID_COPY_ID && id <= ID_NOTE;
     }
 
     public static void addItems(BaseFragment fragment, ActionBarMenuItem menu, long userId, long chatId) {
-        if (menu == null || !SparkConfig.get(SparkConfig.PROFILE_TOOLS) || (userId == 0 && chatId == 0)) {
+        if (menu == null || (userId == 0 && chatId == 0)) {
+            return;
+        }
+        if (SparkConfig.get(SparkConfig.NOTES)) {
+            long did = userId != 0 ? userId : -chatId;
+            boolean has = SparkNotes.has(fragment.getCurrentAccount(), did);
+            menu.addSubItem(ID_NOTE, R.drawable.msg_stories_caption, getString(has ? R.string.SparkNoteEdit : R.string.SparkNoteAdd));
+        }
+        if (!SparkConfig.get(SparkConfig.PROFILE_TOOLS)) {
             return;
         }
         menu.addSubItem(ID_COPY_ID, R.drawable.msg_copy, getString(R.string.SparkCopyId));
@@ -63,6 +73,10 @@ public class SparkProfileMenu {
                 break;
             case ID_CLONE:
                 confirmClone(fragment, userId);
+                break;
+            case ID_NOTE:
+                SparkNotesActivity.edit(fragment, userId != 0 ? userId : -chatId, () ->
+                    BulletinFactory.of(fragment).createSimpleBulletin(R.raw.contact_check, getString(R.string.SparkNoteSaved)).show());
                 break;
         }
     }
@@ -147,6 +161,10 @@ public class SparkProfileMenu {
             if (full != null && full.chat_photo != null) {
                 line(sb, "Bild gesetzt", date(full.chat_photo.date));
             }
+        }
+        String note = SparkNotes.get(account, userId != 0 ? userId : -chatId);
+        if (!TextUtils.isEmpty(note)) {
+            sb.append("\n\n").append(getString(R.string.SparkNote)).append(":\n").append(note);
         }
         final String text = sb.toString();
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());

@@ -18,6 +18,8 @@ public class SparkConfig {
 
     // Profil-Werkzeuge (ID kopieren, Nutzer-Infos, Profil klonen) im Profilmenue
     public static final String PROFILE_TOOLS = "profileTools";
+    // Private Notizen zu Personen, Gruppen und Kanaelen
+    public static final String NOTES = "notes";
     // Beim Klonen uebernehmen
     public static final String CLONE_NAME = "cloneName";
     public static final String CLONE_BIO = "cloneBio";
@@ -58,6 +60,7 @@ public class SparkConfig {
     private static boolean defaultValue(String key) {
         switch (key) {
             case MASTER:
+            case NOTES:
             case PROFILE_TOOLS:
             case CLONE_NAME:
             case CLONE_BIO:

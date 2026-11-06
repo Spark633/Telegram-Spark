@@ -31,6 +31,8 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_UPDATE_CHECK = 7;
     private static final int ID_UPDATE_TEST = 8;
     private static final int ID_REPO = 9;
+    private static final int ID_NOTES = 10;
+    private static final int ID_NOTES_LIST = 11;
 
     @Override
     protected CharSequence getTitle() {
@@ -46,6 +48,11 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asCheck(ID_PROFILE_TOOLS, getString(R.string.SparkProfileTools)).setChecked(SparkConfig.getRaw(SparkConfig.PROFILE_TOOLS)));
         items.add(UItem.asButton(ID_PROFILE_LIBRARY, R.drawable.msg_contacts, getString(R.string.SparkProfileLibrary)));
         items.add(UItem.asShadow(getString(R.string.SparkProfileToolsInfo)));
+
+        items.add(UItem.asHeader(getString(R.string.SparkNotes)));
+        items.add(UItem.asCheck(ID_NOTES, getString(R.string.SparkNotesToggle)).setChecked(SparkConfig.getRaw(SparkConfig.NOTES)));
+        items.add(UItem.asButton(ID_NOTES_LIST, R.drawable.msg_stories_caption, getString(R.string.SparkNotesAll)));
+        items.add(UItem.asShadow(getString(R.string.SparkNotesInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderClone)));
         items.add(UItem.asCheck(ID_CLONE_NAME, getString(R.string.SparkCloneName)).setChecked(SparkConfig.getRaw(SparkConfig.CLONE_NAME)));
@@ -80,6 +87,12 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_CLONE_PHOTO:
                 SparkConfig.toggle(SparkConfig.CLONE_PHOTO);
                 break;
+            case ID_NOTES:
+                SparkConfig.toggle(SparkConfig.NOTES);
+                break;
+            case ID_NOTES_LIST:
+                presentFragment(new SparkNotesActivity());
+                return;
             case ID_MASTER:
                 SparkConfig.toggle(SparkConfig.MASTER);
                 break;
