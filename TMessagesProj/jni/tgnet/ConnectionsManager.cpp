@@ -6,6 +6,8 @@
  * Copyright Nikolai Kudashov, 2015-2018.
  */
 
+#include <atomic>
+#include <mutex>
 #include <cassert>
 #include <cstdlib>
 #include <sys/eventfd.h>
@@ -136,25 +138,24 @@ ConnectionsManager::~ConnectionsManager() {
     pthread_mutex_destroy(&mutex);
 }
 
+// Sparkgram: statt fest eingebauter 5 Instanzen eine Instanz pro Konto (bis MAX_ACCOUNT_COUNT)
+static std::atomic<ConnectionsManager *> sparkInstances[MAX_ACCOUNT_COUNT];
+static std::mutex sparkInstancesMutex;
+
 ConnectionsManager& ConnectionsManager::getInstance(int32_t instanceNum) {
-    switch (instanceNum) {
-        case 0:
-            static ConnectionsManager instance0(0);
-            return instance0;
-        case 1:
-            static ConnectionsManager instance1(1);
-            return instance1;
-        case 2:
-            static ConnectionsManager instance2(2);
-            return instance2;
-        case 3:
-            static ConnectionsManager instance3(3);
-            return instance3;
-        case 4:
-        default:
-            static ConnectionsManager instance4(4);
-            return instance4;
+    if (instanceNum < 0 || instanceNum >= MAX_ACCOUNT_COUNT) {
+        instanceNum = MAX_ACCOUNT_COUNT - 1;
     }
+    ConnectionsManager *instance = sparkInstances[instanceNum].load(std::memory_order_acquire);
+    if (instance == nullptr) {
+        std::lock_guard<std::mutex> lock(sparkInstancesMutex);
+        instance = sparkInstances[instanceNum].load(std::memory_order_relaxed);
+        if (instance == nullptr) {
+            instance = new ConnectionsManager(instanceNum);
+            sparkInstances[instanceNum].store(instance, std::memory_order_release);
+        }
+    }
+    return *instance;
 }
 
 int ConnectionsManager::callEvents(int64_t now) {

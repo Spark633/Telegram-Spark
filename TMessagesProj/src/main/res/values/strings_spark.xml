@@ -51,5 +51,6 @@
     <string name="SparkNotesInfo">Im Drei-Punkte-Menü eines Profils, einer Gruppe oder eines Kanals kannst du eine private Notiz anlegen. Notizen werden nur auf diesem Gerät gespeichert.</string>
     <string name="SparkNotesEmpty">Noch keine Notizen. Öffne ein Profil und wähle im Menü „Notiz hinzufügen“.</string>
     <string name="SparkNotesHint">Tippen zum Bearbeiten, lange drücken öffnet den Chat.</string>
+    <string name="SparkCrashLog">Letzter Absturzbericht</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

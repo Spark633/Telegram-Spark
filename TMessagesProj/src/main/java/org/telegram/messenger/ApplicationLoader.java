@@ -287,6 +287,8 @@ public class ApplicationLoader extends Application {
         } catch (Throwable ignore) {
 
         }
+        // Sparkgram: letzten Absturz protokollieren
+        org.telegram.messenger.spark.SparkCrashLog.install(this);
 
         super.onCreate();
 

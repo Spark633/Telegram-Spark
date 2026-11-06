@@ -33,6 +33,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_REPO = 9;
     private static final int ID_NOTES = 10;
     private static final int ID_NOTES_LIST = 11;
+    private static final int ID_CRASH = 12;
 
     @Override
     protected CharSequence getTitle() {
@@ -69,6 +70,11 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asButton(ID_REPO, R.drawable.msg_link2, getString(R.string.SparkRepo)));
         items.add(UItem.asShadow(getString(R.string.SparkUpdateInfo)));
 
+        if (org.telegram.messenger.spark.SparkCrashLog.read(getContext()) != null) {
+            items.add(UItem.asButton(ID_CRASH, R.drawable.msg_report, getString(R.string.SparkCrashLog)).red());
+            items.add(UItem.asShadow(null));
+        }
+
         items.add(UItem.asShadow(getString(R.string.SparkComingSoon)));
     }
 
@@ -87,6 +93,23 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_CLONE_PHOTO:
                 SparkConfig.toggle(SparkConfig.CLONE_PHOTO);
                 break;
+            case ID_CRASH: {
+                final String log = org.telegram.messenger.spark.SparkCrashLog.read(getContext());
+                AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                builder.setTitle(getString(R.string.SparkCrashLog));
+                builder.setMessage(log == null ? "" : (log.length() > 3000 ? log.substring(0, 3000) + "…" : log));
+                builder.setPositiveButton(getString(R.string.Copy), (d, w) -> {
+                    AndroidUtilities.addToClipboard(log);
+                    BulletinFactory.of(this).createCopyBulletin(getString(R.string.TextCopied)).show();
+                });
+                builder.setNeutralButton(getString(R.string.Delete), (d, w) -> {
+                    org.telegram.messenger.spark.SparkCrashLog.clear(getContext());
+                    listView.adapter.update(true);
+                });
+                builder.setNegativeButton(getString(R.string.Close), null);
+                showDialog(builder.create());
+                return;
+            }
             case ID_NOTES:
                 SparkConfig.toggle(SparkConfig.NOTES);
                 break;
