@@ -114,8 +114,9 @@ public class SparkBulkDelete {
                 last = m.id;
             }
             listener.onProgress(ids.size(), deleted, true);
-            if (res.messages.size() >= 100 && last > 0) {
-                AndroidUtilities.runOnUIThread(() -> search(last), GAP);
+            final int nextOffset = last;
+            if (res.messages.size() >= 100 && nextOffset > 0) {
+                AndroidUtilities.runOnUIThread(() -> search(nextOffset), GAP);
             } else if (collectOnly) {
                 listener.onCollected(found);
             } else {
