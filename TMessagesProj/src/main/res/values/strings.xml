@@ -11727,7 +11727,6 @@
     <string name="SparkHideStars">Sterne und Geschenke</string>
     <string name="SparkHideBusiness">Telegram Business</string>
     <string name="SparkHideWallet">Wallet / TON</string>
-    <string name="SparkHideStories">Stories-Leiste</string>
-    <string name="SparkHideInfo">Blendet die Einträge in den Einstellungen aus; „Stories-Leiste“ entfernt die Stories oben in der Chatliste. Deine Käufe, Sterne und Abos bleiben unverändert.</string>
+    <string name="SparkHideInfo">Blendet die Einträge in den Telegram-Einstellungen aus. Deine Käufe, Sterne und Abos bleiben unverändert.</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

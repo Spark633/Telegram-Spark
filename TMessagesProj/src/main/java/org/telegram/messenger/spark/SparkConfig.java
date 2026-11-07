@@ -48,7 +48,6 @@ public class SparkConfig {
     public static final String HIDE_STARS = "hideStars";
     public static final String HIDE_BUSINESS = "hideBusiness";
     public static final String HIDE_WALLET = "hideWallet";
-    public static final String HIDE_STORIES = "hideStories";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen

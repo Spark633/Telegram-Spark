@@ -60,7 +60,6 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
-    private static final int ID_HIDE_STORIES = 37;
 
     @Override
     protected CharSequence getTitle() {
@@ -129,7 +128,6 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_HIDE_STARS, R.string.SparkHideStars, SparkConfig.HIDE_STARS));
         items.add(check(ID_HIDE_BUSINESS, R.string.SparkHideBusiness, SparkConfig.HIDE_BUSINESS));
         items.add(check(ID_HIDE_WALLET, R.string.SparkHideWallet, SparkConfig.HIDE_WALLET));
-        items.add(check(ID_HIDE_STORIES, R.string.SparkHideStories, SparkConfig.HIDE_STORIES));
         items.add(UItem.asShadow(getString(R.string.SparkHideInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderLook)));
@@ -214,7 +212,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_HIDE_STARS: toggle(SparkConfig.HIDE_STARS); break;
             case ID_HIDE_BUSINESS: toggle(SparkConfig.HIDE_BUSINESS); break;
             case ID_HIDE_WALLET: toggle(SparkConfig.HIDE_WALLET); break;
-            case ID_HIDE_STORIES: toggle(SparkConfig.HIDE_STORIES); break;
+
             case ID_CHANGELOG: presentFragment(new SparkChangelogActivity()); break;
             case ID_WHATS_NEW_HINT: toggle(SparkConfig.WHATS_NEW_HINT); break;
             case ID_EDIT_HISTORY: toggle(SparkConfig.EDIT_HISTORY); break;

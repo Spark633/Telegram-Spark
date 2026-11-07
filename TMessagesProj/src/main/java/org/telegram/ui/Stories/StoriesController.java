@@ -280,9 +280,6 @@ public class StoriesController {
     }
 
     public boolean hasStories() {
-        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_STORIES)) {
-            return false; // Sparkgram: Stories-Leiste ausblenden
-        }
         return (dialogListStories != null && dialogListStories.size() > 0) || hasSelfStories();
     }
 

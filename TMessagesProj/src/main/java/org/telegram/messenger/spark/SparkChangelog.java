@@ -22,7 +22,7 @@ public class SparkChangelog {
         new Release("0.7", "07.11.2026",
             "Auch selbst gelöschte Nachrichten bleiben bei dir stehen – rot „🗑 von dir gelöscht“ (abschaltbar)",
             "Nachricht antippen → „Endgültig entfernen“ für als gelöscht markierte Nachrichten",
-            "Ausblenden: Telegram Premium, Sterne und Geschenke, Business, Wallet/TON, Stories-Leiste",
+            "Ausblenden: Telegram Premium, Sterne und Geschenke, Business, Wallet/TON",
             "Info-Zeile im Profil jetzt wirklich untereinander",
             "„Installierte Version“ zeigt alle Details in einem Fenster",
             "Kürzere Texte bei den Sammel-Optionen"
