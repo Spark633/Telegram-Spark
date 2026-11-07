@@ -42,7 +42,7 @@ public class SparkProfileMenu {
 
     /** Drei-Punkte-Menue im Profil. */
     public static void addItems(BaseFragment fragment, ActionBarMenuItem menu, long userId, long chatId) {
-        if (menu == null || !SparkConfig.get(SparkConfig.PROFILE_MENU)) {
+        if (menu == null) {
             return;
         }
         addItems(fragment, (id, icon, text) -> menu.addSubItem(id, icon, text), userId, chatId, SparkConfig.get(SparkConfig.PROFILE_MENU_GROUPED));
