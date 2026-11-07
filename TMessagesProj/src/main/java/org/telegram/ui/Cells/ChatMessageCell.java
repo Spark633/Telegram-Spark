@@ -6230,6 +6230,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     private boolean sparkDeletedState;
     private static final int SPARK_DELETED_COLOR = 0xFFE53935;
     private Paint sparkDeletedPaint;
+    private android.graphics.Path sparkDeletedPath;
+    private int sparkDeletedShaderTop = -1, sparkDeletedShaderBottom = -1;
     private boolean sparkHistoryState;
 
     private boolean isUserDataChanged() {
@@ -20870,17 +20872,36 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     currentBackgroundShadowDrawable.draw(canvas);
                 }
 
-                // Sparkgram: roter Balken an geloeschten Nachrichten
+                // Sparkgram: rote Kante an geloeschten Nachrichten, folgt der Rundung und laeuft weich aus
                 if (sparkDeletedState && currentBackgroundDrawable != null) {
                     Rect r = currentBackgroundDrawable.getBounds();
+                    final boolean out = currentMessageObject.isOutOwner();
+                    // Blasenkoerper ohne den "Schwanz" an der Seite
+                    float bl = out ? r.left : r.left + dp(6);
+                    float br = out ? r.right - dp(6) : r.right;
+                    float radius = dp(SharedConfig.bubbleRadius);
                     if (sparkDeletedPaint == null) {
                         sparkDeletedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
                     }
-                    sparkDeletedPaint.setColor(SPARK_DELETED_COLOR);
+                    if (sparkDeletedPath == null) {
+                        sparkDeletedPath = new android.graphics.Path();
+                    }
+                    if (sparkDeletedShaderTop != r.top || sparkDeletedShaderBottom != r.bottom) {
+                        sparkDeletedShaderTop = r.top;
+                        sparkDeletedShaderBottom = r.bottom;
+                        int c = SPARK_DELETED_COLOR;
+                        int t = c & 0x00FFFFFF;
+                        sparkDeletedPaint.setShader(new android.graphics.LinearGradient(0, r.top, 0, r.bottom,
+                            new int[]{t, c, c, t}, new float[]{0f, 0.22f, 0.78f, 1f}, android.graphics.Shader.TileMode.CLAMP));
+                    }
                     sparkDeletedPaint.setAlpha((int) (255 * alphaInternal));
-                    float left = currentMessageObject.isOutOwner() ? r.left + dp(2) : r.left + dp(8);
-                    AndroidUtilities.rectTmp.set(left, r.top + dp(8), left + dp(3), r.bottom - dp(8));
-                    canvas.drawRoundRect(AndroidUtilities.rectTmp, dp(1.5f), dp(1.5f), sparkDeletedPaint);
+                    sparkDeletedPath.reset();
+                    AndroidUtilities.rectTmp.set(bl, r.top, br, r.bottom);
+                    sparkDeletedPath.addRoundRect(AndroidUtilities.rectTmp, radius, radius, android.graphics.Path.Direction.CW);
+                    canvas.save();
+                    canvas.clipPath(sparkDeletedPath);
+                    canvas.drawRect(bl, r.top, bl + dp(3.5f), r.bottom, sparkDeletedPaint);
+                    canvas.restore();
                 }
                 if (transitionParams.changePinnedBottomProgress != 1f && currentPosition == null) {
                     if (currentMessageObject.isOutOwner()) {
