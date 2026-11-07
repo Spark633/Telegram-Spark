@@ -33,6 +33,7 @@ public class SparkBackupActivity extends UniversalFragment {
 
     private static final int ID_EXPORT = 1;
     private static final int ID_IMPORT = 2;
+    private static final int ID_QR = 3;
     private static final int ID_ACC_BASE = 1000;
     private static final int REQUEST_PICK = 7731;
 
@@ -53,6 +54,8 @@ public class SparkBackupActivity extends UniversalFragment {
 
     @Override
     protected void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
+        items.add(UItem.asButton(ID_QR, R.drawable.msg_qrcode, "Konto per QR-Code hinzufügen"));
+        items.add(UItem.asShadow("Zeigt einen QR-Code. Auf dem Gerät, auf dem das Konto schon angemeldet ist: Einstellungen → Geräte → „QR-Code scannen“ (bzw. „Desktop-Gerät verbinden“). Kein SMS-/Telegram-Code nötig – nur dein Passwort, falls du eins hast."));
         items.add(UItem.asButton(ID_EXPORT, R.drawable.msg_download, "Sicherung erstellen"));
         items.add(UItem.asButton(ID_IMPORT, R.drawable.msg_filled_data_files, "Sicherung importieren"));
         items.add(UItem.asShadow("Die Sicherung enthält die Telefonnummern deiner angemeldeten Konten und deine Sparkgram-Daten (Einstellungen, Notizen, Schlagwörter, lokale Namen, Vorlagen, stummgeschaltete Personen) – aber keine Sitzungen, Chats oder Schlüssel. Auf dem neuen Gerät meldest du jedes Konto mit dem Telegram-Code (und ggf. Passwort) an; die Nummer ist schon eingetragen. Die Datei enthält deine Nummern – nicht weitergeben."));
@@ -64,13 +67,15 @@ public class SparkBackupActivity extends UniversalFragment {
                 String title = (in ? "✅ " : "➕ ") + a.name + (a.username != null ? " (@" + a.username + ")" : "");
                 items.add(UItem.asButton(ID_ACC_BASE + i, title, in ? "angemeldet" : "+" + a.phone));
             }
-            items.add(UItem.asShadow("Antippen = anmelden. Die Sparkgram-Daten des Kontos werden nach der Anmeldung automatisch übernommen."));
+            items.add(UItem.asShadow("Antippen = anmelden (per QR-Code oder mit Code). Die Sparkgram-Daten des Kontos werden danach automatisch übernommen."));
         }
     }
 
     @Override
     protected void onClick(UItem item, View view, int position, float x, float y) {
-        if (item.id == ID_EXPORT) {
+        if (item.id == ID_QR) {
+            login(null, true);
+        } else if (item.id == ID_EXPORT) {
             doExport();
         } else if (item.id == ID_IMPORT) {
             try {
@@ -89,14 +94,22 @@ public class SparkBackupActivity extends UniversalFragment {
                 BulletinFactory.of(this).createSimpleBulletin(R.raw.contact_check, "Ist schon angemeldet").show();
                 return;
             }
-            int free = SparkBackup.freeAccount();
-            if (free < 0) {
-                BulletinFactory.of(this).createErrorBulletin("Keine freien Konto-Plätze mehr").show();
-                return;
-            }
-            LoginActivity.sparkPrefillPhone = a.phone;
-            presentFragment(new LoginActivity(free));
+            AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
+            b.setTitle(SparkUi.mark(a.name));
+            b.setItems(new CharSequence[]{"Per QR-Code (ohne Code)", "Mit Telegram-Code"}, (d, w) -> login(a.phone, w == 0));
+            showDialog(b.create());
         }
+    }
+
+    private void login(String phone, boolean qr) {
+        int free = SparkBackup.freeAccount();
+        if (free < 0) {
+            BulletinFactory.of(this).createErrorBulletin("Keine freien Konto-Plätze mehr").show();
+            return;
+        }
+        LoginActivity.sparkPrefillPhone = phone;
+        LoginActivity.sparkQrMode = qr;
+        presentFragment(new LoginActivity(free));
     }
 
     private void doExport() {

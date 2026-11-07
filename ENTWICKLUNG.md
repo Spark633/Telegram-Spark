@@ -135,7 +135,11 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   PDF im Chat-Look (`SparkExport.drawBubble`, Bilder vorher per `FileLoader.loadFile` geladen, max. 600, Wartezeit
   begrenzt). Sicherung: `SparkBackup` (JSON: Konten + Prefs; keine Sitzungen/Keys/Tokens), `SparkBackupActivity`,
   Konto-Daten nach Nutzer-ID zugeordnet (`applyPending` in LaunchActivity.onResume), Nummer vorbelegt über
-  `LoginActivity.sparkPrefillPhone` (in `PhoneView.fillNumber`). Export: `SparkExport.exportChat` (Chat-Menü 923, PDF über `android.graphics.pdf.PdfDocument` + StaticLayout, oder HTML; in Downloads).
+  `LoginActivity.sparkPrefillPhone` (in `PhoneView.fillNumber`).
+  QR-Anmeldung: `LoginActivity.sparkQrMode` → `sparkStartQr` (auth.exportLoginToken alle 3 s abfragen, QR erst kurz vor
+  Ablauf erneuern, bei `loginTokenMigrateTo` wie beim Passkey-Login `setDefaultDatacenterId` + importLoginToken,
+  bei SESSION_PASSWORD_NEEDED Telegrams Passwort-Seite, Erfolg über `onAuthSuccess`). Altes Gerät scannt über
+  Einstellungen → Geräte (tg://login?token=…). Export: `SparkExport.exportChat` (Chat-Menü 923, PDF über `android.graphics.pdf.PdfDocument` + StaticLayout, oder HTML; in Downloads).
 
 ## Roadmap (offen)
 

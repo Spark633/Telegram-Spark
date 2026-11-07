@@ -224,6 +224,139 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
 
     // Sparkgram: Telefonnummer, die beim naechsten Login vorbelegt wird (Konten-Sicherung)
     public static String sparkPrefillPhone;
+    // Sparkgram: beim naechsten Login direkt die QR-Anmeldung zeigen
+    public static boolean sparkQrMode;
+    private AlertDialog sparkQrDialog;
+    private android.widget.ImageView sparkQrImage;
+    private android.widget.TextView sparkQrStatus;
+    private boolean sparkQrRunning;
+    private int sparkQrShownUntil;
+    private final Runnable sparkQrPoll = this::sparkQrRequest;
+
+    /** Zeigt einen QR-Code, den ein bereits angemeldetes Geraet scannt (Einstellungen → Geraete → QR-Code scannen). */
+    private void sparkStartQr() {
+        if (getParentActivity() == null || sparkQrRunning) return;
+        sparkQrRunning = true;
+        android.widget.LinearLayout box = new android.widget.LinearLayout(getParentActivity());
+        box.setOrientation(android.widget.LinearLayout.VERTICAL);
+        box.setGravity(Gravity.CENTER_HORIZONTAL);
+        sparkQrImage = new android.widget.ImageView(getParentActivity());
+        sparkQrImage.setBackgroundColor(0xffffffff);
+        sparkQrImage.setPadding(dp(10), dp(10), dp(10), dp(10));
+        box.addView(sparkQrImage, LayoutHelper.createLinear(240, 240, Gravity.CENTER_HORIZONTAL, 0, 8, 0, 8));
+        sparkQrStatus = new android.widget.TextView(getParentActivity());
+        sparkQrStatus.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
+        sparkQrStatus.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
+        sparkQrStatus.setGravity(Gravity.CENTER);
+        sparkQrStatus.setText("QR-Code wird erstellt …");
+        box.addView(sparkQrStatus, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 24, 0, 24, 8));
+        AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
+        b.setTitle("✦ Mit QR-Code anmelden");
+        b.setView(box);
+        b.setNegativeButton("Stattdessen mit Code", (d, w) -> sparkStopQr());
+        sparkQrDialog = b.create();
+        sparkQrDialog.setOnDismissListener(d -> sparkStopQr());
+        showDialog(sparkQrDialog);
+        sparkQrRequest();
+    }
+
+    private void sparkStopQr() {
+        sparkQrRunning = false;
+        sparkQrShownUntil = 0;
+        AndroidUtilities.cancelRunOnUIThread(sparkQrPoll);
+    }
+
+    private void sparkQrRequest() {
+        if (!sparkQrRunning) return;
+        TLRPC.TL_auth_exportLoginToken req = new TLRPC.TL_auth_exportLoginToken();
+        req.api_id = BuildVars.APP_ID;
+        req.api_hash = BuildVars.APP_HASH;
+        for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
+            if (UserConfig.getInstance(a).isClientActivated()) {
+                req.except_ids.add(UserConfig.getInstance(a).getClientUserId());
+            }
+        }
+        ConnectionsManager.getInstance(currentAccount).sendRequest(req, (res, err) -> AndroidUtilities.runOnUIThread(() -> sparkQrHandle(res, err, 0)),
+            ConnectionsManager.RequestFlagWithoutLogin | ConnectionsManager.RequestFlagFailOnServerErrors);
+    }
+
+    private void sparkQrHandle(TLObject res, TLRPC.TL_error err, int migratedDc) {
+        if (!sparkQrRunning) return;
+        if (err != null) {
+            if (err.text != null && err.text.contains("SESSION_PASSWORD_NEEDED")) {
+                sparkQrPassword();
+                return;
+            }
+            if (sparkQrStatus != null) sparkQrStatus.setText("Fehler: " + err.text + " – neuer Versuch …");
+            AndroidUtilities.runOnUIThread(sparkQrPoll, 4000);
+            return;
+        }
+        if (res instanceof TLRPC.TL_auth_loginToken) {
+            TLRPC.TL_auth_loginToken t = (TLRPC.TL_auth_loginToken) res;
+            // angezeigten Code nicht staendig wechseln: erst kurz vor Ablauf einen neuen zeigen
+            int now = ConnectionsManager.getInstance(currentAccount).getCurrentTime();
+            if (sparkQrShownUntil - 5 > now) {
+                AndroidUtilities.runOnUIThread(sparkQrPoll, 3000);
+                return;
+            }
+            sparkQrShownUntil = t.expires;
+            String link = "tg://login?token=" + android.util.Base64.encodeToString(t.token, android.util.Base64.URL_SAFE | android.util.Base64.NO_WRAP | android.util.Base64.NO_PADDING);
+            try {
+                java.util.HashMap<com.google.zxing.EncodeHintType, Object> hints = new java.util.HashMap<>();
+                hints.put(com.google.zxing.EncodeHintType.ERROR_CORRECTION, com.google.zxing.qrcode.decoder.ErrorCorrectionLevel.M);
+                hints.put(com.google.zxing.EncodeHintType.MARGIN, 0);
+                android.graphics.Bitmap bmp = new org.telegram.messenger.TelegramQRCodeWriter().encode(link, 600, 600, hints, null);
+                if (sparkQrImage != null) sparkQrImage.setImageBitmap(bmp);
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+            if (sparkQrStatus != null) sparkQrStatus.setText("Auf deinem anderen Gerät: Einstellungen → Geräte → „QR-Code scannen“ (bzw. „Desktop-Gerät verbinden“) und diesen Code scannen.");
+            AndroidUtilities.runOnUIThread(sparkQrPoll, 3000);
+        } else if (res instanceof TLRPC.TL_auth_loginTokenMigrateTo) {
+            // Konto liegt in einem anderen Rechenzentrum: dort einloesen
+            final TLRPC.TL_auth_loginTokenMigrateTo mt = (TLRPC.TL_auth_loginTokenMigrateTo) res;
+            if (sparkQrStatus != null) sparkQrStatus.setText("Gescannt – melde an …");
+            TLRPC.TL_auth_importLoginToken imp = new TLRPC.TL_auth_importLoginToken();
+            imp.token = mt.token;
+            // wie Telegram selbst (Passkey-Login): erst Rechenzentrum wechseln, dann einloesen
+            ConnectionsManager.getInstance(currentAccount).setDefaultDatacenterId(mt.dc_id);
+            ConnectionsManager.getInstance(currentAccount).sendRequest(imp, (r, e) -> AndroidUtilities.runOnUIThread(() -> sparkQrHandle(r, e, 0)),
+                ConnectionsManager.RequestFlagWithoutLogin | ConnectionsManager.RequestFlagFailOnServerErrors);
+        } else if (res instanceof TLRPC.TL_auth_loginTokenSuccess) {
+            TLRPC.auth_Authorization auth = ((TLRPC.TL_auth_loginTokenSuccess) res).authorization;
+            if (auth instanceof TLRPC.TL_auth_authorization) {
+                sparkStopQr();
+                try { if (sparkQrDialog != null) sparkQrDialog.dismiss(); } catch (Throwable ignore) {}
+                onAuthSuccess((TLRPC.TL_auth_authorization) auth);
+            }
+        } else {
+            AndroidUtilities.runOnUIThread(sparkQrPoll, 3000);
+        }
+    }
+
+    /** Zweistufige Bestaetigung: Passwort-Seite von Telegram anzeigen. */
+    private void sparkQrPassword() {
+        sparkStopQr();
+        try { if (sparkQrDialog != null) sparkQrDialog.dismiss(); } catch (Throwable ignore) {}
+        TL_account.getPassword req2 = new TL_account.getPassword();
+        ConnectionsManager.getInstance(currentAccount).sendRequest(req2, (response1, error1) -> AndroidUtilities.runOnUIThread(() -> {
+            if (error1 == null) {
+                TL_account.Password password = (TL_account.Password) response1;
+                if (!TwoStepVerificationActivity.canHandleCurrentPassword(password, true)) {
+                    AlertsCreator.showUpdateAppAlert(getParentActivity(), getString("UpdateAppAlert", R.string.UpdateAppAlert), true);
+                    return;
+                }
+                Bundle bundle = new Bundle();
+                SerializedData data = new SerializedData(password.getObjectSize());
+                password.serializeToStream(data);
+                bundle.putString("password", Utilities.bytesToHex(data.toByteArray()));
+                bundle.putString("phoneFormated", "");
+                setPage(VIEW_PASSWORD, true, bundle, false);
+            } else {
+                needShowAlert(getString(R.string.RestorePasswordNoEmailTitle), error1.text);
+            }
+        }), ConnectionsManager.RequestFlagFailOnServerErrors | ConnectionsManager.RequestFlagWithoutLogin);
+    }
     public final static boolean ENABLE_PASTED_TEXT_PROCESSING = false;
     private final static int SHOW_DELAY = SharedConfig.getDevicePerformanceClass() <= SharedConfig.PERFORMANCE_CLASS_AVERAGE ? 150 : 100;
 
@@ -3254,6 +3387,11 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         public void fillNumber() {
             if (numberFilled || activityMode != MODE_LOGIN) {
                 return;
+            }
+            // Sparkgram: QR-Anmeldung direkt anbieten
+            if (sparkQrMode) {
+                sparkQrMode = false;
+                AndroidUtilities.runOnUIThread(LoginActivity.this::sparkStartQr, 500);
             }
             // Sparkgram: Nummer aus der Konten-Sicherung vorbelegen
             if (sparkPrefillPhone != null && codeField != null && phoneField != null) {
