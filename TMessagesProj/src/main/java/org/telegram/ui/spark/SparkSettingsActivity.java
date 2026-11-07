@@ -77,6 +77,9 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_CHANNEL_AUTHORS = 57;
     private static final int ID_KEYWORDS = 58;
     private static final int ID_KEYWORDS_OPEN = 59;
+    private static final int ID_TRANSLATE_FREE = 60;
+    private static final int ID_TRANSLATE_PROVIDER = 61;
+    private static final int ID_DEEPL_KEY = 62;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -140,6 +143,18 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_JUMP_FIRST, R.string.SparkJumpFirstToggle, SparkConfig.JUMP_FIRST));
         items.add(check(ID_DELETE_OWN_ALL, R.string.SparkDeleteOwnToggle, SparkConfig.DELETE_OWN_ALL));
         items.add(UItem.asShadow(getString(R.string.SparkMsgToolsInfo)));
+
+        items.add(UItem.asHeader(getString(R.string.SparkHeaderTranslate)));
+        items.add(check(ID_TRANSLATE_FREE, R.string.SparkTranslateFreeToggle, SparkConfig.TRANSLATE_FREE));
+        if (SparkConfig.getRaw(SparkConfig.TRANSLATE_FREE)) {
+            items.add(UItem.asButton(ID_TRANSLATE_PROVIDER, "      " + getString(R.string.SparkTranslateProvider),
+                org.telegram.messenger.spark.SparkTranslate.provider() == org.telegram.messenger.spark.SparkTranslate.PROVIDER_DEEPL ? "DeepL" : "Google"));
+            if (org.telegram.messenger.spark.SparkTranslate.provider() == org.telegram.messenger.spark.SparkTranslate.PROVIDER_DEEPL) {
+                String key = org.telegram.messenger.spark.SparkTranslate.deeplKey();
+                items.add(UItem.asButton(ID_DEEPL_KEY, "      " + getString(R.string.SparkDeeplKey), key == null ? "fehlt" : "••••" + key.substring(Math.max(0, key.length() - 4))));
+            }
+        }
+        items.add(UItem.asShadow(getString(R.string.SparkTranslateInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkKeywords)));
         items.add(check(ID_KEYWORDS, R.string.SparkKeywordsToggle, SparkConfig.KEYWORDS));
@@ -285,6 +300,37 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_GROUP_ACTIVE: toggle(SparkConfig.GROUP_ACTIVE); break;
             case ID_CHANNEL_AUTHORS: toggle(SparkConfig.CHANNEL_AUTHORS); break;
             case ID_KEYWORDS: toggle(SparkConfig.KEYWORDS); break;
+            case ID_TRANSLATE_FREE: toggle(SparkConfig.TRANSLATE_FREE); break;
+            case ID_TRANSLATE_PROVIDER: {
+                int p = org.telegram.messenger.spark.SparkTranslate.provider();
+                org.telegram.messenger.spark.SparkTranslate.setProvider(p == 0 ? 1 : 0);
+                listView.adapter.update(true);
+                break;
+            }
+            case ID_DEEPL_KEY: {
+                final android.widget.EditText input = new android.widget.EditText(getParentActivity());
+                input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                input.setHint("xxxxxxxx-xxxx-…:fx");
+                input.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlackText));
+                input.setHintTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteHintText));
+                android.widget.FrameLayout box = new android.widget.FrameLayout(getParentActivity());
+                box.addView(input, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, 0, 24, 0, 24, 0));
+                AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
+                b.setTitle(getString(R.string.SparkDeeplKey));
+                b.setMessage("Den Schlüssel findest du in deinem DeepL-Konto unter „API-Schlüssel“. Er wird nur auf diesem Gerät gespeichert.");
+                b.setView(box);
+                b.setPositiveButton(getString(R.string.Save), (d, w) -> {
+                    org.telegram.messenger.spark.SparkTranslate.setDeeplKey(input.getText().toString());
+                    listView.adapter.update(true);
+                });
+                b.setNeutralButton("Entfernen", (d, w) -> {
+                    org.telegram.messenger.spark.SparkTranslate.setDeeplKey(null);
+                    listView.adapter.update(true);
+                });
+                b.setNegativeButton(getString(R.string.Cancel), null);
+                showDialog(b.create());
+                break;
+            }
             case ID_KEYWORDS_OPEN: presentFragment(new SparkKeywordsActivity()); break;
             case ID_NAME_HISTORY: toggle(SparkConfig.NAME_HISTORY); break;
             case ID_HIDE_STARS: toggle(SparkConfig.HIDE_STARS); break;

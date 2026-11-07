@@ -62,14 +62,14 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   `SparkConfig` (Schalter, **pro Konto**; global: Updates/„Was ist neu“), `SparkProfiles` (Profil-Bibliothek),
   `SparkNotes`, `SparkMembership` (🚪 raus), `SparkRateLimit`, `SparkMessageStore` (gelöscht/Verlauf, SQLite),
   `SparkBulkDelete`, `SparkNameHistory`, `SparkLocalNames`, `SparkTimezones`, `SparkRegDate`,
-  `SparkUpdater`, `SparkChangelog`, `SparkCrashLog`.
+  `SparkUpdater`, `SparkChangelog`, `SparkCrashLog`, `SparkKeywords`, `SparkTranslate`.
 - `ui/spark/` – Oberfläche: `SparkSettingsActivity`, `SparkProfileMenu` (Profil-/Chat-Menü, Infos),
   `SparkProfileLibraryActivity`, `SparkProfilePreviewActivity`, `SparkPhotoManagerActivity`,
   `SparkNotesActivity`, `SparkOwnMessagesActivity`, `SparkChangelogActivity`, `SparkUi` (Helfer).
 - Eingriffe in Telegram-Code (Suche nach „Sparkgram“): `ProfileActivity`, `ChatActivity`,
   `ChatMessageCell`, `ChatActionCell`, `ChatActivityEnterView`, `MessagesController`, `MediaController`,
   `SettingsActivity`, `LaunchActivity`, `PhotoViewer`, `UserObject`, `MessagePreviewParams`,
-  `StoriesController` (nichts mehr aktiv), `ApplicationLoader`, `BuildVars`, `UserConfig`, `ContactsController`.
+  `TranslateController`, `TranslateAlert2`, `StoriesController` (nichts mehr aktiv), `ApplicationLoader`, `BuildVars`, `UserConfig`, `ContactsController`.
 
 ## Stand der Versionen
 
@@ -77,18 +77,22 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - 0.9: Notiz-Zeile, exakte rote Kante, Sprachnachricht-Fenster, Rückfrage Wiederholen,
   Bibliothek-Favoriten, frühere Namen auf Anfrage, Premium-Optionen ausblendbar (+Automatik pro Konto),
   lokale Namen, Ortszeit, Weiterleiten ohne Absender, Einstellungen pro Konto.
-- 0.10 (in Arbeit): Sprachnachricht-Rückfrage auch im V2-Aufnahmeweg (MediaController.completeAudioRecordingV2),
+- 0.10: Sprachnachricht-Rückfrage auch im V2-Aufnahmeweg (MediaController.completeAudioRecordingV2),
   Weiterleitungszähler, Kontoname als Untertitel, kurze Notiz-Vorschau, kurze Ortszeit,
   Etappe 2 teilweise: Admins anzeigen, Aktive Mitglieder (✅/❌), Bekannte Autoren (`SparkGroupListActivity`),
   stille Mitglieder aus Mitgliederliste, Schlagwort-Alarm (`SparkKeywords`, `SparkKeywordsActivity`,
   Einhängepunkt neben `rememberRaw` in `MessagesController`).
 
+- 0.11 (in Arbeit): Etappe 4 Teil 1 Übersetzen – `SparkTranslate` (Google/DeepL, Schlüssel in globalen Prefs),
+  Schalter `TRANSLATE_FREE`; Eingriffe in `TranslateController` (`isFeatureAvailable`, `sparkUseAlternative`)
+  und `TranslateAlert2` (DeepL vor Google in `alternativeTranslateInternal`, Einzelnachricht → `translateAlt`).
+  Mitgliederliste: Kopf fest oben, bis 10000 Mitglieder, Komplett-Scan; anonyme Admins markiert; Notiz „…“.
+
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Weiterleiten ohne Limit, schneller markieren / Auswahl-Limit, Bild-Link kopieren.
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
-- **Etappe 4:** Übersetzen (einzeln, ganzer Chat, automatisch, eigene vor dem Senden; Google + DeepL),
-  Senden über eigenen Bot.
+- **Etappe 4 Rest:** eigene Nachrichten vor dem Senden übersetzen, Senden über eigenen Bot.
 - **Etappe 5:** Online-Protokoll (echte Zeiten; „kürzlich“ getrennt markiert, fließt nicht in
   „zuletzt aktiv gesehen“ ein), Suche nach Name/ID. (Lokale Namen, Ortszeit, Schlagwort-Alarm: erledigt.)
 - **Etappe 6:** Sticker/Packs herunterladen, fremde Sticker ins eigene Pack, alle Sticker eines Chats,

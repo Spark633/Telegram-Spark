@@ -40,7 +40,7 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
     private static final int ID_BASE = 1000;
     private static final int ID_MORE = 1;
     private static final int ID_MEMBERS = 2;
-    private static final int MEMBER_LIMIT = 2000;
+    private static final int MEMBER_LIMIT = 10000;
     private static final String FEATURE = "historyScan";
     private static final int PER_HOUR = 400;
     private static final int PAGES_PER_STEP = 10;
@@ -111,7 +111,42 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
         }
     }
 
+    private android.widget.TextView pinnedHeader;
+
+    @Override
+    public View createView(android.content.Context context) {
+        View v = super.createView(context);
+        if (mode == MODE_ACTIVE) {
+            // Fortschritt/Anzahl oben angeheftet, Liste scrollt darunter
+            pinnedHeader = new android.widget.TextView(context);
+            pinnedHeader.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 14);
+            pinnedHeader.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlueHeader));
+            pinnedHeader.setBackgroundColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhite));
+            pinnedHeader.setPadding(AndroidUtilities.dp(21), AndroidUtilities.dp(12), AndroidUtilities.dp(21), AndroidUtilities.dp(12));
+            pinnedHeader.setElevation(AndroidUtilities.dp(2));
+            ((android.widget.FrameLayout) v).addView(pinnedHeader, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, android.view.Gravity.TOP));
+            listView.setPadding(0, AndroidUtilities.dp(44), 0, 0);
+            listView.setClipToPadding(false);
+            updateHeader();
+        }
+        return v;
+    }
+
+    private String headerText() {
+        if (!membersLoaded) {
+            return "Mitgliederliste wird geladen … " + rows.size();
+        }
+        return (!membersHidden ? rows.size() + " Mitglieder · " : rows.size() + " Personen · ") + scanned + " Nachrichten durchsucht" + (endReached ? " ✓" : loading ? " …" : "");
+    }
+
+    private void updateHeader() {
+        if (pinnedHeader != null) {
+            pinnedHeader.setText(headerText());
+        }
+    }
+
     private void update() {
+        updateHeader();
         if (listView != null && listView.adapter != null) {
             listView.adapter.update(true);
         }
@@ -157,6 +192,7 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
                     boolean owner = p instanceof TLRPC.TL_channelParticipantCreator;
                     String title = !TextUtils.isEmpty(p.rank) ? p.rank : (owner ? "Eigentümer" : "Admin");
                     if (owner && !TextUtils.isEmpty(p.rank)) title = p.rank + " (Eigentümer)";
+                    if (p.admin_rights != null && p.admin_rights.anonymous) title += " · anonym";
                     addAdmin(uid, title);
                 }
                 sortAdmins();
@@ -236,7 +272,8 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
             offsetId = last;
             Collections.sort(rows, (a, b) -> b.count - a.count);
             update();
-            AndroidUtilities.runOnUIThread(() -> scanStep(pages - 1), 700);
+            // Sparkgram: bei "Mitglieder & Aktivitaet" automatisch bis zum Anfang weiter (gebremst)
+            AndroidUtilities.runOnUIThread(() -> scanStep(mode == MODE_ACTIVE ? PAGES_PER_STEP : pages - 1), 700);
         }));
     }
 
@@ -378,13 +415,9 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
             items.add(UItem.asShadow("Antippen öffnet das Profil."));
             return;
         }
-        String info;
-        if (mode == MODE_ACTIVE && !membersLoaded) {
-            info = "Mitgliederliste wird geladen … " + rows.size();
-        } else {
-            info = (mode == MODE_ACTIVE && !membersHidden ? rows.size() + " Mitglieder · " : "") + scanned + " Nachrichten durchsucht" + (loading ? " …" : "") + (endReached ? " (Anfang erreicht)" : "");
+        if (mode != MODE_ACTIVE) {
+            items.add(UItem.asHeader(scanned + " Nachrichten durchsucht" + (loading ? " …" : "") + (endReached ? " (Anfang erreicht)" : "")));
         }
-        items.add(UItem.asHeader(info));
         if (error != null) {
             items.add(UItem.asShadow(error));
         }
@@ -395,7 +428,7 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
             items.add(UItem.asButton(ID_BASE + i, title, value));
         }
         if (!endReached && !loading) {
-            items.add(UItem.asButton(ID_MORE, R.drawable.msg_retry, "Weiter zurück durchsuchen (+1000)").accent());
+            items.add(UItem.asButton(ID_MORE, R.drawable.msg_retry, mode == MODE_ACTIVE ? "Weiter durchsuchen" : "Weiter zurück durchsuchen (+1000)").accent());
         }
         if (mode == MODE_ACTIVE && membersHidden) {
             items.add(UItem.asShadow("Die Mitgliederliste dieser Gruppe ist verborgen – die Liste stammt deshalb nur aus dem Verlauf, stille Mitleser fehlen."));

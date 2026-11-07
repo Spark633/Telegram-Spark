@@ -73,6 +73,8 @@ public class SparkConfig {
     public static final String GROUP_ADMINS = "groupAdmins";
     public static final String GROUP_ACTIVE = "groupActive";
     public static final String CHANNEL_AUTHORS = "channelAuthors";
+    // Uebersetzen: Chat-Uebersetzung ohne Premium (Google/DeepL)
+    public static final String TRANSLATE_FREE = "translateFree";
     // Schlagwort-Alarm
     public static final String KEYWORDS = "keywords";
     // Kleine Markierung an allen Sparkgram-Funktionen
@@ -185,6 +187,7 @@ public class SparkConfig {
             case GROUP_ACTIVE:
             case CHANNEL_AUTHORS:
             case KEYWORDS:
+            case TRANSLATE_FREE:
             case LOCAL_NAMES:
             case TIMEZONES:
             case NAME_HISTORY:

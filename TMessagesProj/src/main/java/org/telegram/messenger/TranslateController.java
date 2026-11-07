@@ -91,7 +91,12 @@ public class TranslateController extends BaseController {
     }
 
     public boolean isFeatureAvailable() {
-        return isChatTranslateEnabled() && UserConfig.getInstance(currentAccount).isPremium();
+        return isChatTranslateEnabled() && (UserConfig.getInstance(currentAccount).isPremium() || org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE));
+    }
+
+    /** Sparkgram: Chat-Uebersetzung ohne Premium ueber Google/DeepL statt Telegram-Server. */
+    private boolean sparkUseAlternative() {
+        return org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE) && (!UserConfig.getInstance(currentAccount).isPremium() || org.telegram.messenger.spark.SparkTranslate.useDeepl());
     }
 
     public boolean isFeatureAvailable(long dialogId) {
@@ -101,6 +106,7 @@ public class TranslateController extends BaseController {
         final TLRPC.Chat chat = getMessagesController().getChat(-dialogId);
         return (
             UserConfig.getInstance(currentAccount).isPremium() ||
+            org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE) ||
             chat != null && chat.autotranslation
         );
     }
@@ -1163,13 +1169,13 @@ public class TranslateController extends BaseController {
                         texts = pendingTranslation1.messageTexts;
                         toLanguage = pendingTranslation1.language;
                     }
-                    if (res instanceof TLRPC.TL_messages_translateResult) {
+                    if (res instanceof TLRPC.TL_messages_translateResult && !sparkUseAlternative()) {
                         ArrayList<TLRPC.TL_textWithEntities> translated = ((TLRPC.TL_messages_translateResult) res).result;
                         final int count = Math.min(callbacks.size(), translated.size());
                         for (int i = 0; i < count; ++i) {
                             callbacks.get(i).run(isTranscription, ids.get(i), TranslateAlert2.preprocess(texts.get(i), translated.get(i)), toLanguage);
                         }
-                    } else if (err != null && "TRANSLATIONS_DISABLED_ALT".equalsIgnoreCase(err.text)) {
+                    } else if (sparkUseAlternative() || err != null && "TRANSLATIONS_DISABLED_ALT".equalsIgnoreCase(err.text)) {
                         for (int i = 0; i < ids.size(); ++i) {
                             final int id = ids.get(i);
                             final Utilities.Callback4<Boolean, Integer, TLRPC.TL_textWithEntities, String> _callback = callbacks.get(i);

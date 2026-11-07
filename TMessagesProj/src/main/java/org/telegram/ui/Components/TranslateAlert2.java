@@ -397,6 +397,11 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
             return;
         }
 
+        // Sparkgram: bei DeepL als Uebersetzer direkt ueber DeepL (mit Google als Ausweichweg)
+        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE) && org.telegram.messenger.spark.SparkTranslate.useDeepl()) {
+            translateAlt();
+            return;
+        }
         TLRPC.TL_messages_translateText req = new TLRPC.TL_messages_translateText();
         if (reqPeer != null) {
             req.flags |= 1;
@@ -569,6 +574,14 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
         new Thread() {
             @Override
             public void run() {
+                // Sparkgram: DeepL statt Google, falls eingestellt (Google bleibt Ausweichweg)
+                if (org.telegram.messenger.spark.SparkTranslate.useDeepl()) {
+                    String deepl = org.telegram.messenger.spark.SparkTranslate.deepl(Uri.decode(text), toLng);
+                    if (deepl != null) {
+                        AndroidUtilities.runOnUIThread(() -> done.run(deepl, false));
+                        return;
+                    }
+                }
                 String uri;
                 HttpURLConnection connection = null;
                 try {

@@ -19,6 +19,13 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.11", "07.11.2026",
+            "Übersetzen: „Chat übersetzen“ auch ohne Premium – über Google oder mit eigenem DeepL-Schlüssel",
+            "Einzelne Nachrichten werden bei gewähltem DeepL ebenfalls über DeepL übersetzt",
+            "Mitglieder & Aktivität: Anzeige bleibt oben stehen, alle Mitglieder werden komplett geladen",
+            "Admins anzeigen: anonyme Admins werden mit „· anonym“ markiert",
+            "Notiz-Zeile im Profil zeigt „…“, wenn die Notiz weitergeht"
+        ),
         new Release("0.10", "07.11.2026",
             "Rückfrage bei Sprachnachrichten funktioniert jetzt auch mit Telegrams neuem Aufnahme-Weg",
             "Anzeige, wie oft eine Nachricht weitergeleitet wurde (⤳ 12×, bei Kanal-Beiträgen)",
