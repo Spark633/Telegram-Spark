@@ -46,6 +46,9 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_CHAT_MENU = 19;
     private static final int ID_PROFILE_MENU_GROUPED = 21;
     private static final int ID_CHAT_MENU_GROUPED = 22;
+    private static final int ID_MEMBER_CHECK = 23;
+    private static final int ID_MEMBER_HINT = 24;
+    private static final int ID_MEMBER_INTERVAL = 25;
 
     @Override
     protected CharSequence getTitle() {
@@ -83,6 +86,14 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(UItem.asButton(ID_PHOTO_MANAGER_OPEN, R.drawable.msg_photos, getString(R.string.SparkPhotoManager)));
         }
         items.add(UItem.asShadow(getString(R.string.SparkProfileToolsInfo)));
+
+        items.add(UItem.asHeader(getString(R.string.SparkHeaderGroups)));
+        items.add(check(ID_MEMBER_CHECK, R.string.SparkMemberCheckToggle, SparkConfig.MEMBER_CHECK));
+        if (SparkConfig.getRaw(SparkConfig.MEMBER_CHECK)) {
+            items.add(subCheck(ID_MEMBER_HINT, R.string.SparkMemberHintToggle, SparkConfig.MEMBER_CHECK_HINT));
+            items.add(UItem.asButton(ID_MEMBER_INTERVAL, "      " + getString(R.string.SparkMemberInterval), (org.telegram.messenger.spark.SparkMembership.intervalMs() / 1000) + " s"));
+        }
+        items.add(UItem.asShadow(getString(R.string.SparkMemberInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkNotes)));
         items.add(check(ID_NOTES, R.string.SparkNotesToggle, SparkConfig.NOTES));
@@ -149,6 +160,15 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_CHAT_MENU: toggle(SparkConfig.CHAT_MENU); break;
             case ID_PROFILE_MENU_GROUPED: toggle(SparkConfig.PROFILE_MENU_GROUPED); break;
             case ID_CHAT_MENU_GROUPED: toggle(SparkConfig.CHAT_MENU_GROUPED); break;
+            case ID_MEMBER_CHECK: toggle(SparkConfig.MEMBER_CHECK); break;
+            case ID_MEMBER_HINT: toggle(SparkConfig.MEMBER_CHECK_HINT); break;
+            case ID_MEMBER_INTERVAL: {
+                int index = SparkConfig.prefs().getInt("memberCheckInterval", 0);
+                index = (index + 1) % org.telegram.messenger.spark.SparkMembership.INTERVALS.length;
+                SparkConfig.prefs().edit().putInt("memberCheckInterval", index).apply();
+                listView.adapter.update(true);
+                break;
+            }
             case ID_UPDATE_TEST: toggle(SparkConfig.UPDATE_TEST_BUILDS); break;
             case ID_PROFILE_LIBRARY: presentFragment(new SparkProfileLibraryActivity()); break;
             case ID_PHOTO_MANAGER_OPEN: presentFragment(new SparkPhotoManagerActivity()); break;

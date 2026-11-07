@@ -6226,6 +6226,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         }
     }
 
+    private int sparkMemberState;
+
     private boolean isUserDataChanged() {
         if (currentMessageObject != null && (!hasLinkPreview && MessageObject.getMedia(currentMessageObject.messageOwner) != null && MessageObject.getMedia(currentMessageObject.messageOwner).webpage instanceof TLRPC.TL_webPage)) {
             return true;
@@ -6246,6 +6248,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             return true;
         }
         if (lastReactions != currentMessageObject.messageOwner.reactions) {
+            return true;
+        }
+        // Sparkgram: Mitgliedsstatus geaendert -> Namenszeile neu aufbauen
+        if (currentUser != null && currentMessageObject.getDialogId() < 0 && sparkMemberState != org.telegram.messenger.spark.SparkMembership.state(currentAccount, -currentMessageObject.getDialogId(), currentUser.id)) {
             return true;
         }
 
@@ -18919,6 +18925,21 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     adminString.insert(0, pair.first);
                 } else {
                     adminString.append(pair.first);
+                }
+            }
+
+            // Sparkgram: Markierung, wenn der Absender nicht mehr in der Gruppe ist
+            sparkMemberState = 0;
+            if (currentUser != null && messageObject.getDialogId() < 0 && !messageObject.isOutOwner()) {
+                org.telegram.messenger.spark.SparkMembership.onMessageShown(currentAccount, messageObject);
+                sparkMemberState = org.telegram.messenger.spark.SparkMembership.state(currentAccount, -messageObject.getDialogId(), currentUser.id);
+                CharSequence sparkBadge = org.telegram.messenger.spark.SparkMembership.badge(currentAccount, -messageObject.getDialogId(), currentUser.id);
+                if (sparkBadge != null) {
+                    if (adminString == null) {
+                        adminString = new SpannableStringBuilder(sparkBadge);
+                    } else {
+                        adminString.insert(0, sparkBadge + " · ");
+                    }
                 }
             }
 

@@ -11706,5 +11706,11 @@
     <string name="SparkCopyLink">Link kopieren</string>
     <string name="SparkCopyAll">Alles kopieren</string>
     <string name="SparkMenuGroupedToggle">unter einem Knopf „Sparkgram“ sammeln</string>
+    <string name="SparkHeaderGroups">Gruppen</string>
+    <string name="SparkMemberCheckToggle">Markieren, wer nicht mehr in der Gruppe ist</string>
+    <string name="SparkMemberHintToggle">Hinweis im Chat, wenn jemand aus dem Gespräch geht</string>
+    <string name="SparkMemberInterval">Aktive Teilnehmer prüfen alle</string>
+    <string name="SparkMemberInfo">Neben dem Namen erscheint „🚪 raus“, wenn der Absender die Gruppe verlassen hat. Geprüft wird beim Anzeigen der Nachrichten; wer gerade mitschreibt, wird im eingestellten Abstand geprüft. Im Zweifel erscheint keine Markierung statt einer falschen.</string>
+    <string name="SparkMemberLeftHint">%1$s ist nicht mehr in der Gruppe</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

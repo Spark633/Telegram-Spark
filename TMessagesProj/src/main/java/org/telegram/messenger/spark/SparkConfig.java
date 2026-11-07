@@ -27,6 +27,10 @@ public class SparkConfig {
     // Eintraege unter einem Knopf "Sparkgram" sammeln statt einzeln (je Menue)
     public static final String PROFILE_MENU_GROUPED = "profileMenuGrouped";
     public static final String CHAT_MENU_GROUPED = "chatMenuGrouped";
+    // Gruppen: pruefen, ob Absender noch Mitglied sind (Markierung am Namen)
+    public static final String MEMBER_CHECK = "memberCheck";
+    // Hinweis im Chat, wenn ein aktiver Gespraechsteilnehmer die Gruppe verlaesst
+    public static final String MEMBER_CHECK_HINT = "memberCheckHint";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
@@ -78,6 +82,8 @@ public class SparkConfig {
             case PHOTO_MANAGER:
             case SPARK_MARKER:
             case CHAT_MENU:
+            case MEMBER_CHECK:
+            case MEMBER_CHECK_HINT:
             case CLONE_NAME:
             case CLONE_BIO:
             case CLONE_PHOTO:

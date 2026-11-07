@@ -30062,6 +30062,16 @@ public class ChatActivity extends BaseFragment implements
     @Override
     public void onResume() {
         super.onResume();
+        // Sparkgram: aktive Gespraechsteilnehmer regelmaessig auf Mitgliedschaft pruefen
+        if (currentChat != null) {
+            final long sparkChatId = currentChat.id;
+            org.telegram.messenger.spark.SparkMembership.onChatOpened(currentAccount, sparkChatId, (chatId, userId) -> {
+                if (getParentActivity() != null) {
+                    org.telegram.ui.Components.BulletinFactory.of(this).createSimpleBulletin(R.raw.error,
+                        org.telegram.ui.spark.SparkUi.mark(org.telegram.messenger.LocaleController.formatString(R.string.SparkMemberLeftHint, org.telegram.messenger.spark.SparkMembership.userName(currentAccount, userId)))).show();
+                }
+            });
+        }
         checkShowBlur(false);
         activityResumeTime = System.currentTimeMillis();
         if (openImport && getSendMessagesHelper().getImportingHistory(dialog_id) != null) {
@@ -30274,6 +30284,9 @@ public class ChatActivity extends BaseFragment implements
     @Override
     public void onPause() {
         super.onPause();
+        if (currentChat != null) {
+            org.telegram.messenger.spark.SparkMembership.onChatClosed(currentAccount, currentChat.id); // Sparkgram
+        }
         scrolling = false;
         if (scrimPopupWindow != null) {
             scrimPopupWindow.setPauseNotifications(false);

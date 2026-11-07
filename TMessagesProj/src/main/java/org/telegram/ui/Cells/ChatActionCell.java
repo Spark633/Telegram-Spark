@@ -642,6 +642,7 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
 
     public void setMessageObject(MessageObject messageObject, boolean force) {
         if (messageObject == null) return;
+        org.telegram.messenger.spark.SparkMembership.onMessageShown(currentAccount, messageObject); // Sparkgram
         if (currentMessageObject != messageObject && walletSlidingOffset != 0) setWalletSlidingOffset(0);
         final boolean walletStateChanged = messageObject.messageOwner != null
                 && messageObject.messageOwner.action instanceof TLRPC.TL_messageActionGramTransfer
