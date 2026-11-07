@@ -6230,8 +6230,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     private boolean sparkDeletedState;
     private static final int SPARK_DELETED_COLOR = 0xFFE53935;
     private Paint sparkDeletedPaint;
-    private android.graphics.Path sparkDeletedPath;
-    private int sparkDeletedShaderTop = -1, sparkDeletedShaderBottom = -1;
+    private android.graphics.Path sparkDeletedPath, sparkDeletedClip;
+    private float[] sparkDeletedPos, sparkDeletedPos2;
     private boolean sparkHistoryState;
 
     private boolean isUserDataChanged() {
@@ -20872,35 +20872,63 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     currentBackgroundShadowDrawable.draw(canvas);
                 }
 
-                // Sparkgram: rote Kante an geloeschten Nachrichten, folgt der Rundung und laeuft weich aus
+                // Sparkgram: rote Kante an geloeschten Nachrichten. Laeuft links an der Blase entlang,
+                // folgt oben und unten der Rundung und wird an der Ober-/Unterkante immer duenner.
                 if (sparkDeletedState && currentBackgroundDrawable != null) {
                     Rect r = currentBackgroundDrawable.getBounds();
                     final boolean out = currentMessageObject.isOutOwner();
-                    // Blasenkoerper ohne den "Schwanz" an der Seite
                     float bl = out ? r.left : r.left + dp(6);
                     float br = out ? r.right - dp(6) : r.right;
-                    float radius = dp(SharedConfig.bubbleRadius);
+                    float top = r.top, bottom = r.bottom;
+                    float radius = Math.min(dp(SharedConfig.bubbleRadius), (bottom - top) / 2f);
+                    float ext = Math.min(dp(36), Math.max(0, (br - bl) / 2f - radius));
+                    float thick = dp(3.5f);
                     if (sparkDeletedPaint == null) {
                         sparkDeletedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                        sparkDeletedPaint.setStyle(Paint.Style.STROKE);
+                        sparkDeletedPaint.setStrokeCap(Paint.Cap.ROUND);
                     }
                     if (sparkDeletedPath == null) {
                         sparkDeletedPath = new android.graphics.Path();
+                        sparkDeletedClip = new android.graphics.Path();
+                        sparkDeletedPos = new float[2];
+                        sparkDeletedPos2 = new float[2];
                     }
-                    if (sparkDeletedShaderTop != r.top || sparkDeletedShaderBottom != r.bottom) {
-                        sparkDeletedShaderTop = r.top;
-                        sparkDeletedShaderBottom = r.bottom;
-                        int c = SPARK_DELETED_COLOR;
-                        int t = c & 0x00FFFFFF;
-                        sparkDeletedPaint.setShader(new android.graphics.LinearGradient(0, r.top, 0, r.bottom,
-                            new int[]{t, c, c, t}, new float[]{0f, 0.22f, 0.78f, 1f}, android.graphics.Shader.TileMode.CLAMP));
-                    }
+                    sparkDeletedPaint.setColor(SPARK_DELETED_COLOR);
                     sparkDeletedPaint.setAlpha((int) (255 * alphaInternal));
-                    sparkDeletedPath.reset();
-                    AndroidUtilities.rectTmp.set(bl, r.top, br, r.bottom);
-                    sparkDeletedPath.addRoundRect(AndroidUtilities.rectTmp, radius, radius, android.graphics.Path.Direction.CW);
+                    // Umriss der linken Haelfte der Blase
+                    android.graphics.Path path = sparkDeletedPath;
+                    path.reset();
+                    path.moveTo(bl + radius + ext, top);
+                    path.lineTo(bl + radius, top);
+                    AndroidUtilities.rectTmp.set(bl, top, bl + 2 * radius, top + 2 * radius);
+                    path.arcTo(AndroidUtilities.rectTmp, 270, -90, false);
+                    path.lineTo(bl, bottom - radius);
+                    AndroidUtilities.rectTmp.set(bl, bottom - 2 * radius, bl + 2 * radius, bottom);
+                    path.arcTo(AndroidUtilities.rectTmp, 180, -90, false);
+                    path.lineTo(bl + radius + ext, bottom);
+                    // nur innerhalb der Blase zeichnen
+                    sparkDeletedClip.reset();
+                    AndroidUtilities.rectTmp.set(bl, top, br, bottom);
+                    sparkDeletedClip.addRoundRect(AndroidUtilities.rectTmp, radius, radius, android.graphics.Path.Direction.CW);
                     canvas.save();
-                    canvas.clipPath(sparkDeletedPath);
-                    canvas.drawRect(bl, r.top, bl + dp(3.5f), r.bottom, sparkDeletedPaint);
+                    canvas.clipPath(sparkDeletedClip);
+                    android.graphics.PathMeasure pm = new android.graphics.PathMeasure(path, false);
+                    float len = pm.getLength();
+                    float taper = (float) (Math.PI / 2 * radius) + ext; // Ecke + Stueck Oberkante
+                    float step = dp(1.5f);
+                    for (float d = 0; d < len; d += step) {
+                        float edge = Math.min(d, len - d);
+                        float f = edge >= taper ? 1f : edge / taper;
+                        f = f * f * (3 - 2 * f); // weicher Uebergang
+                        if (f <= 0.02f) {
+                            continue;
+                        }
+                        pm.getPosTan(d, sparkDeletedPos, null);
+                        pm.getPosTan(Math.min(d + step, len), sparkDeletedPos2, null);
+                        sparkDeletedPaint.setStrokeWidth(2 * thick * f); // halb ausserhalb -> wird abgeschnitten
+                        canvas.drawLine(sparkDeletedPos[0], sparkDeletedPos[1], sparkDeletedPos2[0], sparkDeletedPos2[1], sparkDeletedPaint);
+                    }
                     canvas.restore();
                 }
                 if (transitionParams.changePinnedBottomProgress != 1f && currentPosition == null) {
