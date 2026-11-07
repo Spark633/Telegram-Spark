@@ -1,5 +1,7 @@
 package org.telegram.ui.spark;
 
+import static org.telegram.messenger.LocaleController.getString;
+
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
