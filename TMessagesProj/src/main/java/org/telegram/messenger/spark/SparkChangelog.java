@@ -20,7 +20,7 @@ public class SparkChangelog {
 
     public static final Release[] RELEASES = {
         new Release("0.8", "07.11.2026",
-            "Eigenes Sparkgram-App-Symbol: oranger Flieger mit hellblauen Funken (auch für Themed Icons)",
+            "Eigenes Sparkgram-App-Symbol: hellblauer Flieger mit orangen Funken (auch für Themed Icons)",
             "Updates-Bereich: „Nach Updates suchen“ und „Testversionen“ direkt unter der installierten Version"
         ),
         new Release("0.7", "07.11.2026",
