@@ -35,6 +35,10 @@ public class SparkConfig {
     public static final String MEMBER_CHECK = "memberCheck";
     // Hinweis im Chat, wenn ein aktiver Gespraechsteilnehmer die Gruppe verlaesst
     public static final String MEMBER_CHECK_HINT = "memberCheckHint";
+    // Geloeschte Nachrichten im Chat behalten und markieren
+    public static final String KEEP_DELETED = "keepDeleted";
+    // Bearbeitungsverlauf speichern
+    public static final String EDIT_HISTORY = "editHistory";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
@@ -88,6 +92,8 @@ public class SparkConfig {
             case PHOTO_MANAGER:
             case SPARK_MARKER:
             case CHAT_MENU:
+            case KEEP_DELETED:
+            case EDIT_HISTORY:
             case MEMBER_CHECK:
             case MEMBER_CHECK_HINT:
             case CLONE_NAME:

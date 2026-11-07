@@ -51,6 +51,8 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_MEMBER_INTERVAL = 25;
     private static final int ID_INFO_ROW = 26;
     private static final int ID_PHOTO_DATE = 27;
+    private static final int ID_KEEP_DELETED = 28;
+    private static final int ID_EDIT_HISTORY = 29;
 
     @Override
     protected CharSequence getTitle() {
@@ -90,6 +92,11 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(UItem.asButton(ID_PHOTO_MANAGER_OPEN, R.drawable.msg_photos, getString(R.string.SparkPhotoManager)));
         }
         items.add(UItem.asShadow(getString(R.string.SparkProfileToolsInfo)));
+
+        items.add(UItem.asHeader(getString(R.string.SparkHeaderMessages)));
+        items.add(check(ID_KEEP_DELETED, R.string.SparkKeepDeletedToggle, SparkConfig.KEEP_DELETED));
+        items.add(check(ID_EDIT_HISTORY, R.string.SparkEditHistoryToggle, SparkConfig.EDIT_HISTORY));
+        items.add(UItem.asShadow(getString(R.string.SparkMessagesInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderGroups)));
         items.add(check(ID_MEMBER_CHECK, R.string.SparkMemberCheckToggle, SparkConfig.MEMBER_CHECK));
@@ -156,6 +163,8 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_INFO: toggle(SparkConfig.PROFILE_INFO); break;
             case ID_INFO_ROW: toggle(SparkConfig.PROFILE_INFO_ROW); break;
             case ID_PHOTO_DATE: toggle(SparkConfig.PHOTO_DATE); break;
+            case ID_KEEP_DELETED: toggle(SparkConfig.KEEP_DELETED); break;
+            case ID_EDIT_HISTORY: toggle(SparkConfig.EDIT_HISTORY); break;
             case ID_CLONE: toggle(SparkConfig.PROFILE_CLONE); break;
             case ID_CLONE_NAME: toggle(SparkConfig.CLONE_NAME); break;
             case ID_CLONE_BIO: toggle(SparkConfig.CLONE_BIO); break;

@@ -1264,6 +1264,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_VIEW_STATISTICS = 115;
     public final static int OPTION_WELCOME_REVERT = 116;
     public final static int OPTION_SEND_MONEY = 117;
+    public final static int OPTION_SPARK_HISTORY = 900; // Sparkgram
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -31305,6 +31306,12 @@ public class ChatActivity extends BaseFragment implements
                 icons.add(R.drawable.msg_calendar2);
             }
 
+            // Sparkgram: Bearbeitungsverlauf
+            if (selectedObject != null && org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).hasHistory(selectedObject.getDialogId(), selectedObject.getId())) {
+                items.add(org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkEditHistory)));
+                options.add(OPTION_SPARK_HISTORY);
+                icons.add(R.drawable.msg_edit);
+            }
             if (options.isEmpty() && optionsView == null) {
                 return false;
             }
@@ -33624,6 +33631,10 @@ public class ChatActivity extends BaseFragment implements
         }
         boolean preserveDim = false;
         switch (option) {
+            case OPTION_SPARK_HISTORY: {
+                org.telegram.ui.spark.SparkUi.showEditHistory(this, selectedObject);
+                break;
+            }
             case OPTION_RETRY: {
                 final MessageObject object = selectedObject;
                 final MessageObject.GroupedMessages group = selectedObjectGroup;

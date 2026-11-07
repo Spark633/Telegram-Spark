@@ -40,6 +40,41 @@ public class SparkUi {
         return sb;
     }
 
+    /** Zeigt alle frueheren Fassungen einer bearbeiteten Nachricht. */
+    public static void showEditHistory(org.telegram.ui.ActionBar.BaseFragment fragment, org.telegram.messenger.MessageObject message) {
+        if (fragment == null || message == null || fragment.getParentActivity() == null) {
+            return;
+        }
+        java.util.ArrayList<org.telegram.messenger.spark.SparkMessageStore.Version> versions =
+            org.telegram.messenger.spark.SparkMessageStore.get(fragment.getCurrentAccount()).history(message.getDialogId(), message.getId());
+        java.text.SimpleDateFormat f = new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.GERMANY);
+        StringBuilder sb = new StringBuilder();
+        int n = 1;
+        for (org.telegram.messenger.spark.SparkMessageStore.Version v : versions) {
+            long when = v.editDate > 0 ? v.editDate * 1000L : (n == 1 && message.messageOwner != null ? message.messageOwner.date * 1000L : 0);
+            sb.append("Fassung ").append(n++);
+            if (when > 0) {
+                sb.append(" (").append(f.format(new java.util.Date(when))).append(")");
+            }
+            sb.append(":\n").append(android.text.TextUtils.isEmpty(v.text) ? "(ohne Text)" : v.text).append("\n\n");
+        }
+        sb.append("Aktuell");
+        if (message.messageOwner != null && message.messageOwner.edit_date > 0) {
+            sb.append(" (").append(f.format(new java.util.Date(message.messageOwner.edit_date * 1000L))).append(")");
+        }
+        sb.append(":\n").append(message.messageOwner == null || android.text.TextUtils.isEmpty(message.messageOwner.message) ? "(ohne Text)" : message.messageOwner.message);
+        final String text = sb.toString();
+        org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(fragment.getParentActivity());
+        builder.setTitle(mark(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.SparkEditHistory)));
+        builder.setMessage(text);
+        builder.setPositiveButton(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.OK), null);
+        builder.setNeutralButton(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.Copy), (d, w) -> {
+            AndroidUtilities.addToClipboard(text);
+            org.telegram.ui.Components.BulletinFactory.of(fragment).createCopyBulletin(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.TextCopied)).show();
+        });
+        fragment.showDialog(builder.create());
+    }
+
     /** "Profilbild vom 07.11.2026, 14:32" */
     public static String photoDate(int unixTime) {
         return "Profilbild vom " + new java.text.SimpleDateFormat("dd.MM.yyyy, HH:mm", java.util.Locale.GERMANY).format(new java.util.Date(unixTime * 1000L));

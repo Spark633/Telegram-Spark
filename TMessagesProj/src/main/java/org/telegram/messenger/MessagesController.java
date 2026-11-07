@@ -18528,6 +18528,9 @@ public class MessagesController extends BaseController implements NotificationCe
                         message.out = true;
                     }
                 }
+                if (!(baseUpdate instanceof TL_update.TL_updateNewScheduledMessage)) {
+                    org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).rememberRaw(message); // Sparkgram
+                }
                 if (message instanceof TLRPC.TL_messageEmpty) {
                     continue;
                 }
@@ -18848,15 +18851,18 @@ public class MessagesController extends BaseController implements NotificationCe
                 dialogs_read_outbox_max.put(dialogId, Math.max(value, update.max_id));
             } else if (baseUpdate instanceof TL_update.TL_updateDeleteMessages) {
                 TL_update.TL_updateDeleteMessages update = (TL_update.TL_updateDeleteMessages) baseUpdate;
-                if (deletedMessages == null) {
-                    deletedMessages = new LongSparseArray<>();
+                // Sparkgram: geloeschte Nachrichten behalten und markieren
+                if (!org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).onDeleted(0, update.messages)) {
+                    if (deletedMessages == null) {
+                        deletedMessages = new LongSparseArray<>();
+                    }
+                    ArrayList<Integer> arrayList = deletedMessages.get(0);
+                    if (arrayList == null) {
+                        arrayList = new ArrayList<>();
+                        deletedMessages.put(0, arrayList);
+                    }
+                    arrayList.addAll(update.messages);
                 }
-                ArrayList<Integer> arrayList = deletedMessages.get(0);
-                if (arrayList == null) {
-                    arrayList = new ArrayList<>();
-                    deletedMessages.put(0, arrayList);
-                }
-                arrayList.addAll(update.messages);
             } else if (baseUpdate instanceof TL_update.TL_updateDeleteQuickReplyMessages) {
                 TL_update.TL_updateDeleteQuickReplyMessages update = (TL_update.TL_updateDeleteQuickReplyMessages) baseUpdate;
                 if (deletedQuickReplyMessages == null) {
@@ -19376,16 +19382,19 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (BuildVars.LOGS_ENABLED) {
                     FileLog.d(baseUpdate + " channelId = " + update.channel_id);
                 }
-                if (deletedMessages == null) {
-                    deletedMessages = new LongSparseArray<>();
+                // Sparkgram: geloeschte Nachrichten behalten und markieren
+                if (!org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).onDeleted(update.channel_id, update.messages)) {
+                    if (deletedMessages == null) {
+                        deletedMessages = new LongSparseArray<>();
+                    }
+                    long dialogId = -update.channel_id;
+                    ArrayList<Integer> arrayList = deletedMessages.get(dialogId);
+                    if (arrayList == null) {
+                        arrayList = new ArrayList<>();
+                        deletedMessages.put(dialogId, arrayList);
+                    }
+                    arrayList.addAll(update.messages);
                 }
-                long dialogId = -update.channel_id;
-                ArrayList<Integer> arrayList = deletedMessages.get(dialogId);
-                if (arrayList == null) {
-                    arrayList = new ArrayList<>();
-                    deletedMessages.put(dialogId, arrayList);
-                }
-                arrayList.addAll(update.messages);
             } else if (baseUpdate instanceof TL_update.TL_updateChannel) {
                 if (BuildVars.LOGS_ENABLED) {
                     TL_update.TL_updateChannel update = (TL_update.TL_updateChannel) baseUpdate;
@@ -19466,6 +19475,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         message.out = true;
                     }
                 }
+                org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).onEdited(message); // Sparkgram: alte Fassung sichern
                 if (!message.out) {
                     long from_id = DialogObject.getPeerDialogId(message.from_id);
                     if (from_id == clientUserId) {

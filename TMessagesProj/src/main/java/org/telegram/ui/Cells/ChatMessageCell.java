@@ -6227,6 +6227,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     }
 
     private int sparkMemberState;
+    private boolean sparkDeletedState;
+    private boolean sparkHistoryState;
 
     private boolean isUserDataChanged() {
         if (currentMessageObject != null && (!hasLinkPreview && MessageObject.getMedia(currentMessageObject.messageOwner) != null && MessageObject.getMedia(currentMessageObject.messageOwner).webpage instanceof TLRPC.TL_webPage)) {
@@ -6248,6 +6250,11 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             return true;
         }
         if (lastReactions != currentMessageObject.messageOwner.reactions) {
+            return true;
+        }
+        // Sparkgram: Loesch-/Verlaufsstatus geaendert -> Zeitzeile neu aufbauen
+        if (sparkDeletedState != org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).isDeleted(currentMessageObject.getDialogId(), currentMessageObject.getId())
+                || sparkHistoryState != org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).hasHistory(currentMessageObject.getDialogId(), currentMessageObject.getId())) {
             return true;
         }
         // Sparkgram: Mitgliedsstatus geaendert -> Namenszeile neu aufbauen
@@ -6777,6 +6784,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     public MultiLayoutTypingAnimator botDraftTypingAnimator;
 
     private void setMessageContent(MessageObject messageObject, MessageObject.GroupedMessages groupedMessages, boolean bottomNear, boolean topNear, boolean firstInChat, boolean lastInChatList) {
+        org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).remember(messageObject); // Sparkgram: Text fuer Verlauf merken
         if (messageObject.checkLayout() || currentPosition != null && lastHeight != AndroidUtilities.displaySize.y) {
             currentMessageObject = null;
         }
@@ -18525,6 +18533,14 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         }
         if (currentMessageObject.messageOwner.video_processing_pending) {
             timeString = formatString(R.string.ScheduledTimeApprox, timeString);
+        }
+        // Sparkgram: geloeschte / bearbeitete Nachrichten kennzeichnen
+        sparkDeletedState = org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).isDeleted(currentMessageObject.getDialogId(), currentMessageObject.getId());
+        sparkHistoryState = org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).hasHistory(currentMessageObject.getDialogId(), currentMessageObject.getId());
+        if (sparkDeletedState) {
+            timeString = "🗑 " + timeString;
+        } else if (sparkHistoryState) {
+            timeString = "✏️ " + timeString;
         }
         if (signString != null) {
             if (messageObject.messageOwner.via_business_bot_id != 0) {
