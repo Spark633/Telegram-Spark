@@ -206,6 +206,35 @@ public class SparkKeywords {
                 .setWhen(h.date * 1000L)
                 .setShowWhen(true)
                 .setContentIntent(pi);
+            // Unterhaltungs-Stil + Verknuepfung: Android zeigt die Meldung dann oben bei den Unterhaltungen
+            try {
+                String title = "✦ Schlagwort: „" + h.keyword + "“";
+                String senderName = h.senderId != h.dialogId ? org.telegram.ui.spark.SparkNotesActivity.dialogName(account, h.senderId) : chatName;
+                androidx.core.app.Person me = new androidx.core.app.Person.Builder().setName("Ich").build();
+                androidx.core.app.Person from = new androidx.core.app.Person.Builder().setName(senderName).setKey("u" + h.senderId).build();
+                NotificationCompat.MessagingStyle style = new NotificationCompat.MessagingStyle(me);
+                style.setConversationTitle(title + " in " + chatName);
+                style.setGroupConversation(true);
+                style.addMessage(h.text, h.date * 1000L, from);
+                b.setStyle(style);
+                String shortcutId = "spark_kw_" + account + "_" + h.dialogId;
+                Intent sIntent = new Intent(ctx, LaunchActivity.class);
+                sIntent.setAction(Intent.ACTION_VIEW);
+                if (h.dialogId > 0) sIntent.putExtra("userId", h.dialogId); else sIntent.putExtra("chatId", -h.dialogId);
+                sIntent.putExtra("currentAccount", account);
+                androidx.core.content.pm.ShortcutInfoCompat sc = new androidx.core.content.pm.ShortcutInfoCompat.Builder(ctx, shortcutId)
+                    .setShortLabel(chatName)
+                    .setLongLabel(title + " in " + chatName)
+                    .setIntent(sIntent)
+                    .setLongLived(true)
+                    .setPerson(from)
+                    .setIcon(androidx.core.graphics.drawable.IconCompat.createWithResource(ctx, h.dialogId > 0 ? R.drawable.book_user : R.drawable.book_group))
+                    .build();
+                androidx.core.content.pm.ShortcutManagerCompat.pushDynamicShortcut(ctx, sc);
+                b.setShortcutInfo(sc);
+            } catch (Throwable e) {
+                FileLog.e(e);
+            }
             nm.notify(CHANNEL_ID.hashCode() + (int) (h.dialogId % 1000) * 1000 + (h.messageId % 1000), b.build());
         } catch (Throwable e) {
             FileLog.e(e);

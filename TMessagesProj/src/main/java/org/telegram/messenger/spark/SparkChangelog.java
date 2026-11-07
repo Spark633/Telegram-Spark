@@ -25,7 +25,7 @@ public class SparkChangelog {
             "Sprachnachrichten: beim Loslassen öffnet sich Telegrams Vorschau (anhören, zuschneiden, senden oder verwerfen) – wie bei der Freihand-Aufnahme",
             "Profil und Chat: unter bzw. neben dem Status steht, wann Sparkgram die Person zuletzt online gesehen hat oder wann sie zuletzt in gemeinsamen Chats geschrieben/getippt hat",
             "Gelöschte Konten zeigen den Namen, den Sparkgram vorher kannte („Name (gelöscht)“)",
-            "Schlagwort-Benachrichtigung heißt jetzt „✦ Schlagwort: …“",
+            "Schlagwort-Benachrichtigung heißt jetzt „✦ Schlagwort: …“ und erscheint oben bei den Unterhaltungen (wie normale Chats)",
             "Übersetzen: „Chat übersetzen“ auch ohne Premium – über Google oder mit eigenem DeepL-Schlüssel",
             "Einzelne Nachrichten werden bei gewähltem DeepL ebenfalls über DeepL übersetzt",
             "Eigene Nachricht vor dem Senden übersetzen: Text eintippen → Drei-Punkte-Menü → „Eingabe übersetzen“ (Sprache wird pro Chat gemerkt, mit Rückgängig)",
