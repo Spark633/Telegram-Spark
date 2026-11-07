@@ -152,10 +152,10 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderUpdates)));
         items.add(UItem.asButton(ID_VERSION, R.drawable.msg_info, getString(R.string.SparkVersion), SparkUpdater.buildLabel()));
-        items.add(UItem.asButton(ID_CHANGELOG, R.drawable.msg_stories_caption, "Was ist neu?"));
-        items.add(UItem.asCheck(ID_WHATS_NEW_HINT, "Nach Updates „Was ist neu?“ zeigen").setChecked(SparkConfig.getRaw(SparkConfig.WHATS_NEW_HINT)));
         items.add(UItem.asButton(ID_UPDATE_CHECK, R.drawable.msg_retry, getString(R.string.SparkUpdateCheck)));
         items.add(UItem.asCheck(ID_UPDATE_TEST, getString(R.string.SparkUpdateTestBuilds)).setChecked(SparkConfig.getRaw(SparkConfig.UPDATE_TEST_BUILDS)));
+        items.add(UItem.asButton(ID_CHANGELOG, R.drawable.msg_stories_caption, "Was ist neu?"));
+        items.add(UItem.asCheck(ID_WHATS_NEW_HINT, "Nach Updates „Was ist neu?“ zeigen").setChecked(SparkConfig.getRaw(SparkConfig.WHATS_NEW_HINT)));
         items.add(UItem.asButton(ID_REPO, R.drawable.msg_link2, getString(R.string.SparkRepo)));
         items.add(UItem.asShadow(getString(R.string.SparkUpdateInfo)));
 
