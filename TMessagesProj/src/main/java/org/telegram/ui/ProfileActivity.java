@@ -13586,7 +13586,16 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     boolean containsGift = false;
                     if (position == sparkNoteRow) {
                         String sparkNote = org.telegram.messenger.spark.SparkNotes.get(currentAccount, userId != 0 ? userId : -chatId);
-                        detailCell.setTextAndValue(TextUtils.isEmpty(sparkNote) ? getString(R.string.SparkNoteEmptyRow) : sparkNote,
+                        String sparkPreview = sparkNote;
+                        if (!TextUtils.isEmpty(sparkPreview)) {
+                            sparkPreview = sparkPreview.trim();
+                            int nl = sparkPreview.indexOf('\n');
+                            boolean more = nl >= 0;
+                            if (nl >= 0) sparkPreview = sparkPreview.substring(0, nl);
+                            if (sparkPreview.length() > 45) { sparkPreview = sparkPreview.substring(0, 45); more = true; }
+                            if (more) sparkPreview = sparkPreview.trim() + " …";
+                        }
+                        detailCell.setTextAndValue(TextUtils.isEmpty(sparkNote) ? getString(R.string.SparkNoteEmptyRow) : sparkPreview,
                             org.telegram.ui.spark.SparkUi.mark(getString(TextUtils.isEmpty(sparkNote) ? R.string.SparkNoteAdd : R.string.SparkNote)), false);
                     } else if (position == sparkInfoRow) {
                         detailCell.setTextAndValue(org.telegram.ui.spark.SparkProfileMenu.infoLine(currentAccount, userId, chatId), org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkInfoRowLabel)), false);

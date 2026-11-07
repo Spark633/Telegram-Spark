@@ -18548,6 +18548,11 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 && !currentMessageObject.isSaved) {
             timeString = "↪ " + new java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.GERMANY).format(new java.util.Date(currentMessageObject.messageOwner.fwd_from.date * 1000L)) + " · " + timeString;
         }
+        // Sparkgram: wie oft weitergeleitet (liefert Telegram nur bei Kanal-Beitraegen)
+        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.FORWARD_COUNT)
+                && currentMessageObject.messageOwner.forwards > 0) {
+            timeString = "⤳ " + currentMessageObject.messageOwner.forwards + "× · " + timeString;
+        }
         if (sparkDeletedState) {
             timeString = (sparkDelState == org.telegram.messenger.spark.SparkMessageStore.DELETED_BY_SELF ? "🗑 von dir gelöscht · " : "🗑 gelöscht · ") + timeString;
         } else if (sparkHistoryState) {

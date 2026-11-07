@@ -11751,7 +11751,7 @@
     <string name="SparkRepeatConfirm">Diese Nachricht noch einmal als deine eigene senden?</string>
     <string name="SparkConfirmInfo">Gegen versehentliches Senden. Nach einer Sprachaufnahme erscheint ein Fenster: anhören, senden oder verwerfen.</string>
     <string name="SparkNameHistoryToggle">Frühere Namen merken (im Menü abrufbar)</string>
-    <string name="SparkNoteEmptyRow">Noch keine Notiz – tippen zum Hinzufügen</string>
+    <string name="SparkNoteEmptyRow">Noch keine Notiz</string>
     <string name="SparkNameHistory">Frühere Namen</string>
     <string name="SparkHidePremiumAuto">automatisch aus, wenn dieses Konto Premium hat</string>
     <string name="SparkLocalNamesToggle">Namen nur für mich ändern</string>
@@ -11759,5 +11759,6 @@
     <string name="SparkTimezonesToggle">Ortszeit von Kontakten</string>
     <string name="SparkTimezone">Zeitzone festlegen</string>
     <string name="SparkForwardNoSenderToggle">Weiterleiten standardmäßig ohne Absender</string>
+    <string name="SparkForwardCountToggle">Anzeige, wie oft weitergeleitet</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

@@ -347,7 +347,7 @@ public class SparkProfileMenu {
         if (userId != 0) {
             TLRPC.UserFull full = mc.getUserFull(userId);
             if (SparkConfig.get(SparkConfig.TIMEZONES)) {
-                String lt = org.telegram.messenger.spark.SparkTimezones.localTime(userId);
+                String lt = org.telegram.messenger.spark.SparkTimezones.shortTime(userId);
                 if (lt != null) {
                     sb.append("\nOrtszeit: ").append(lt);
                 }

@@ -72,9 +72,11 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 ## Stand der Versionen
 
 - 0.1–0.8: siehe `SparkChangelog.java`.
-- 0.9 (in Arbeit): Notiz-Zeile, exakte rote Kante, Sprachnachricht-Fenster, Rückfrage Wiederholen,
+- 0.9: Notiz-Zeile, exakte rote Kante, Sprachnachricht-Fenster, Rückfrage Wiederholen,
   Bibliothek-Favoriten, frühere Namen auf Anfrage, Premium-Optionen ausblendbar (+Automatik pro Konto),
   lokale Namen, Ortszeit, Weiterleiten ohne Absender, Einstellungen pro Konto.
+- 0.10 (in Arbeit): Sprachnachricht-Rückfrage auch im V2-Aufnahmeweg (MediaController.completeAudioRecordingV2),
+  Weiterleitungszähler, Kontoname als Untertitel, kurze Notiz-Vorschau, kurze Ortszeit.
 
 ## Roadmap (offen)
 

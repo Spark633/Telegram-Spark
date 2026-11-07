@@ -73,6 +73,22 @@ public class SparkTimezones {
         return zoneId;
     }
 
+    /** Kurzform fuer die Info-Zeile, z. B. "05:32 (UTC−8)". */
+    public static String shortTime(long dialogId) {
+        String id = get(dialogId);
+        if (id == null) {
+            return null;
+        }
+        TimeZone tz = TimeZone.getTimeZone(id);
+        SimpleDateFormat f = new SimpleDateFormat("HH:mm", Locale.GERMANY);
+        f.setTimeZone(tz);
+        long now = System.currentTimeMillis();
+        int off = tz.getOffset(now) / 60000;
+        int h = Math.abs(off) / 60, m = Math.abs(off) % 60;
+        String utc = "UTC" + (off == 0 ? "" : (off > 0 ? "+" : "−") + h + (m != 0 ? ":" + (m < 10 ? "0" : "") + m : ""));
+        return f.format(new Date(now)) + " (" + utc + ")";
+    }
+
     /** z. B. "14:32 (Japan, +8 h zu dir)" oder null. */
     public static String localTime(long dialogId) {
         String id = get(dialogId);

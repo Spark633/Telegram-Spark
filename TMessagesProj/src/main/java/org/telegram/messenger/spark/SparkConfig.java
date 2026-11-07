@@ -68,6 +68,7 @@ public class SparkConfig {
     public static final String LOCAL_NAMES = "localNames";
     public static final String TIMEZONES = "timezones";
     public static final String FORWARD_NO_SENDER = "forwardNoSender";
+    public static final String FORWARD_COUNT = "forwardCount";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
@@ -173,6 +174,7 @@ public class SparkConfig {
             case SPARK_MARKER:
             case CHAT_MENU:
             case HIDE_PREMIUM_AUTO:
+            case FORWARD_COUNT:
             case LOCAL_NAMES:
             case TIMEZONES:
             case NAME_HISTORY:

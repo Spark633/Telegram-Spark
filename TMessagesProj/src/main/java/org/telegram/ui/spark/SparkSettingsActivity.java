@@ -71,6 +71,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_LOCAL_NAMES = 51;
     private static final int ID_TIMEZONES = 52;
     private static final int ID_FORWARD_NO_SENDER = 53;
+    private static final int ID_FORWARD_COUNT = 54;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -92,7 +93,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     protected void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
         final boolean on = SparkConfig.getRaw(SparkConfig.MASTER);
         // Hauptschalter ist oben fest angeheftet (siehe createView), hier nur der Hinweis
-        items.add(UItem.asShadow(getString(R.string.SparkMasterInfo) + "\n\nDiese Einstellungen gelten für das Konto: " + org.telegram.messenger.UserObject.getUserName(getUserConfig().getCurrentUser()) + "."));
+        items.add(UItem.asShadow(getString(R.string.SparkMasterInfo)));
 
         final int start = items.size();
 
@@ -130,6 +131,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_MSG_REPEAT, R.string.SparkMsgRepeatToggle, SparkConfig.MSG_REPEAT));
         items.add(check(ID_FORWARD_TIME, R.string.SparkForwardTimeToggle, SparkConfig.FORWARD_TIME));
         items.add(check(ID_FORWARD_NO_SENDER, R.string.SparkForwardNoSenderToggle, SparkConfig.FORWARD_NO_SENDER));
+        items.add(check(ID_FORWARD_COUNT, R.string.SparkForwardCountToggle, SparkConfig.FORWARD_COUNT));
         items.add(check(ID_JUMP_FIRST, R.string.SparkJumpFirstToggle, SparkConfig.JUMP_FIRST));
         items.add(check(ID_DELETE_OWN_ALL, R.string.SparkDeleteOwnToggle, SparkConfig.DELETE_OWN_ALL));
         items.add(UItem.asShadow(getString(R.string.SparkMsgToolsInfo)));
@@ -213,6 +215,11 @@ public class SparkSettingsActivity extends UniversalFragment {
     @Override
     public View createView(android.content.Context context) {
         View view = super.createView(context);
+        // Konto, fuer das diese Einstellungen gelten
+        org.telegram.tgnet.TLRPC.User me = getUserConfig().getCurrentUser();
+        if (me != null) {
+            actionBar.setSubtitle("Konto: " + org.telegram.messenger.UserObject.getUserName(me));
+        }
         // Hauptschalter oben fest angeheftet, bleibt beim Scrollen sichtbar
         masterCell = new org.telegram.ui.Cells.TextCheckCell(context);
         masterCell.setBackgroundColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhite));
@@ -258,6 +265,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_LOCAL_NAMES: toggle(SparkConfig.LOCAL_NAMES); break;
             case ID_TIMEZONES: toggle(SparkConfig.TIMEZONES); break;
             case ID_FORWARD_NO_SENDER: toggle(SparkConfig.FORWARD_NO_SENDER); break;
+            case ID_FORWARD_COUNT: toggle(SparkConfig.FORWARD_COUNT); break;
             case ID_NAME_HISTORY: toggle(SparkConfig.NAME_HISTORY); break;
             case ID_HIDE_STARS: toggle(SparkConfig.HIDE_STARS); break;
             case ID_HIDE_BUSINESS: toggle(SparkConfig.HIDE_BUSINESS); break;

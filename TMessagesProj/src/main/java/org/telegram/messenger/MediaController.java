@@ -4725,7 +4725,19 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
             params.replyToStoryItem = recordReplyingStory;
             params.sendMessageChatArguments = recordSendMessageChatArguments;
             params.payStars = sendAfterDonePayStars;
-            SendMessagesHelper.getInstance(recordingCurrentAccount).sendMessage(params);
+            // Sparkgram: optional erst anhoeren / verwerfen (neuer Aufnahme-Weg V2)
+            final int sparkAccount = recordingCurrentAccount;
+            final File sparkFile = file;
+            if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_VOICE)) {
+                AndroidUtilities.runOnUIThread(() -> org.telegram.ui.spark.SparkUi.confirmVoice(sparkFile.getAbsolutePath(),
+                    () -> SendMessagesHelper.getInstance(sparkAccount).sendMessage(params),
+                    () -> {
+                        AutoDeleteMediaTask.unlockFile(sparkFile);
+                        sparkFile.delete();
+                    }));
+            } else {
+                SendMessagesHelper.getInstance(recordingCurrentAccount).sendMessage(params);
+            }
         }
         NotificationCenter.getInstance(recordingCurrentAccount).postNotificationName(
                 NotificationCenter.audioDidSent,
