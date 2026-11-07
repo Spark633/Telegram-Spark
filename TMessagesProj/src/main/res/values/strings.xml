@@ -11777,6 +11777,9 @@
     <string name="SparkMediaInfo">Nachricht mit Sticker, GIF oder Sprachnachricht antippen → „✦ Medien …“: zur Sammlung, in „Downloads“ speichern, ohne Absender weitersenden, Pack-Link kopieren, ganzes Pack herunterladen, in dein eigenes Pack übernehmen. Im Chat-Menü: „Sammlung“ (antippen = senden) und „Sticker dieses Chats“ (lange drücken = Pack herunterladen).</string>
     <string name="SparkBotSendToggle">Über eigenen Bot senden</string>
     <string name="SparkBotInfo">Mit dem Token deines Bots (von @BotFather) kannst du im Chat-Menü „Über Bot senden“ wählen – die Nachricht kommt dann vom Bot. Der Bot muss in der Gruppe/im Kanal sein (mit Schreibrecht) bzw. von der Person gestartet worden sein. Der Token bleibt auf dem Gerät.</string>
+    <string name="SparkTemplatesToggle">Textvorlagen</string>
+    <string name="SparkMutePeopleToggle">Einzelne Personen stummschalten</string>
+    <string name="SparkOrgInfo">Statistiken zeigen, wie viele Chats, Gruppen, Kanäle und Bots du hast. Textvorlagen fügst du im Chat-Menü ein. Eine Person stummschalten: im Profil-Menü – dann kommen von ihr keine Benachrichtigungen mehr, auch nicht in Gruppen (die Gruppe selbst bleibt laut).</string>
     <string name="SparkHeaderPeople">Personen</string>
     <string name="SparkSearch">Suche nach Name / ID</string>
     <string name="SparkOnlineLog">Online-Protokoll</string>

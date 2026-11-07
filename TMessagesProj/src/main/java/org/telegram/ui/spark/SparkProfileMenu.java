@@ -45,9 +45,11 @@ public class SparkProfileMenu {
     public static final int ID_BOT_SEND = 916;
     public static final int ID_CHAT_STICKERS = 917;
     public static final int ID_COLLECTION = 918;
+    public static final int ID_MUTE_PERSON = 919;
+    public static final int ID_TEMPLATES = 920;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_COLLECTION;
+        return id >= ID_COPY_ID && id <= ID_TEMPLATES;
     }
 
     public interface Adder {
@@ -107,6 +109,10 @@ public class SparkProfileMenu {
         if (userId != 0 && !self && SparkConfig.get(SparkConfig.TIMEZONES)) {
             list.add(new Entry(ID_TIMEZONE, R.drawable.msg_recent, label(getString(R.string.SparkTimezone), marked)));
         }
+        if (userId != 0 && !self && SparkConfig.get(SparkConfig.MUTE_PEOPLE)) {
+            boolean m = org.telegram.messenger.spark.SparkPeople.isMuted(account, userId);
+            list.add(new Entry(ID_MUTE_PERSON, m ? R.drawable.msg_unmute : R.drawable.msg_mute, label(m ? "Benachrichtigungen von Person an" : "Person überall stummschalten", marked)));
+        }
         if (userId != 0 && !self && SparkConfig.get(SparkConfig.ONLINE_LOG)) {
             list.add(new Entry(ID_ONLINE_LOG, R.drawable.msg_log, label(getString(R.string.SparkOnlineLog), marked)));
         }
@@ -139,6 +145,9 @@ public class SparkProfileMenu {
         if (fragment instanceof org.telegram.ui.ChatActivity) {
             if (SparkConfig.get(SparkConfig.COLLECTION)) {
                 list.add(new Entry(ID_COLLECTION, R.drawable.msg_saved, label("Sammlung", marked)));
+            }
+            if (SparkConfig.get(SparkConfig.TEMPLATES)) {
+                list.add(new Entry(ID_TEMPLATES, R.drawable.msg_stories_caption, label("Textvorlagen", marked)));
             }
             if (SparkConfig.get(SparkConfig.BOT_SEND) && !android.text.TextUtils.isEmpty(org.telegram.messenger.spark.SparkBot.token())) {
                 list.add(new Entry(ID_BOT_SEND, R.drawable.msg_bot, label("Über Bot senden", marked)));
@@ -427,6 +436,32 @@ public class SparkProfileMenu {
         return (ChatObject.isChannel(chat) ? "-100" : "-") + chatId;
     }
 
+    /** Vorlage auswaehlen und ins Eingabefeld einfuegen. */
+    private static void insertTemplate(org.telegram.ui.ChatActivity chat) {
+        java.util.ArrayList<String> list = org.telegram.messenger.spark.SparkTemplates.list();
+        java.util.ArrayList<CharSequence> names = new java.util.ArrayList<>();
+        for (String t : list) names.add(t.length() > 70 ? t.substring(0, 70).replace('\n', ' ') + " …" : t.replace('\n', ' '));
+        names.add("＋ Neue Vorlage …");
+        names.add("⚙ Vorlagen verwalten");
+        AlertDialog.Builder b = new AlertDialog.Builder(chat.getParentActivity());
+        b.setTitle(SparkUi.mark("Textvorlagen"));
+        b.setItems(names.toArray(new CharSequence[0]), (d, which) -> {
+            if (which < list.size()) {
+                org.telegram.ui.Components.ChatActivityEnterView input = chat.getChatActivityEnterView();
+                if (input == null) return;
+                CharSequence cur = input.getFieldText();
+                String text = list.get(which);
+                input.setFieldText(TextUtils.isEmpty(cur) ? text : cur + (cur.toString().endsWith(" ") ? "" : " ") + text);
+                input.openKeyboard();
+            } else if (which == list.size()) {
+                SparkTemplatesActivity.edit(chat, -1, () -> insertTemplate(chat));
+            } else {
+                chat.presentFragment(new SparkTemplatesActivity());
+            }
+        });
+        chat.showDialog(b.create());
+    }
+
     private static final String[][] LANGS = {
         {"en", "Englisch"}, {"de", "Deutsch"}, {"es", "Spanisch"}, {"fr", "Französisch"}, {"it", "Italienisch"},
         {"pt", "Portugiesisch"}, {"nl", "Niederländisch"}, {"pl", "Polnisch"}, {"tr", "Türkisch"}, {"ru", "Russisch"},
@@ -484,6 +519,18 @@ public class SparkProfileMenu {
     public static void handle(BaseFragment fragment, int id, long userId, long chatId) {
         final int account = fragment.getCurrentAccount();
         switch (id) {
+            case ID_MUTE_PERSON: {
+                boolean m = !org.telegram.messenger.spark.SparkPeople.isMuted(account, userId);
+                org.telegram.messenger.spark.SparkPeople.setMuted(account, userId, m);
+                BulletinFactory.of(fragment).createSimpleBulletin(m ? R.raw.ic_mute : R.raw.ic_unmute,
+                    m ? "✦ Keine Benachrichtigungen mehr von dieser Person – in allen Chats" : "✦ Benachrichtigungen von dieser Person wieder an").show();
+                break;
+            }
+            case ID_TEMPLATES:
+                if (fragment instanceof org.telegram.ui.ChatActivity) {
+                    insertTemplate((org.telegram.ui.ChatActivity) fragment);
+                }
+                break;
             case ID_COLLECTION:
                 fragment.presentFragment(new SparkCollectionActivity(userId != 0 ? userId : -chatId));
                 break;

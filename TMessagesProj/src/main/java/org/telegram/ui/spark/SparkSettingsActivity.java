@@ -93,6 +93,10 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_COLLECTION_OPEN = 73;
     private static final int ID_BOT_SEND = 74;
     private static final int ID_BOT_TOKEN = 75;
+    private static final int ID_STATS = 76;
+    private static final int ID_TEMPLATES = 77;
+    private static final int ID_TEMPLATES_OPEN = 78;
+    private static final int ID_MUTE_PEOPLE = 79;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -202,6 +206,15 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(UItem.asButton(ID_BOT_TOKEN, "      Bot-Token", android.text.TextUtils.isEmpty(org.telegram.messenger.spark.SparkBot.token()) ? "fehlt" : (bn != null ? bn : "gesetzt")));
         }
         items.add(UItem.asShadow(getString(R.string.SparkBotInfo)));
+
+        items.add(UItem.asHeader("Organisation"));
+        items.add(UItem.asButton(ID_STATS, R.drawable.msg_stats, "Statistiken"));
+        items.add(expandable(ID_TEMPLATES, R.string.SparkTemplatesToggle, SparkConfig.TEMPLATES, 1));
+        if (open(SparkConfig.TEMPLATES)) {
+            items.add(UItem.asButton(ID_TEMPLATES_OPEN, R.drawable.msg_stories_caption, "Vorlagen verwalten"));
+        }
+        items.add(check(ID_MUTE_PEOPLE, R.string.SparkMutePeopleToggle, SparkConfig.MUTE_PEOPLE));
+        items.add(UItem.asShadow(getString(R.string.SparkOrgInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderPeople)));
         items.add(UItem.asButton(ID_SEARCH, R.drawable.msg_search, getString(R.string.SparkSearch)));
@@ -361,6 +374,10 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_COLLECTION: expand(SparkConfig.COLLECTION); break;
             case ID_COLLECTION_OPEN: presentFragment(new SparkCollectionActivity(0)); break;
             case ID_BOT_SEND: expand(SparkConfig.BOT_SEND); break;
+            case ID_STATS: presentFragment(new SparkStatsActivity()); break;
+            case ID_TEMPLATES: expand(SparkConfig.TEMPLATES); break;
+            case ID_TEMPLATES_OPEN: presentFragment(new SparkTemplatesActivity()); break;
+            case ID_MUTE_PEOPLE: toggle(SparkConfig.MUTE_PEOPLE); break;
             case ID_BOT_TOKEN: SparkMedia.editBotToken(this, () -> listView.adapter.update(true)); break;
             case ID_CONFIRM_STICKER: toggle(SparkConfig.CONFIRM_STICKER); break;
             case ID_CONFIRM_GIF: toggle(SparkConfig.CONFIRM_GIF); break;

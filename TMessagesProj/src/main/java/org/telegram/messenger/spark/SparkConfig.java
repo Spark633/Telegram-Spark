@@ -92,6 +92,9 @@ public class SparkConfig {
     public static final String VOICE_TOOLS = "voiceTools";
     // Senden ueber eigenen Bot
     public static final String BOT_SEND = "botSend";
+    // Etappe 7: Organisation
+    public static final String MUTE_PEOPLE = "mutePeople";
+    public static final String TEMPLATES = "templates";
 
     public static int selectLimit() {
         return get(SELECT_NO_LIMIT) ? 1000 : 100;
@@ -219,6 +222,8 @@ public class SparkConfig {
             case COLLECTION:
             case VOICE_TOOLS:
             case BOT_SEND:
+            case MUTE_PEOPLE:
+            case TEMPLATES:
             case LOCAL_NAMES:
             case TIMEZONES:
             case NAME_HISTORY:

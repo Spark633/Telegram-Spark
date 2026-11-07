@@ -1078,6 +1078,15 @@ public class NotificationsController extends BaseController implements Notificat
             FileLog.d("NotificationsController: processNewMessages msgs.size()=" + (messageObjects == null ? "null" : messageObjects.size()) + " isLast=" + isLast + " isFcm=" + isFcm + ")");
         }
 
+        // Sparkgram: keine Benachrichtigungen von einzeln stummgeschalteten Personen
+        if (messageObjects != null && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_PEOPLE)) {
+            for (int i = messageObjects.size() - 1; i >= 0; i--) {
+                final MessageObject mo = messageObjects.get(i);
+                if (mo != null && !mo.isOutOwner() && org.telegram.messenger.spark.SparkPeople.isMuted(currentAccount, mo.getFromChatId())) {
+                    messageObjects.remove(i);
+                }
+            }
+        }
         if (messageObjects != null) {
             for (int i = 0; i < messageObjects.size(); ++i) {
                 final MessageObject messageObject = messageObjects.get(i);

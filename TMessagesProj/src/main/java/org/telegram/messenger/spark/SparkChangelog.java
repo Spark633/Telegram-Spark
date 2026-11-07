@@ -33,7 +33,10 @@ public class SparkChangelog {
             "Sammlung: unbegrenzt Sticker, GIFs und Sprachnachrichten mit eigenen Ordnern – im Chat antippen = senden",
             "„✦ Medien …“ an Nachrichten: speichern (Downloads), ohne Absender weitersenden, Pack-Link kopieren, ganzes Pack herunterladen, in eigenes Pack übernehmen",
             "„Sticker dieses Chats“: alle im Chat benutzten Packs mit Anzahl",
-            "Galerie-Knopf im QR-Scanner"
+            "Galerie-Knopf im QR-Scanner",
+            "Einzelne Personen stummschalten (Profil-Menü): keine Benachrichtigungen mehr von ihnen, auch in Gruppen",
+            "Textvorlagen: im Chat-Menü einfügen, in den Einstellungen verwalten",
+            "Statistiken: Anzahl Chats, Personen, Bots, Gruppen, Kanäle, Archiv, Ungelesenes"
         ),
         new Release("0.11", "07.11.2026",
             "Online-Protokoll: im Profil-Menü sehen, wann jemand online war (Zeiträume mit Dauer); „kürzlich“ & Co. getrennt mit ⚠ markiert",

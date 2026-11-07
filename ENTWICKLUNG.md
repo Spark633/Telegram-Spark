@@ -122,16 +122,19 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   Etappe 6: `SparkCollection` (SQLite, ganze Nachricht serialisiert, Senden als Kopie ohne Absender →
   Original muss noch existieren), `SparkCollectionActivity`, `SparkMedia` (Nachrichtenmenü `OPTION_SPARK_MEDIA` 904),
   `SparkChatStickersActivity` (Chat-Menü 917), QR-Galerie: `CameraScanActivity.sparkGallery()`.
+  Etappe 7 Teil 1: `SparkPeople` (stummgeschaltete Personen, Filter am Anfang von
+  `NotificationsController.processNewMessages`, Profil-Menü 919), `SparkTemplates` + `SparkTemplatesActivity`
+  (Chat-Menü 920), `SparkStatsActivity` (Chat-Anzahl & Co.).
 
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
 - **Etappe 4 Rest:** automatisch übersetzen.
-- **Etappe 7:** Chat-Anzahl, Ordner „Gelöschte Chats“, Ungelesen pro Konto, mehr Anheften (lokal),
-  einzelne stummschalten, In-App-Benachrichtigungen, Export PDF/HTML, Bookmarks mit Schlagwörtern,
-  Duplikate in „Gespeichertes“, RP: Persona pro Chat, Textvorlagen, Zitieren mit Formatierung,
-  Nachrichtenverlauf einer Person, Auto-Ordner, Sortierung, Statistiken, Backup.
+- **Etappe 7 Rest:** Ordner „Gelöschte Chats“, Ungelesen pro Konto, mehr Anheften (lokal),
+  In-App-Benachrichtigungen, Export PDF/HTML, Bookmarks mit Schlagwörtern,
+  Duplikate in „Gespeichertes“, RP: Persona pro Chat, Zitieren mit Formatierung,
+  Nachrichtenverlauf einer Person, Auto-Ordner, Sortierung, Backup.
 - **Etappe 8:** Ghost-Modus (gelesen/schreibt/online getrennt), Menüs aufräumen, Doppeltipp-Aktion,
   App-Sperre, versteckte Konten, Zwischenablage-Schutz, Proxy-Verwaltung (+ Anleitung).
 - Nebenher: eigenes Firebase für Push, mehr Konten ohne Start-Nachteil, Übernahme nach `main`.
