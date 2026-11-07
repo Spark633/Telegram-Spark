@@ -11546,16 +11546,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     }
                 }
             }
-            // Sparkgram: bei verborgenem Status die echte letzte Zeit aus dem Online-Protokoll zeigen
+            // Sparkgram: zuletzt online gesehen / zuletzt aktiv in gemeinsamen Chats
             if (sparkSeenView != null) {
-                String seen = null;
-                if (!isOnline[0] && user.status != null && (user.status instanceof TLRPC.TL_userStatusRecently || user.status instanceof TLRPC.TL_userStatusLastWeek || user.status instanceof TLRPC.TL_userStatusLastMonth)
-                        && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.ONLINE_LOG)) {
-                    long t = org.telegram.messenger.spark.SparkOnlineLog.get(currentAccount).lastReal(user.id);
-                    if (t > 0) {
-                        seen = "✦ zuletzt echt gesehen: " + org.telegram.messenger.spark.SparkOnlineLog.relative(t);
-                    }
-                }
+                String seen = isOnline[0] ? null : org.telegram.messenger.spark.SparkOnlineLog.seenLine(currentAccount, user, false);
                 sparkSeenView.setText(seen == null ? "" : seen);
                 sparkSeenView.setVisibility(seen == null ? View.GONE : View.VISIBLE);
                 sparkUpdateSeenView();

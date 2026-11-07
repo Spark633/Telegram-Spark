@@ -23,7 +23,7 @@ public class SparkChangelog {
             "Online-Protokoll: im Profil-Menü sehen, wann jemand online war (Zeiträume mit Dauer); „kürzlich“ & Co. getrennt mit ⚠ markiert",
             "Suche nach Name, @Benutzername oder ID – auch nach lokalen und früheren Namen (Sparkgram-Einstellungen → Personen)",
             "Sprachnachrichten: beim Loslassen öffnet sich Telegrams Vorschau (anhören, zuschneiden, senden oder verwerfen) – wie bei der Freihand-Aufnahme",
-            "Profil: zeigt Telegram nur „kürzlich“, steht darunter „✦ zuletzt echt gesehen: …“ aus dem Online-Protokoll",
+            "Profil und Chat: unter bzw. neben dem Status steht, wann Sparkgram die Person zuletzt online gesehen hat oder wann sie zuletzt in gemeinsamen Chats geschrieben/getippt hat",
             "Gelöschte Konten zeigen den Namen, den Sparkgram vorher kannte („Name (gelöscht)“)",
             "Schlagwort-Benachrichtigung heißt jetzt „✦ Schlagwort: …“",
             "Übersetzen: „Chat übersetzen“ auch ohne Premium – über Google oder mit eigenem DeepL-Schlüssel",

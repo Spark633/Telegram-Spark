@@ -1241,6 +1241,13 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
                     isOnline[0] = false;
                     newStatus = LocaleController.formatUserStatus(currentAccount, user, isOnline, allowShorterStatus ? statusMadeShorter : null);
                     useOnlineColor = isOnline[0];
+                    // Sparkgram: zuletzt online gesehen / aktiv (Online-Protokoll)
+                    if (!isOnline[0]) {
+                        String sparkSeen = org.telegram.messenger.spark.SparkOnlineLog.seenLine(currentAccount, user, true);
+                        if (sparkSeen != null) {
+                            newStatus = newStatus + " · " + sparkSeen;
+                        }
+                    }
                 }
                 newSubtitle = newStatus;
             } else {

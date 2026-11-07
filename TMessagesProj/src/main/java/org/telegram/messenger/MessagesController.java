@@ -16761,7 +16761,7 @@ public class MessagesController extends BaseController implements NotificationCe
                                     if (message instanceof TLRPC.TL_messageEmpty) {
                                         continue;
                                     }
-                                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); // Sparkgram: Schlagwort-Alarm
+                                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); org.telegram.messenger.spark.SparkOnlineLog.onMessage(currentAccount, message); // Sparkgram: Schlagwort-Alarm + Aktivitaet
                                     message.unread = !(channelFinal != null && channelFinal.left || (message.out ? outboxValue : inboxValue) >= message.id || message.action instanceof TLRPC.TL_messageActionChannelCreate);
 
                                     boolean isDialogCreated = createdDialogIds.contains(dialogId);
@@ -17014,7 +17014,7 @@ public class MessagesController extends BaseController implements NotificationCe
                                     if (message instanceof TLRPC.TL_messageEmpty) {
                                         continue;
                                     }
-                                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); // Sparkgram: Schlagwort-Alarm
+                                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); org.telegram.messenger.spark.SparkOnlineLog.onMessage(currentAccount, message); // Sparkgram: Schlagwort-Alarm + Aktivitaet
                                     MessageObject.getDialogId(message);
 
                                     if (!DialogObject.isEncryptedDialog(message.dialog_id)) {
@@ -18051,7 +18051,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         message.out = true;
                     }
 
-                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); // Sparkgram: Schlagwort-Alarm
+                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); org.telegram.messenger.spark.SparkOnlineLog.onMessage(currentAccount, message); // Sparkgram: Schlagwort-Alarm + Aktivitaet
                     getMessagesStorage().setLastPtsValue(updates.pts);
                     boolean isDialogCreated = createdDialogIds.contains(message.dialog_id);
                     MessageObject obj = new MessageObject(currentAccount, message, isDialogCreated, isDialogCreated);
@@ -18545,7 +18545,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
                 if (!(baseUpdate instanceof TL_update.TL_updateNewScheduledMessage)) {
                     org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).rememberRaw(message); // Sparkgram
-                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); // Sparkgram: Schlagwort-Alarm
+                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); org.telegram.messenger.spark.SparkOnlineLog.onMessage(currentAccount, message); // Sparkgram: Schlagwort-Alarm + Aktivitaet
                 }
                 if (message instanceof TLRPC.TL_messageEmpty) {
                     continue;
@@ -18967,6 +18967,9 @@ public class MessagesController extends BaseController implements NotificationCe
                 long uid = -chatId;
                 if (uid == 0) {
                     uid = userId;
+                }
+                if (userId > 0 && !(action instanceof TLRPC.TL_sendMessageCancelAction)) {
+                    org.telegram.messenger.spark.SparkOnlineLog.get(currentAccount).onActivity(userId, getConnectionsManager().getCurrentTime(), baseUpdate instanceof TL_update.TL_updateChannelUserTyping ? -chatId : uid, org.telegram.messenger.spark.SparkOnlineLog.ACT_TYPING); // Sparkgram: Aktivitaet
                 }
                 if (action instanceof TLRPC.TL_sendMessageTextDraftAction) {
                     AndroidUtilities.runOnUIThread(() -> BotForumHelper.getInstance(currentAccount)

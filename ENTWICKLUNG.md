@@ -104,7 +104,9 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   (wie der Paid-Message-Weg in `ChatActivityEnterView`), Flag `sparkVoicePreview` verhindert doppelte Rückfrage.
   Das Fenster in `SparkUi.confirmVoice` (mit Reglern) bleibt für die übrigen Sendewege.
   Profil: `sparkSeenView` unter `onlineTextView[1]` (folgt Translation/Alpha über deren Overrides),
-  `SparkOnlineLog.lastReal`/`relative`. Gelöschte Konten: `UserObject.getUserName` → `SparkNameHistory.lastKnown`
+  `SparkOnlineLog.seenLine` (neueste aus Online-Protokoll und Tabelle `active`: letzte Nachricht/Tippen pro Person,
+  Hooks neben `SparkKeywords.check` und bei `TL_update*UserTyping`); im Chat angehängt in
+  `ChatAvatarContainer` (kompakt). Gelöschte Konten: `UserObject.getUserName` → `SparkNameHistory.lastKnown`
   (Schalter `DELETED_NAMES`; gelöschte Konten werden nicht mehr in den Verlauf geschrieben).
 
 ## Roadmap (offen)

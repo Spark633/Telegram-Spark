@@ -52,17 +52,22 @@ public class SparkOnlineLog {
 
     private static class Helper extends SQLiteOpenHelper {
         Helper(int account) {
-            super(ApplicationLoader.applicationContext, "sparkgram_online_" + account + ".db", null, 1);
+            super(ApplicationLoader.applicationContext, "sparkgram_online_" + account + ".db", null, 2);
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL("CREATE TABLE ev(user_id INTEGER, time INTEGER, kind INTEGER, value INTEGER)");
             db.execSQL("CREATE INDEX ev_user ON ev(user_id, time)");
+            onUpgrade(db, 1, 2);
         }
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int o, int n) {
+            if (o < 2) {
+                // letzte Aktivitaet in gemeinsamen Chats (Nachricht/Tippen)
+                db.execSQL("CREATE TABLE IF NOT EXISTS active(user_id INTEGER PRIMARY KEY, time INTEGER, dialog_id INTEGER, what INTEGER)");
+            }
         }
     }
 
@@ -153,6 +158,101 @@ public class SparkOnlineLog {
             FileLog.e(e);
         }
         return list;
+    }
+
+    public static final int ACT_MESSAGE = 1;
+    public static final int ACT_TYPING = 2;
+
+    public static class Activity {
+        public long time;
+        public long dialogId;
+        public int what;
+    }
+
+    // userId -> zuletzt gespeicherte Aktivitaetszeit (spart Schreibzugriffe)
+    private final HashMap<Long, Long> lastActive = new HashMap<>();
+
+    /** Neue Nachricht einer Person (aus der Update-Verarbeitung). */
+    public static void onMessage(int account, TLRPC.Message m) {
+        if (m == null || m.out || !(m.from_id instanceof TLRPC.TL_peerUser) || m.from_id.user_id <= 0) {
+            return;
+        }
+        get(account).onActivity(m.from_id.user_id, m.date, org.telegram.messenger.MessageObject.getDialogId(m), ACT_MESSAGE);
+    }
+
+    /** Merkt sich die letzte Aktivitaet einer Person (max. alle 30 s ein Schreibzugriff). */
+    public void onActivity(long userId, long time, long dialogId, int what) {
+        if (userId <= 0 || time <= 0 || !SparkConfig.get(SparkConfig.ONLINE_LOG)) {
+            return;
+        }
+        synchronized (lastActive) {
+            Long prev = lastActive.get(userId);
+            if (prev != null && time < prev + 30) {
+                return;
+            }
+            lastActive.put(userId, time);
+        }
+        queue.postRunnable(() -> {
+            try {
+                SQLiteDatabase db = helper.getWritableDatabase();
+                db.execSQL("INSERT OR REPLACE INTO active(user_id, time, dialog_id, what) SELECT ?, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM active WHERE user_id = ? AND time > ?)",
+                    new Object[]{userId, time, dialogId, what, userId, time});
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        });
+    }
+
+    public Activity lastActivity(long userId) {
+        try (Cursor c = helper.getReadableDatabase().rawQuery("SELECT time, dialog_id, what FROM active WHERE user_id = ?", new String[]{String.valueOf(userId)})) {
+            if (c.moveToFirst()) {
+                Activity a = new Activity();
+                a.time = c.getLong(0);
+                a.dialogId = c.getLong(1);
+                a.what = c.getInt(2);
+                return a;
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+        return null;
+    }
+
+    /**
+     * Zeile "zuletzt gesehen/aktiv" fuer Profil und Chat: neueste Angabe aus Online-Protokoll und Aktivitaet.
+     * Liefert null, wenn nichts bekannt ist oder Telegram gerade "online" bzw. eine genauere Zeit zeigt.
+     */
+    public static String seenLine(int account, TLRPC.User user, boolean compact) {
+        if (user == null || user.bot || user.self || !SparkConfig.get(SparkConfig.ONLINE_LOG)) {
+            return null;
+        }
+        TLRPC.UserStatus st = user.status;
+        if (st instanceof TLRPC.TL_userStatusOnline && st.expires > System.currentTimeMillis() / 1000) {
+            return null;
+        }
+        SparkOnlineLog log = get(account);
+        long online = log.lastReal(user.id);
+        Activity act = log.lastActivity(user.id);
+        long actTime = act != null ? act.time : 0;
+        long best = Math.max(online, actTime);
+        if (best <= 0) {
+            return null;
+        }
+        // Telegram zeigt schon eine genaue, neuere Zeit -> nichts doppelt anzeigen
+        if (st instanceof TLRPC.TL_userStatusOffline && st.expires >= best) {
+            return null;
+        }
+        String when = relative(best);
+        if (actTime >= online && act != null) {
+            String chat = org.telegram.ui.spark.SparkNotesActivity.dialogName(account, act.dialogId);
+            boolean dm = act.dialogId == user.id;
+            String what = act.what == ACT_TYPING ? "tippte" : "schrieb";
+            if (compact) {
+                return "✦ aktiv " + when;
+            }
+            return "✦ zuletzt aktiv: " + when + " · " + what + (dm ? " hier im Chat" : " in „" + chat + "“");
+        }
+        return compact ? "✦ online " + when : "✦ zuletzt online gesehen: " + when;
     }
 
     /** Letzte echte Zeit (online gesehen bzw. „zuletzt online um“), 0 wenn keine. */
