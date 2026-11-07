@@ -112,10 +112,54 @@ public class SparkUi {
         int side = Math.min(b.getWidth(), b.getHeight());
         Bitmap square = Bitmap.createBitmap(b, (b.getWidth() - side) / 2, (b.getHeight() - side) / 2, side, side);
         Bitmap scaled = Bitmap.createScaledBitmap(square, size, size, true);
-        RoundedBitmapDrawable d = RoundedBitmapDrawableFactory.create(ApplicationLoader.applicationContext.getResources(), scaled);
-        d.setCircular(true);
-        d.setBounds(0, 0, size, size);
-        return d;
+        return new CircleBitmapDrawable(scaled);
+    }
+
+    /** Rundes Bild, das Einfaerbungen (ColorFilter) der Listen ignoriert. */
+    public static class CircleBitmapDrawable extends Drawable {
+        private final Bitmap bitmap;
+        private final android.graphics.Paint paint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG | android.graphics.Paint.FILTER_BITMAP_FLAG);
+
+        CircleBitmapDrawable(Bitmap bitmap) {
+            this.bitmap = bitmap;
+            paint.setShader(new android.graphics.BitmapShader(bitmap, android.graphics.Shader.TileMode.CLAMP, android.graphics.Shader.TileMode.CLAMP));
+            setBounds(0, 0, bitmap.getWidth(), bitmap.getHeight());
+        }
+
+        @Override
+        public void draw(android.graphics.Canvas canvas) {
+            android.graphics.Rect b = getBounds();
+            canvas.save();
+            canvas.translate(b.left, b.top);
+            float r = Math.min(bitmap.getWidth(), bitmap.getHeight()) / 2f;
+            canvas.drawCircle(bitmap.getWidth() / 2f, bitmap.getHeight() / 2f, r, paint);
+            canvas.restore();
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+            paint.setAlpha(alpha);
+        }
+
+        @Override
+        public void setColorFilter(android.graphics.ColorFilter colorFilter) {
+            // bewusst ignoriert: Profilbilder sollen nicht grau eingefaerbt werden
+        }
+
+        @Override
+        public int getOpacity() {
+            return android.graphics.PixelFormat.TRANSLUCENT;
+        }
+
+        @Override
+        public int getIntrinsicWidth() {
+            return bitmap.getWidth();
+        }
+
+        @Override
+        public int getIntrinsicHeight() {
+            return bitmap.getHeight();
+        }
     }
 
     /** Zeigt ein Bild bildschirmfuellend; Tippen schliesst. */

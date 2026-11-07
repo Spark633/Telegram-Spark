@@ -182,31 +182,30 @@ public class SparkProfileMenu {
     public static String infoLine(int account, long userId, long chatId) {
         MessagesController mc = MessagesController.getInstance(account);
         StringBuilder sb = new StringBuilder();
-        sb.append("ID ").append(peerId(account, userId, chatId));
+        sb.append("ID: ").append(peerId(account, userId, chatId));
         if (userId != 0) {
             TLRPC.UserFull full = mc.getUserFull(userId);
-            sb.append(" · erstellt ").append(org.telegram.messenger.spark.SparkRegDate.shortText(userId));
+            sb.append("\nKonto erstellt: ").append(org.telegram.messenger.spark.SparkRegDate.shortText(userId));
             if (full != null && full.profile_photo != null && full.profile_photo.date > 0) {
-                sb.append(" · Bild seit ").append(LocaleController.formatDateChat(full.profile_photo.date));
+                sb.append("\nProfilbild seit: ").append(LocaleController.formatDateChat(full.profile_photo.date));
             }
             if (full != null && full.common_chats_count > 0) {
-                sb.append(" · ").append(full.common_chats_count).append(" gem. Gruppen");
+                sb.append("\nGemeinsame Gruppen: ").append(full.common_chats_count);
             }
         } else {
             TLRPC.Chat chat = mc.getChat(chatId);
             TLRPC.ChatFull full = mc.getChatFull(chatId);
             if (chat != null) {
-                sb.append(" · ").append(chatType(chat));
-                sb.append(ChatObject.getPublicUsername(chat) != null ? " · öffentlich" : " · privat");
+                sb.append("\nTyp: ").append(chatType(chat)).append(ChatObject.getPublicUsername(chat) != null ? ", öffentlich" : ", privat");
                 int members = full != null && full.participants_count > 0 ? full.participants_count : chat.participants_count;
                 if (members > 0) {
-                    sb.append(" · ").append(members).append(" Mitgl.");
+                    sb.append("\nMitglieder: ").append(members);
                     if (full != null && full.online_count > 0) {
                         sb.append(" (").append(full.online_count).append(" online)");
                     }
                 }
                 if (full != null && full.slowmode_seconds > 0) {
-                    sb.append(" · Slow Mode ").append(slowMode(full.slowmode_seconds));
+                    sb.append("\nSlow Mode: ").append(slowMode(full.slowmode_seconds));
                 }
             }
         }
