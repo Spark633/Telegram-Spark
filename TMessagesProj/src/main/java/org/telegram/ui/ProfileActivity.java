@@ -621,6 +621,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private int numberRow;
     public int birthdayRow;
     private int sparkInfoRow = -1; // Sparkgram: Info-Zeile
+    private int sparkNoteRow = -1; // Sparkgram: Notiz-Zeile
     private TextView sparkPhotoDateView; // Sparkgram: Datum des angezeigten Profilbilds
 
     private void sparkUpdatePhotoDate() {
@@ -4702,6 +4703,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 presentFragment(new ChatActivity(args));
             } else if (position == sparkInfoRow) {
                 org.telegram.ui.spark.SparkProfileMenu.handle(ProfileActivity.this, org.telegram.ui.spark.SparkProfileMenu.ID_INFO, userId, chatId);
+            } else if (position == sparkNoteRow) {
+                org.telegram.ui.spark.SparkNotesActivity.edit(ProfileActivity.this, userId != 0 ? userId : -chatId, () -> {
+                    if (listAdapter != null) listAdapter.notifyItemChanged(sparkNoteRow);
+                });
             } else if (position == birthdayRow) {
                 if (birthdayEffect != null && birthdayEffect.start()) {
                     return;
@@ -9381,7 +9386,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     }
 
                     final boolean forwardsAllowed = !userInfo.noforwards_my_enabled && !userInfo.noforwards_peer_enabled;
-                    otherItem.setSubItemShown(enable_no_forwards, forwardsAllowed);
+                    otherItem.setSubItemShown(enable_no_forwards, forwardsAllowed && !(org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_PREMIUM) && !getUserConfig().isPremium())); // Sparkgram: Premium-Funktion ausblendbar
                     otherItem.setSubItemShown(disable_no_forwards, !forwardsAllowed);
                 }
             }
@@ -10551,6 +10556,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         numberRow = -1;
         birthdayRow = -1;
         sparkInfoRow = -1;
+        sparkNoteRow = -1;
         setUsernameRow = -1;
         bioRow = -1;
         channelRow = -1;
@@ -10828,6 +10834,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 if (org.telegram.ui.spark.SparkProfileMenu.showInfoRow()) {
                     sparkInfoRow = rowCount++; // Sparkgram
                 }
+                if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.NOTES)) {
+                    sparkNoteRow = rowCount++; // Sparkgram
+                }
                 if (actionsView == null && userId != getUserConfig().getClientUserId()) {
                     notificationsRow = rowCount++;
                 }
@@ -10982,6 +10991,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             }
             if (org.telegram.ui.spark.SparkProfileMenu.showInfoRow()) {
                 sparkInfoRow = rowCount++; // Sparkgram
+            }
+            if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.NOTES)) {
+                sparkNoteRow = rowCount++; // Sparkgram
             }
             if (actionsView == null) {
                 if (infoHeaderRow != -1) {
@@ -12291,7 +12303,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         otherItem.addSubItem(gift_premium, R.drawable.msg_gift_premium, LocaleController.getString(R.string.ProfileSendAGift));
                         giftAction = true;
                     }
-                    if (getMessagesController().config.walletAvailable.get() && !MessagesController.isSupportUser(user) && !UserObject.isService(user.id)) {
+                    if (getMessagesController().config.walletAvailable.get() && !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_WALLET) && !MessagesController.isSupportUser(user) && !UserObject.isService(user.id)) {
                         otherItem.addSubItem(send_money, R.drawable.ic_gram, LocaleController.getString(R.string.WalletSendMoney));
                     }
                     otherItem.addSubItem(start_secret_chat, R.drawable.msg_secret, LocaleController.getString(R.string.StartEncryptedChat));
@@ -12302,7 +12314,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         otherItem.addSubItem(disable_no_forwards, R.drawable.menu_share_on_24, getString(R.string.EnableSharing));
 
                         final boolean forwardsAllowed = !userInfo.noforwards_my_enabled && !userInfo.noforwards_peer_enabled;
-                        otherItem.setSubItemShown(enable_no_forwards, forwardsAllowed);
+                        otherItem.setSubItemShown(enable_no_forwards, forwardsAllowed && !(org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_PREMIUM) && !getUserConfig().isPremium())); // Sparkgram: Premium-Funktion ausblendbar
                         otherItem.setSubItemShown(disable_no_forwards, !forwardsAllowed);
                     }
                 }
@@ -13572,7 +13584,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     TextDetailCell detailCell = (TextDetailCell) holder.itemView;
                     boolean containsQr = false;
                     boolean containsGift = false;
-                    if (position == sparkInfoRow) {
+                    if (position == sparkNoteRow) {
+                        String sparkNote = org.telegram.messenger.spark.SparkNotes.get(currentAccount, userId != 0 ? userId : -chatId);
+                        detailCell.setTextAndValue(TextUtils.isEmpty(sparkNote) ? getString(R.string.SparkNoteEmptyRow) : sparkNote,
+                            org.telegram.ui.spark.SparkUi.mark(getString(TextUtils.isEmpty(sparkNote) ? R.string.SparkNoteAdd : R.string.SparkNote)), false);
+                    } else if (position == sparkInfoRow) {
                         detailCell.setTextAndValue(org.telegram.ui.spark.SparkProfileMenu.infoLine(currentAccount, userId, chatId), org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkInfoRowLabel)), false);
                     } else if (position == birthdayRow) {
                         TLRPC.UserFull userFull = getMessagesController().getUserFull(userId);
@@ -14403,7 +14419,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         position == faqRow || position == policyRow || position == sendLogsRow || position == sendLastLogsRow ||
                         position == clearLogsRow || position == switchBackendRow || position == setAvatarRow ||
                         position == addToGroupButtonRow || position == premiumRow || position == premiumGiftingRow ||
-                        position == businessRow || position == liteModeRow || position == birthdayRow || position == sparkInfoRow || position == channelRow ||
+                        position == businessRow || position == liteModeRow || position == birthdayRow || position == sparkInfoRow || position == sparkNoteRow || position == channelRow ||
                         position == starsRow || position == tonRow || position == linkedCommunityRow;
             }
             if (holder.itemView instanceof UserCell) {
@@ -14434,7 +14450,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 return VIEW_TYPE_HEADER;
             } else if (position == phoneRow || position == locationRow || position == numberRow || position == birthdayRow) {
                 return VIEW_TYPE_TEXT_DETAIL;
-            } else if (position == sparkInfoRow) {
+            } else if (position == sparkInfoRow || position == sparkNoteRow) {
                 return VIEW_TYPE_TEXT_DETAIL_MULTILINE_2; // Sparkgram: Inhalt mehrzeilig
             } else if (position == usernameRow || position == setUsernameRow) {
                 return VIEW_TYPE_TEXT_DETAIL_MULTILINE;
@@ -15873,6 +15889,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             put(++pointer, bizLocationRow, sparseIntArray);
             put(++pointer, birthdayRow, sparseIntArray);
             put(++pointer, sparkInfoRow, sparseIntArray);
+            put(++pointer, sparkNoteRow, sparseIntArray);
             put(++pointer, channelRow, sparseIntArray);
             put(++pointer, botStarsBalanceRow, sparseIntArray);
             put(++pointer, botTonBalanceRow, sparseIntArray);

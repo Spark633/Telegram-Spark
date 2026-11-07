@@ -32,7 +32,7 @@ public class SparkProfileLibraryActivity extends UniversalFragment {
 
     @Override
     public boolean onFragmentCreate() {
-        entries = SparkProfiles.load(currentAccount);
+        entries = SparkProfiles.sorted(currentAccount);
         return super.onFragmentCreate();
     }
 
@@ -42,7 +42,7 @@ public class SparkProfileLibraryActivity extends UniversalFragment {
     }
 
     private void reload() {
-        entries = SparkProfiles.load(currentAccount);
+        entries = SparkProfiles.sorted(currentAccount);
         if (listView != null && listView.adapter != null) {
             listView.adapter.update(true);
         }
@@ -57,11 +57,16 @@ public class SparkProfileLibraryActivity extends UniversalFragment {
             return;
         }
         items.add(UItem.asHeader(getString(R.string.SparkProfileLibrary)));
-        for (int i = entries.size() - 1; i >= 0; i--) {
+        for (int i = 0; i < entries.size(); i++) {
             SparkProfiles.Entry e = entries.get(i);
             String title = e.displayName();
             if (!TextUtils.isEmpty(e.label)) {
                 title = e.label + " · " + title;
+            }
+            if (e.original) {
+                title = "📌 " + title;
+            } else if (e.favorite) {
+                title = "⭐ " + title;
             }
             String value = LocaleController.formatDateChat(e.created / 1000);
             android.graphics.drawable.Drawable thumb = e.hasPhoto() ? SparkUi.roundThumb(e.photoPath, 30) : null;

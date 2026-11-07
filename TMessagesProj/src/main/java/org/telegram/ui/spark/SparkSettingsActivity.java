@@ -66,6 +66,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_CONFIRM_GIF = 46;
     private static final int ID_CONFIRM_VOICE = 47;
     private static final int ID_NAME_HISTORY = 48;
+    private static final int ID_CONFIRM_REPEAT = 49;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -130,6 +131,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_CONFIRM_STICKER, R.string.SparkConfirmSticker, SparkConfig.CONFIRM_STICKER));
         items.add(check(ID_CONFIRM_GIF, R.string.SparkConfirmGif, SparkConfig.CONFIRM_GIF));
         items.add(check(ID_CONFIRM_VOICE, R.string.SparkConfirmVoice, SparkConfig.CONFIRM_VOICE));
+        items.add(check(ID_CONFIRM_REPEAT, R.string.SparkConfirmRepeat, SparkConfig.CONFIRM_REPEAT));
         items.add(UItem.asShadow(getString(R.string.SparkConfirmInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderGroups)));
@@ -241,6 +243,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_CONFIRM_STICKER: toggle(SparkConfig.CONFIRM_STICKER); break;
             case ID_CONFIRM_GIF: toggle(SparkConfig.CONFIRM_GIF); break;
             case ID_CONFIRM_VOICE: toggle(SparkConfig.CONFIRM_VOICE); break;
+            case ID_CONFIRM_REPEAT: toggle(SparkConfig.CONFIRM_REPEAT); break;
             case ID_NAME_HISTORY: toggle(SparkConfig.NAME_HISTORY); break;
             case ID_HIDE_STARS: toggle(SparkConfig.HIDE_STARS); break;
             case ID_HIDE_BUSINESS: toggle(SparkConfig.HIDE_BUSINESS); break;

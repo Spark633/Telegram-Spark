@@ -75,6 +75,74 @@ public class SparkUi {
         fragment.showDialog(builder.create());
     }
 
+    /** Rueckfrage nach einer Sprachaufnahme: anhoeren, senden oder verwerfen. */
+    public static void confirmVoice(String path, Runnable onSend, Runnable onDiscard) {
+        org.telegram.ui.ActionBar.BaseFragment f = org.telegram.ui.LaunchActivity.getSafeLastFragment();
+        if (f == null || f.getParentActivity() == null) {
+            onSend.run();
+            return;
+        }
+        final android.app.Activity activity = f.getParentActivity();
+        final android.media.MediaPlayer[] player = new android.media.MediaPlayer[1];
+        final boolean[] decided = new boolean[1];
+        final Runnable stop = () -> {
+            if (player[0] != null) {
+                try { player[0].stop(); } catch (Throwable ignore) {}
+                try { player[0].release(); } catch (Throwable ignore) {}
+                player[0] = null;
+            }
+        };
+        android.widget.TextView play = new android.widget.TextView(activity);
+        play.setText("▶  Anhören");
+        play.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 17);
+        play.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlueText4));
+        play.setPadding(AndroidUtilities.dp(24), AndroidUtilities.dp(12), AndroidUtilities.dp(24), AndroidUtilities.dp(4));
+        play.setOnClickListener(v -> {
+            if (player[0] != null) {
+                stop.run();
+                play.setText("▶  Anhören");
+                return;
+            }
+            try {
+                android.media.MediaPlayer mp = new android.media.MediaPlayer();
+                mp.setDataSource(path);
+                mp.setOnCompletionListener(m -> {
+                    stop.run();
+                    play.setText("▶  Anhören");
+                });
+                mp.prepare();
+                mp.start();
+                player[0] = mp;
+                play.setText("■  Stopp");
+            } catch (Throwable e) {
+                stop.run();
+                play.setText("Abspielen nicht möglich");
+            }
+        });
+        org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(activity);
+        builder.setTitle(mark("Sprachnachricht senden?"));
+        builder.setView(play);
+        builder.setPositiveButton(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.Send), (d, w) -> {
+            decided[0] = true;
+            stop.run();
+            onSend.run();
+        });
+        builder.setNegativeButton("Verwerfen", (d, w) -> {
+            decided[0] = true;
+            stop.run();
+            onDiscard.run();
+        });
+        org.telegram.ui.ActionBar.AlertDialog dialog = builder.create();
+        f.showDialog(dialog, d -> {
+            stop.run();
+            if (!decided[0]) {
+                // Fenster weggewischt: nichts senden, Aufnahme verwerfen
+                decided[0] = true;
+                onDiscard.run();
+            }
+        });
+    }
+
     /** Rueckfrage vor dem Senden eines Stickers/GIFs, mit kleiner Vorschau. */
     public static void confirmSend(android.app.Activity activity, String title, org.telegram.tgnet.TLRPC.Document doc, Runnable onConfirm) {
         org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(activity);

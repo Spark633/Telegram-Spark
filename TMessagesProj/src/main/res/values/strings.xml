@@ -11746,8 +11746,11 @@
     <string name="SparkHeaderConfirm">Vor dem Senden fragen</string>
     <string name="SparkConfirmSticker">Sticker</string>
     <string name="SparkConfirmGif">GIFs</string>
-    <string name="SparkConfirmVoice">Sprachnachrichten (erst anhören)</string>
-    <string name="SparkConfirmInfo">Gegen versehentliches Senden. Bei Sprachnachrichten erscheint nach dem Loslassen die Vorschau zum Anhören, gesendet wird erst mit dem Senden-Knopf.</string>
+    <string name="SparkConfirmVoice">Sprachnachrichten (anhören oder verwerfen)</string>
+    <string name="SparkConfirmRepeat">Nachricht wiederholen</string>
+    <string name="SparkRepeatConfirm">Diese Nachricht noch einmal als deine eigene senden?</string>
+    <string name="SparkConfirmInfo">Gegen versehentliches Senden. Nach einer Sprachaufnahme erscheint ein Fenster: anhören, senden oder verwerfen.</string>
     <string name="SparkNameHistoryToggle">Frühere Benutzernamen und Namen merken</string>
+    <string name="SparkNoteEmptyRow">Noch keine Notiz – tippen zum Hinzufügen</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

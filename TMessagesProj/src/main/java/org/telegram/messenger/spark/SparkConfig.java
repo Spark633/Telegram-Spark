@@ -58,6 +58,7 @@ public class SparkConfig {
     public static final String CONFIRM_STICKER = "confirmSticker";
     public static final String CONFIRM_GIF = "confirmGif";
     public static final String CONFIRM_VOICE = "confirmVoice";
+    public static final String CONFIRM_REPEAT = "confirmRepeat";
     // Verlauf frueherer Benutzernamen/Namen
     public static final String NAME_HISTORY = "nameHistory";
     // Kleine Markierung an allen Sparkgram-Funktionen

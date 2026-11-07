@@ -33668,7 +33668,16 @@ public class ChatActivity extends BaseFragment implements
                 } else {
                     list.add(selectedObject);
                 }
-                getSendMessagesHelper().sendMessage(list, getDialogId(), true, false, true, 0, 0);
+                if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_REPEAT)) {
+                    AlertDialog.Builder rb = new AlertDialog.Builder(getParentActivity(), themeDelegate);
+                    rb.setTitle(org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkRepeat)));
+                    rb.setMessage(getString(R.string.SparkRepeatConfirm));
+                    rb.setPositiveButton(getString(R.string.Send), (d, w) -> getSendMessagesHelper().sendMessage(list, getDialogId(), true, false, true, 0, 0));
+                    rb.setNegativeButton(getString(R.string.Cancel), null);
+                    showDialog(rb.create());
+                } else {
+                    getSendMessagesHelper().sendMessage(list, getDialogId(), true, false, true, 0, 0);
+                }
                 break;
             }
             case OPTION_SPARK_REMOVE: {

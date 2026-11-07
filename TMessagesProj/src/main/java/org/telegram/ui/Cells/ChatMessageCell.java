@@ -20883,12 +20883,13 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 if (sparkDeletedState && currentBackgroundDrawable != null) {
                     Rect r = currentBackgroundDrawable.getBounds();
                     final boolean out = currentMessageObject.isOutOwner();
-                    float bl = out ? r.left : r.left + dp(6);
-                    float br = out ? r.right - dp(6) : r.right;
-                    float top = r.top, bottom = r.bottom;
+                    // Masse wie in MessageDrawable.generatePath: 2dp Innenrand, eingehende Blasen 8dp fuer den "Schwanz"
+                    float bl = out ? r.left + dp(2) : r.left + dp(8);
+                    float br = out ? r.right - dp(8) : r.right - dp(2);
+                    float top = r.top + dp(2), bottom = r.bottom - dp(2);
                     float radius = Math.min(dp(SharedConfig.bubbleRadius), (bottom - top) / 2f);
-                    float ext = Math.min(dp(8), Math.max(0, (br - bl) / 2f - radius));
-                    float thick = dp(3.5f);
+                    float ext = Math.min(dp(6), Math.max(0, (br - bl) / 2f - radius));
+                    float thick = dp(2.5f);
                     if (sparkDeletedPaint == null) {
                         sparkDeletedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
                         sparkDeletedPaint.setStyle(Paint.Style.STROKE);
@@ -20913,12 +20914,20 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     AndroidUtilities.rectTmp.set(bl, bottom - 2 * radius, bl + 2 * radius, bottom);
                     path.arcTo(AndroidUtilities.rectTmp, 180, -90, false);
                     path.lineTo(bl + radius + ext, bottom);
-                    // nur innerhalb der Blase zeichnen
-                    sparkDeletedClip.reset();
-                    AndroidUtilities.rectTmp.set(bl, top, br, bottom);
-                    sparkDeletedClip.addRoundRect(AndroidUtilities.rectTmp, radius, radius, android.graphics.Path.Direction.CW);
+                    // nur innerhalb der Blase zeichnen – exakter Umriss von Telegram selbst
+                    android.graphics.Path clip = null;
+                    try {
+                        clip = currentBackgroundDrawable.makePath();
+                    } catch (Throwable ignore) {
+                    }
+                    if (clip == null || clip.isEmpty()) {
+                        sparkDeletedClip.reset();
+                        AndroidUtilities.rectTmp.set(bl, top, br, bottom);
+                        sparkDeletedClip.addRoundRect(AndroidUtilities.rectTmp, radius, radius, android.graphics.Path.Direction.CW);
+                        clip = sparkDeletedClip;
+                    }
                     canvas.save();
-                    canvas.clipPath(sparkDeletedClip);
+                    canvas.clipPath(clip);
                     android.graphics.PathMeasure pm = new android.graphics.PathMeasure(path, false);
                     float len = pm.getLength();
                     float taper = (float) (Math.PI / 2 * radius) * 0.85f + ext; // wird schon in der Rundung duenner, endet kurz danach

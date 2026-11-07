@@ -39,6 +39,7 @@ public class SparkProfilePreviewActivity extends UniversalFragment {
     private static final int ID_RENAME = 2;
     private static final int ID_DELETE = 3;
     private static final int ID_OPEN_SOURCE = 4;
+    private static final int ID_FAVORITE = 5;
 
     private SparkProfiles.Entry entry;
     private View header;
@@ -118,6 +119,9 @@ public class SparkProfilePreviewActivity extends UniversalFragment {
         if (!entry.original && entry.sourceUserId != 0 && entry.sourceUserId != org.telegram.messenger.UserConfig.getInstance(currentAccount).getClientUserId()) {
             items.add(UItem.asButton(ID_OPEN_SOURCE, R.drawable.msg_contacts, getString(R.string.SparkProfileOpenSource)));
         }
+        if (!entry.original) {
+            items.add(UItem.asButton(ID_FAVORITE, R.drawable.msg_fave, entry.favorite ? "Favorit entfernen" : "Als Favorit oben anheften ⭐"));
+        }
         items.add(UItem.asButton(ID_RENAME, R.drawable.msg_edit, getString(R.string.SparkProfileRename)));
         items.add(UItem.asButton(ID_DELETE, R.drawable.msg_delete, getString(R.string.SparkProfileDelete)).red());
         items.add(UItem.asShadow(null));
@@ -136,6 +140,9 @@ public class SparkProfilePreviewActivity extends UniversalFragment {
                     BulletinFactory.of(this).createErrorBulletin(LocaleController.formatString(R.string.SparkError, String.valueOf(error))).show();
                 }
             });
+        } else if (item.id == ID_FAVORITE) {
+            SparkProfiles.setFavorite(currentAccount, entry, !entry.favorite);
+            listView.adapter.update(true);
         } else if (item.id == ID_OPEN_SOURCE) {
             openSource();
         } else if (item.id == ID_RENAME) {
@@ -161,7 +168,7 @@ public class SparkProfilePreviewActivity extends UniversalFragment {
         } else if (item.id == ID_DELETE) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
             builder.setTitle(getString(R.string.SparkProfileDelete));
-            builder.setMessage(entry.displayName());
+            builder.setMessage(entry.original ? "Das ist dein gesichertes Original-Profil. Wirklich löschen? Beim nächsten Klonen wird dann dein dann aktuelles Profil als neues Original gesichert." : entry.displayName());
             builder.setPositiveButton(getString(R.string.Delete), (d, w) -> {
                 SparkProfiles.remove(currentAccount, entry);
                 finishFragment();

@@ -46,6 +46,7 @@ public class SparkProfiles {
         public String sourceUsername;
         public long created;
         public boolean original;
+        public boolean favorite;
 
         public String displayName() {
             String name = (firstName == null ? "" : firstName) + (TextUtils.isEmpty(lastName) ? "" : " " + lastName);
@@ -69,6 +70,7 @@ public class SparkProfiles {
             o.put("sourceUsername", sourceUsername);
             o.put("created", created);
             o.put("original", original);
+            o.put("favorite", favorite);
             return o;
         }
 
@@ -85,6 +87,7 @@ public class SparkProfiles {
             e.sourceUsername = o.has("sourceUsername") && !o.isNull("sourceUsername") ? o.optString("sourceUsername") : null;
             e.created = o.optLong("created");
             e.original = o.optBoolean("original");
+            e.favorite = o.optBoolean("favorite");
             return e;
         }
     }
@@ -148,6 +151,29 @@ public class SparkProfiles {
             }
         }
         save(account, list);
+    }
+
+    public static void setFavorite(int account, Entry entry, boolean favorite) {
+        ArrayList<Entry> list = load(account);
+        for (Entry e : list) {
+            if (e.id.equals(entry.id)) {
+                e.favorite = favorite;
+            }
+        }
+        entry.favorite = favorite;
+        save(account, list);
+    }
+
+    /** Anzeige-Reihenfolge: Original zuerst, dann Favoriten, dann der Rest (neueste zuerst). */
+    public static ArrayList<Entry> sorted(int account) {
+        ArrayList<Entry> list = load(account);
+        java.util.Collections.sort(list, (a, b) -> {
+            int ra = a.original ? 0 : a.favorite ? 1 : 2;
+            int rb = b.original ? 0 : b.favorite ? 1 : 2;
+            if (ra != rb) return ra - rb;
+            return Long.compare(b.created, a.created);
+        });
+        return list;
     }
 
     public static void rename(int account, Entry entry, String label) {

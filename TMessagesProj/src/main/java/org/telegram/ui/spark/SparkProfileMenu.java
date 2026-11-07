@@ -250,6 +250,20 @@ public class SparkProfileMenu {
             if (full != null && full.common_chats_count > 0) {
                 sb.append("\nGemeinsame Gruppen: ").append(full.common_chats_count);
             }
+            // Sparkgram: fruehere Benutzernamen direkt in der Info-Zeile
+            if (SparkConfig.get(SparkConfig.NAME_HISTORY)) {
+                TLRPC.User u = mc.getUser(userId);
+                String cur = u != null ? UserObject.getPublicUsername(u) : null;
+                StringBuilder old = new StringBuilder();
+                for (org.telegram.messenger.spark.SparkNameHistory.Item it : org.telegram.messenger.spark.SparkNameHistory.get(account).history(userId, org.telegram.messenger.spark.SparkNameHistory.KIND_USERNAME)) {
+                    if (cur != null && cur.equalsIgnoreCase(it.value)) continue;
+                    if (old.length() > 0) old.append(", ");
+                    old.append("@").append(it.value);
+                }
+                if (old.length() > 0) {
+                    sb.append("\nFrüher: ").append(old);
+                }
+            }
         } else {
             TLRPC.Chat chat = mc.getChat(chatId);
             TLRPC.ChatFull full = mc.getChatFull(chatId);

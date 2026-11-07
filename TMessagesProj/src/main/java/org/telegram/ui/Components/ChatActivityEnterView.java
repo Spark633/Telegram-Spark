@@ -3038,7 +3038,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                                     });
                                     return true;
                                 }
-                                MediaController.getInstance().stopRecording(isInScheduleMode() ? 3 : (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_VOICE) ? 2 : 1), true, 0, voiceOnce, 0); // Sparkgram: 2 = erst anhoeren
+                                MediaController.getInstance().stopRecording(isInScheduleMode() ? 3 : 1, true, 0, voiceOnce, 0);
                                 delegate.needStartRecordAudio(0);
                             }
                             recordingAudioVideo = false;
@@ -3157,7 +3157,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                                     AlertsCreator.createScheduleDatePickerDialog(parentActivity, parentFragment.getDialogId(), (notify, scheduleDate, scheduleRepeatPeriod) -> MediaController.getInstance().stopRecording(1, notify, scheduleDate, false, 0), () -> MediaController.getInstance().stopRecording(0, false, 0, false, 0), resourcesProvider);
                                 }
                                 delegate.needStartRecordAudio(0);
-                                MediaController.getInstance().stopRecording(isInScheduleMode() ? 3 : (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_VOICE) ? 2 : 1), true, 0, voiceOnce, 0); // Sparkgram: 2 = erst anhoeren
+                                MediaController.getInstance().stopRecording(isInScheduleMode() ? 3 : 1, true, 0, voiceOnce, 0);
                             }
                             recordingAudioVideo = false;
                             messageTransitionIsRunning = false;
