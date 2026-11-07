@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512">
+<defs>
+<linearGradient id="ga" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB25B"/><stop offset="1" stop-color="#F06A1D"/></linearGradient>
+<symbol id="spark" viewBox="-50 -50 100 100"><path d="M0,-50 C6,-12 12,-6 50,0 C12,6 6,12 0,50 C-6,12 -12,6 -50,0 C-12,-6 -6,-12 0,-50Z"/></symbol>
+<symbol id="plane" viewBox="0 0 512 512"><path d="M112 262 L388 150 Q404 144 400 162 L352 372 Q347 390 331 380 L258 330 L222 366 Q212 375 208 362 L200 314 L128 290 Q100 280 112 262Z"/><path d="M200 314 L352 196 L246 324Z" opacity=".25" fill="#000"/></symbol>
+<filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<circle cx="256" cy="256" r="256" fill="#20232B"/>
+<use xlink:href="#plane" x="-18" y="-10" width="512" height="512" fill="url(#ga)"/>
+<g filter="url(#glow)">
+<use xlink:href="#spark" x="272" y="100" width="100" height="100" fill="#7FD3FF" stroke="#fff" stroke-width="4"/>
+<use xlink:href="#spark" x="342" y="205" width="52" height="52" fill="#7FD3FF" stroke="#fff" stroke-width="5"/>
+<use xlink:href="#spark" x="217" y="195" width="40" height="40" fill="#7FD3FF" stroke="#fff" stroke-width="6"/>
+</g>
+</svg>
