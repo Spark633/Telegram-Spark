@@ -33,9 +33,10 @@ public class SparkProfileMenu {
     public static final int ID_GROUP = 905;
     public static final int ID_JUMP_FIRST = 906;
     public static final int ID_DELETE_OWN = 907;
+    public static final int ID_NAME_HISTORY = 908;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_DELETE_OWN;
+        return id >= ID_COPY_ID && id <= ID_NAME_HISTORY;
     }
 
     public interface Adder {
@@ -88,6 +89,9 @@ public class SparkProfileMenu {
         }
         if (SparkConfig.get(SparkConfig.PROFILE_INFO)) {
             list.add(new Entry(ID_INFO, R.drawable.msg_info, label(getString(R.string.SparkUserInfo), marked)));
+        }
+        if (userId != 0 && !self && SparkConfig.get(SparkConfig.NAME_HISTORY)) {
+            list.add(new Entry(ID_NAME_HISTORY, R.drawable.msg_log, label(getString(R.string.SparkNameHistory), marked)));
         }
         if (userId != 0 && !self && SparkConfig.get(SparkConfig.PROFILE_CLONE)) {
             list.add(new Entry(ID_CLONE, R.drawable.msg_customize, label(getString(R.string.SparkCloneProfile), marked)));
@@ -184,6 +188,43 @@ public class SparkProfileMenu {
         return (seconds / 3600) + " h";
     }
 
+    /** Fruehere Benutzernamen und Namen einer Person – nur auf Anfrage. */
+    private static void showNameHistory(BaseFragment fragment, long userId) {
+        final int account = fragment.getCurrentAccount();
+        TLRPC.User user = MessagesController.getInstance(account).getUser(userId);
+        java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd.MM.yy", java.util.Locale.GERMANY);
+        StringBuilder sb = new StringBuilder();
+        String curUser = user != null ? UserObject.getPublicUsername(user) : null;
+        String curName = user != null ? UserObject.getUserName(user) : null;
+        sb.append("Benutzernamen:");
+        int n = 0;
+        for (org.telegram.messenger.spark.SparkNameHistory.Item it : org.telegram.messenger.spark.SparkNameHistory.get(account).history(userId, org.telegram.messenger.spark.SparkNameHistory.KIND_USERNAME)) {
+            boolean now = curUser != null && curUser.equalsIgnoreCase(it.value);
+            sb.append("\n• @").append(it.value).append(now ? " (aktuell)" : "").append(" – ").append(df.format(new java.util.Date(it.firstSeen))).append(" bis ").append(now ? "heute" : df.format(new java.util.Date(it.lastSeen)));
+            n++;
+        }
+        if (n == 0) sb.append("\n• noch keine erfasst");
+        sb.append("\n\nNamen:");
+        n = 0;
+        for (org.telegram.messenger.spark.SparkNameHistory.Item it : org.telegram.messenger.spark.SparkNameHistory.get(account).history(userId, org.telegram.messenger.spark.SparkNameHistory.KIND_NAME)) {
+            boolean now = it.value.equals(curName);
+            sb.append("\n• ").append(it.value).append(now ? " (aktuell)" : "").append(" – ").append(df.format(new java.util.Date(it.firstSeen))).append(" bis ").append(now ? "heute" : df.format(new java.util.Date(it.lastSeen)));
+            n++;
+        }
+        if (n == 0) sb.append("\n• noch keine erfasst");
+        sb.append("\n\nErfasst wird, was Sparkgram seit der Installation gesehen hat.");
+        final String text = sb.toString();
+        AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
+        builder.setTitle(SparkUi.mark(getString(R.string.SparkNameHistory)));
+        builder.setMessage(text);
+        builder.setPositiveButton(getString(R.string.OK), null);
+        builder.setNeutralButton(getString(R.string.Copy), (d, w) -> {
+            AndroidUtilities.addToClipboard(text);
+            BulletinFactory.of(fragment).createCopyBulletin(getString(R.string.TextCopied)).show();
+        });
+        fragment.showDialog(builder.create());
+    }
+
     private static void confirmDeleteOwn(BaseFragment fragment, long dialogId) {
         final int account = fragment.getCurrentAccount();
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
@@ -250,20 +291,6 @@ public class SparkProfileMenu {
             if (full != null && full.common_chats_count > 0) {
                 sb.append("\nGemeinsame Gruppen: ").append(full.common_chats_count);
             }
-            // Sparkgram: fruehere Benutzernamen direkt in der Info-Zeile
-            if (SparkConfig.get(SparkConfig.NAME_HISTORY)) {
-                TLRPC.User u = mc.getUser(userId);
-                String cur = u != null ? UserObject.getPublicUsername(u) : null;
-                StringBuilder old = new StringBuilder();
-                for (org.telegram.messenger.spark.SparkNameHistory.Item it : org.telegram.messenger.spark.SparkNameHistory.get(account).history(userId, org.telegram.messenger.spark.SparkNameHistory.KIND_USERNAME)) {
-                    if (cur != null && cur.equalsIgnoreCase(it.value)) continue;
-                    if (old.length() > 0) old.append(", ");
-                    old.append("@").append(it.value);
-                }
-                if (old.length() > 0) {
-                    sb.append("\nFrüher: ").append(old);
-                }
-            }
         } else {
             TLRPC.Chat chat = mc.getChat(chatId);
             TLRPC.ChatFull full = mc.getChatFull(chatId);
@@ -297,6 +324,9 @@ public class SparkProfileMenu {
         switch (id) {
             case ID_GROUP:
                 showGroup(fragment, userId, chatId);
+                break;
+            case ID_NAME_HISTORY:
+                showNameHistory(fragment, userId);
                 break;
             case ID_JUMP_FIRST:
                 if (fragment instanceof org.telegram.ui.ChatActivity) {
@@ -391,26 +421,6 @@ public class SparkProfileMenu {
             }
             if (user.scam || user.fake) {
                 line(sb, "Warnung", user.scam ? "als Betrug markiert" : "als Fake markiert");
-            }
-            // Sparkgram: fruehere Benutzernamen / Namen
-            if (SparkConfig.get(SparkConfig.NAME_HISTORY)) {
-                java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd.MM.yy", java.util.Locale.GERMANY);
-                String cur = UserObject.getPublicUsername(user);
-                StringBuilder old = new StringBuilder();
-                for (org.telegram.messenger.spark.SparkNameHistory.Item it : org.telegram.messenger.spark.SparkNameHistory.get(account).history(user.id, org.telegram.messenger.spark.SparkNameHistory.KIND_USERNAME)) {
-                    if (cur != null && cur.equalsIgnoreCase(it.value)) continue;
-                    if (old.length() > 0) old.append(", ");
-                    old.append("@").append(it.value).append(" (bis ").append(df.format(new java.util.Date(it.lastSeen))).append(")");
-                }
-                line(sb, "Frühere Benutzernamen", old.length() > 0 ? old.toString() : null);
-                String curName = UserObject.getUserName(user);
-                StringBuilder oldNames = new StringBuilder();
-                for (org.telegram.messenger.spark.SparkNameHistory.Item it : org.telegram.messenger.spark.SparkNameHistory.get(account).history(user.id, org.telegram.messenger.spark.SparkNameHistory.KIND_NAME)) {
-                    if (it.value.equals(curName)) continue;
-                    if (oldNames.length() > 0) oldNames.append(", ");
-                    oldNames.append(it.value).append(" (bis ").append(df.format(new java.util.Date(it.lastSeen))).append(")");
-                }
-                line(sb, "Frühere Namen", oldNames.length() > 0 ? oldNames.toString() : null);
             }
             if (full != null) {
                 line(sb, "Gemeinsame Gruppen", full.common_chats_count);

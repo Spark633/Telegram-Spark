@@ -25,7 +25,7 @@ public class SparkChangelog {
             "Sprachnachrichten: neues Fenster nach der Aufnahme mit Anhören, Senden und Verwerfen (behebt Fehler mit leerer Vorschau)",
             "Optionale Rückfrage vor dem Wiederholen einer Nachricht",
             "Profil-Bibliothek: Original immer oben, Favoriten ⭐ darunter",
-            "Frühere Benutzernamen direkt in der Info-Zeile im Profil",
+            "Frühere Namen und Benutzernamen auf Anfrage: Profilmenü → „Frühere Namen“ (mit Zeitraum)",
             "„Ausblenden → Telegram Premium“ blendet auch Premium-Optionen wie „Teilen deaktivieren“ aus"
         ),
         new Release("0.8", "07.11.2026",
