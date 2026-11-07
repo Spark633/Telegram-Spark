@@ -84,6 +84,8 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_ONLINE_LOG = 64;
     private static final int ID_SEARCH = 65;
     private static final int ID_DELETED_NAMES = 66;
+    private static final int ID_SELECT_NO_LIMIT = 67;
+    private static final int ID_SELECT_RANGE = 68;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -172,6 +174,8 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_FORWARD_COUNT, R.string.SparkForwardCountToggle, SparkConfig.FORWARD_COUNT));
         items.add(check(ID_JUMP_FIRST, R.string.SparkJumpFirstToggle, SparkConfig.JUMP_FIRST));
         items.add(check(ID_DELETE_OWN_ALL, R.string.SparkDeleteOwnToggle, SparkConfig.DELETE_OWN_ALL));
+        items.add(check(ID_SELECT_NO_LIMIT, R.string.SparkSelectNoLimitToggle, SparkConfig.SELECT_NO_LIMIT));
+        items.add(check(ID_SELECT_RANGE, R.string.SparkSelectRangeToggle, SparkConfig.SELECT_RANGE));
         items.add(UItem.asShadow(getString(R.string.SparkMsgToolsInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderPeople)));
@@ -324,6 +328,8 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_FORWARD_TIME: toggle(SparkConfig.FORWARD_TIME); break;
             case ID_JUMP_FIRST: toggle(SparkConfig.JUMP_FIRST); break;
             case ID_DELETE_OWN_ALL: toggle(SparkConfig.DELETE_OWN_ALL); break;
+            case ID_SELECT_NO_LIMIT: toggle(SparkConfig.SELECT_NO_LIMIT); break;
+            case ID_SELECT_RANGE: toggle(SparkConfig.SELECT_RANGE); break;
             case ID_CONFIRM_STICKER: toggle(SparkConfig.CONFIRM_STICKER); break;
             case ID_CONFIRM_GIF: toggle(SparkConfig.CONFIRM_GIF); break;
             case ID_CONFIRM_VOICE: toggle(SparkConfig.CONFIRM_VOICE); break;

@@ -9322,6 +9322,13 @@ public class MessagesController extends BaseController implements NotificationCe
         if ((messages == null || messages.isEmpty()) && taskId == 0) {
             return;
         }
+        // Sparkgram: mehr als 100 markierte Nachrichten in 100er-Paketen loeschen (Telegram-Grenze pro Anfrage)
+        if (taskId == 0 && encryptedChat == null && randoms == null && messages.size() > 100) {
+            for (int i = 0; i < messages.size(); i += 100) {
+                deleteMessages(new ArrayList<>(messages.subList(i, Math.min(messages.size(), i + 100))), null, null, dialogId, forAll, mode, cacheOnly, 0, null, topicId, movedToScheduled, movedToScheduledMessageId);
+            }
+            return;
+        }
         ArrayList<Integer> toSend = null;
         long channelId;
         boolean sparkKeepLocal = false;

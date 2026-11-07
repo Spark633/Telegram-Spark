@@ -1729,6 +1729,11 @@ public class ChatActivity extends BaseFragment implements
             if (!actionBar.isActionModeShowed() && (!isReport() || showMenu)) {
                 result = createMenu(view, false, true, x, y, true);
             } else {
+                // Sparkgram: lange druecken waehrend der Auswahl -> alles bis zur naechsten markierten Nachricht markieren
+                if (!isReport() && view instanceof ChatMessageCell && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.SELECT_RANGE)
+                        && sparkSelectRange(((ChatMessageCell) view).getMessageObject())) {
+                    return true;
+                }
                 boolean outside = false;
                 if (view instanceof ChatMessageCell) {
                     outside = !((ChatMessageCell) view).isInsideBackground(x, y);
@@ -1801,7 +1806,7 @@ public class ChatActivity extends BaseFragment implements
                         return;
                     }
                     if (messageObject.contentType == 0) {
-                        if (selected && selectedMessagesIds[0].size() + selectedMessagesIds[1].size() >= 100) {
+                        if (selected && selectedMessagesIds[0].size() + selectedMessagesIds[1].size() >= org.telegram.messenger.spark.SparkConfig.selectLimit()) {
                             limitReached = true;
                         } else {
                             limitReached = false;
@@ -19311,6 +19316,46 @@ public class ChatActivity extends BaseFragment implements
         }
     }
 
+    private boolean sparkIsSelected(MessageObject mo) {
+        return selectedMessagesIds[0].indexOfKey(mo.getId()) >= 0 || selectedMessagesIds[1].indexOfKey(mo.getId()) >= 0;
+    }
+
+    /** Sparkgram: markiert alle Nachrichten zwischen der naechsten markierten und dieser. */
+    private boolean sparkSelectRange(MessageObject target) {
+        if (target == null || messages == null) return false;
+        int ti = messages.indexOf(target);
+        if (ti < 0) return false;
+        int other = -1;
+        for (int d = 1; d < messages.size() && other < 0; d++) {
+            if (ti - d >= 0 && sparkIsSelected(messages.get(ti - d))) other = ti - d;
+            else if (ti + d < messages.size() && sparkIsSelected(messages.get(ti + d))) other = ti + d;
+        }
+        if (other < 0) return false;
+        int from = Math.min(ti, other), to = Math.max(ti, other);
+        int limit = org.telegram.messenger.spark.SparkConfig.selectLimit();
+        int added = 0;
+        boolean full = false;
+        for (int i = from; i <= to; i++) {
+            MessageObject mo = messages.get(i);
+            if (mo == null || mo.getId() == 0 || mo.contentType != 0 || mo.isSponsored() || mo.messageOwner == null || mo.messageOwner.action != null || sparkIsSelected(mo)) {
+                continue;
+            }
+            if (selectedMessagesIds[0].size() + selectedMessagesIds[1].size() >= limit) {
+                full = true;
+                break;
+            }
+            addToSelectedMessages(mo, false, false);
+            added++;
+        }
+        updateActionModeTitle();
+        updateVisibleRows();
+        try {
+            chatListView.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+        } catch (Exception ignore) {}
+        BulletinFactory.of(this).createSimpleBulletin(R.raw.info, "✦ " + added + " Nachrichten dazu markiert" + (full ? " (Grenze " + limit + " erreicht)" : "")).show();
+        return true;
+    }
+
     private void addToSelectedMessages(MessageObject messageObject, boolean outside) {
         addToSelectedMessages(messageObject, outside, true);
     }
@@ -19382,7 +19427,7 @@ public class ChatActivity extends BaseFragment implements
                     }
                 }
             } else {
-                if (selectedMessagesIds[0].size() + selectedMessagesIds[1].size() >= 100) {
+                if (selectedMessagesIds[0].size() + selectedMessagesIds[1].size() >= org.telegram.messenger.spark.SparkConfig.selectLimit()) {
                     AndroidUtilities.shakeView(selectedMessagesCountTextView);
                     Vibrator vibrator = (Vibrator) ApplicationLoader.applicationContext.getSystemService(Context.VIBRATOR_SERVICE);
                     if (vibrator != null) {

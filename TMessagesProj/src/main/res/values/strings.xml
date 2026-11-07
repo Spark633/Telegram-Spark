@@ -11742,7 +11742,7 @@
     <string name="SparkForwardTimeToggle">Originalzeit bei Weiterleitungen</string>
     <string name="SparkJumpFirstToggle">Zur ersten Nachricht springen</string>
     <string name="SparkDeleteOwnToggle">Alle eigenen Nachrichten löschen</string>
-    <string name="SparkMsgToolsInfo">Details und Wiederholen findest du, wenn du eine Nachricht antippst. „Zur ersten Nachricht“ und „Alle eigenen Nachrichten löschen“ sind im Drei-Punkte-Menü des Chats. Weitergeleitete Nachrichten zeigen ↪ mit der ursprünglichen Zeit.</string>
+    <string name="SparkMsgToolsInfo">Details und Wiederholen findest du, wenn du eine Nachricht antippst. „Zur ersten Nachricht“ und „Alle eigenen Nachrichten löschen“ sind im Drei-Punkte-Menü des Chats. Weitergeleitete Nachrichten zeigen ↪ mit der ursprünglichen Zeit. Bereich markieren: eine Nachricht markieren, dann eine andere lange drücken – alles dazwischen wird markiert.</string>
     <string name="SparkHeaderConfirm">Vor dem Senden fragen</string>
     <string name="SparkConfirmSticker">Sticker</string>
     <string name="SparkConfirmGif">GIFs</string>
@@ -11768,6 +11768,8 @@
     <string name="SparkKeywordsToggle">Bei Schlagwörtern benachrichtigen</string>
     <string name="SparkKeywordsOpen">Schlagwörter und Treffer</string>
     <string name="SparkKeywordsInfo">Meldet eingehende Nachrichten mit deinen Schlagwörtern – in allen Chats und Gruppen, auch stummgeschalteten. Treffer werden gesammelt, Antippen springt zur Nachricht.</string>
+    <string name="SparkSelectNoLimitToggle">Bis zu 1000 Nachrichten markieren (Weiterleiten/Löschen ohne 100er-Grenze)</string>
+    <string name="SparkSelectRangeToggle">Bereich markieren: während der Auswahl lange drücken</string>
     <string name="SparkHeaderPeople">Personen</string>
     <string name="SparkSearch">Suche nach Name / ID</string>
     <string name="SparkOnlineLog">Online-Protokoll</string>

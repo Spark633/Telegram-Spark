@@ -81,6 +81,14 @@ public class SparkConfig {
     public static final String ONLINE_LOG = "onlineLog";
     // geloeschte Konten: zuletzt bekannten Namen zeigen
     public static final String DELETED_NAMES = "deletedNames";
+    // mehr als 100 Nachrichten markieren (Weiterleiten/Loeschen in 100er-Paketen)
+    public static final String SELECT_NO_LIMIT = "selectNoLimit";
+    // Bereich markieren: lange druecken waehrend der Auswahl markiert alles dazwischen
+    public static final String SELECT_RANGE = "selectRange";
+
+    public static int selectLimit() {
+        return get(SELECT_NO_LIMIT) ? 1000 : 100;
+    }
     // Schlagwort-Alarm
     public static final String KEYWORDS = "keywords";
     // Kleine Markierung an allen Sparkgram-Funktionen
@@ -197,6 +205,8 @@ public class SparkConfig {
             case TRANSLATE_OWN:
             case ONLINE_LOG:
             case DELETED_NAMES:
+            case SELECT_NO_LIMIT:
+            case SELECT_RANGE:
             case LOCAL_NAMES:
             case TIMEZONES:
             case NAME_HISTORY:

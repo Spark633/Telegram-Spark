@@ -26,7 +26,9 @@ public class SparkChangelog {
             "Chat: „zuletzt aktiv / online gesehen“ steht jetzt als eigene Zeile unter dem Status",
             "Profil: die Zeile unter dem Status ist jetzt sauber mittig",
             "Mitglieder & Aktivität: Pause nach je 1000 Nachrichten ist zurück, die Liste bleibt oben",
-            "Sprachnachrichten: keine extra Rückfrage mehr beim Senden aus der Freihand-Vorschau"
+            "Sprachnachrichten: keine extra Rückfrage mehr beim Senden aus der Freihand-Vorschau",
+            "Bis zu 1000 Nachrichten markieren – Weiterleiten und Löschen laufen automatisch in 100er-Paketen",
+            "Bereich markieren: während der Auswahl eine andere Nachricht lange drücken markiert alles dazwischen"
         ),
         new Release("0.11", "07.11.2026",
             "Online-Protokoll: im Profil-Menü sehen, wann jemand online war (Zeiträume mit Dauer); „kürzlich“ & Co. getrennt mit ⚠ markiert",

@@ -115,10 +115,12 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   Suche mit angeheftetem `EditTextBoldCursor`, Chat-Kopf: `sparkLineView` als 3. Zeile in `ChatAvatarContainer`
   (Titel/Status rücken 5 dp hoch), Profil-Zeile zentriert per `measureText`, Mitgliederliste: Pause zurück,
   `update()` hält die Liste oben. Freihand-Rückfrage entfernt (Telegrams Vorschau reicht).
+  Etappe 3 Rest: `SparkConfig.selectLimit()` (ChatActivity, 2 Stellen), `deleteMessages` teilt >100 auf
+  (Weiterleiten teilt Telegram selbst), `ChatActivity.sparkSelectRange` (Langdruck im Auswahlmodus).
 
 ## Roadmap (offen)
 
-- **Etappe 3 Rest:** Weiterleiten ohne Limit, schneller markieren / Auswahl-Limit, Bild-Link kopieren.
+- **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
 - **Etappe 4 Rest:** automatisch übersetzen, Senden über eigenen Bot.
 - **Etappe 6:** Sticker/Packs herunterladen, fremde Sticker ins eigene Pack, alle Sticker eines Chats,
