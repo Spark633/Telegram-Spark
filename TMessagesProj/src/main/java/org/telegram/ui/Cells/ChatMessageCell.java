@@ -20881,7 +20881,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     float br = out ? r.right - dp(6) : r.right;
                     float top = r.top, bottom = r.bottom;
                     float radius = Math.min(dp(SharedConfig.bubbleRadius), (bottom - top) / 2f);
-                    float ext = Math.min(dp(36), Math.max(0, (br - bl) / 2f - radius));
+                    float ext = Math.min(dp(8), Math.max(0, (br - bl) / 2f - radius));
                     float thick = dp(3.5f);
                     if (sparkDeletedPaint == null) {
                         sparkDeletedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -20915,7 +20915,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     canvas.clipPath(sparkDeletedClip);
                     android.graphics.PathMeasure pm = new android.graphics.PathMeasure(path, false);
                     float len = pm.getLength();
-                    float taper = (float) (Math.PI / 2 * radius) + ext; // Ecke + Stueck Oberkante
+                    float taper = (float) (Math.PI / 2 * radius) * 0.85f + ext; // wird schon in der Rundung duenner, endet kurz danach
                     float step = dp(1.5f);
                     for (float d = 0; d < len; d += step) {
                         float edge = Math.min(d, len - d);

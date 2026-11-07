@@ -38,6 +38,7 @@ public class SparkProfilePreviewActivity extends UniversalFragment {
     private static final int ID_APPLY = 1;
     private static final int ID_RENAME = 2;
     private static final int ID_DELETE = 3;
+    private static final int ID_OPEN_SOURCE = 4;
 
     private SparkProfiles.Entry entry;
     private View header;
@@ -111,6 +112,9 @@ public class SparkProfilePreviewActivity extends UniversalFragment {
         items.add(UItem.asCustom(header));
         items.add(UItem.asShadow(null));
         items.add(UItem.asButton(ID_APPLY, R.drawable.msg_openprofile, getString(R.string.SparkProfileApply)).accent());
+        if (!entry.original && entry.sourceUserId != 0 && entry.sourceUserId != org.telegram.messenger.UserConfig.getInstance(currentAccount).getClientUserId()) {
+            items.add(UItem.asButton(ID_OPEN_SOURCE, R.drawable.msg_contacts, getString(R.string.SparkProfileOpenSource)));
+        }
         items.add(UItem.asButton(ID_RENAME, R.drawable.msg_edit, getString(R.string.SparkProfileRename)));
         items.add(UItem.asButton(ID_DELETE, R.drawable.msg_delete, getString(R.string.SparkProfileDelete)).red());
         items.add(UItem.asShadow(null));
@@ -129,6 +133,13 @@ public class SparkProfilePreviewActivity extends UniversalFragment {
                     BulletinFactory.of(this).createErrorBulletin(LocaleController.formatString(R.string.SparkError, String.valueOf(error))).show();
                 }
             });
+        } else if (item.id == ID_OPEN_SOURCE) {
+            org.telegram.tgnet.TLRPC.User u = org.telegram.messenger.MessagesController.getInstance(currentAccount).getUser(entry.sourceUserId);
+            if (u == null) {
+                BulletinFactory.of(this).createErrorBulletin(getString(R.string.SparkProfileSourceUnknown)).show();
+            } else {
+                presentFragment(org.telegram.ui.ProfileActivity.of(entry.sourceUserId));
+            }
         } else if (item.id == ID_RENAME) {
             final EditText input = new EditText(getParentActivity());
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
