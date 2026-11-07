@@ -3938,6 +3938,9 @@ public class ChatActivity extends BaseFragment implements
                     }
                 } else if (id == mute) {
                     toggleMute(false);
+                } else if (org.telegram.ui.spark.SparkProfileMenu.isSparkItem(id)) {
+                    // Sparkgram
+                    org.telegram.ui.spark.SparkProfileMenu.handle(ChatActivity.this, id, currentUser != null ? currentUser.id : 0, currentChat != null ? currentChat.id : 0);
                 } else if (id == add_shortcut) {
                     try {
                         getMediaDataController().installShortcut(currentUser.id, MediaDataController.SHORTCUT_TYPE_USER_OR_CHAT);
@@ -4484,6 +4487,8 @@ public class ChatActivity extends BaseFragment implements
             if (currentChat != null && !isTopic) {
                 viewAsTopics = headerItem.lazilyAddSubItem(view_as_topics, R.drawable.msg_topics, LocaleController.getString(R.string.TopicViewAsTopics));
             }
+            // Sparkgram: Funktionen auch im Chat-Menue
+            org.telegram.ui.spark.SparkProfileMenu.addChatItems(this, headerItem, currentUser != null ? currentUser.id : 0, currentChat != null ? currentChat.id : 0);
             if (themeDelegate.isThemeChangeAvailable(true)) {
                 headerItem.lazilyAddSubItem(change_colors, R.drawable.msg_background, LocaleController.getString(R.string.SetWallpapers));
             }

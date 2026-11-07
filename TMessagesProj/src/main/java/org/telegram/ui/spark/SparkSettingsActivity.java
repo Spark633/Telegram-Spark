@@ -43,6 +43,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_UPDATE_TEST = 16;
     private static final int ID_REPO = 17;
     private static final int ID_CRASH = 18;
+    private static final int ID_CHAT_MENU = 19;
 
     @Override
     protected CharSequence getTitle() {
@@ -89,8 +90,9 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asShadow(getString(R.string.SparkNotesInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderLook)));
+        items.add(check(ID_CHAT_MENU, R.string.SparkChatMenuToggle, SparkConfig.CHAT_MENU));
         items.add(check(ID_MARKER, R.string.SparkMarkerToggle, SparkConfig.SPARK_MARKER));
-        items.add(UItem.asShadow(getString(R.string.SparkMarkerInfo)));
+        items.add(UItem.asShadow(getString(R.string.SparkLookInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderAccounts)));
         items.add(UItem.asShadow(getString(R.string.SparkAccountsInfo)));
@@ -138,6 +140,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_PHOTO_MANAGER: toggle(SparkConfig.PHOTO_MANAGER); break;
             case ID_NOTES: toggle(SparkConfig.NOTES); break;
             case ID_MARKER: toggle(SparkConfig.SPARK_MARKER); break;
+            case ID_CHAT_MENU: toggle(SparkConfig.CHAT_MENU); break;
             case ID_UPDATE_TEST: toggle(SparkConfig.UPDATE_TEST_BUILDS); break;
             case ID_PROFILE_LIBRARY: presentFragment(new SparkProfileLibraryActivity()); break;
             case ID_PHOTO_MANAGER_OPEN: presentFragment(new SparkPhotoManagerActivity()); break;

@@ -33,8 +33,28 @@ public class SparkProfileMenu {
         return id >= ID_COPY_ID && id <= ID_PHOTOS;
     }
 
+    public interface Adder {
+        void add(int id, int icon, CharSequence text);
+    }
+
+    /** Drei-Punkte-Menue im Profil. */
     public static void addItems(BaseFragment fragment, ActionBarMenuItem menu, long userId, long chatId) {
-        if (menu == null || (userId == 0 && chatId == 0)) {
+        if (menu == null) {
+            return;
+        }
+        addItems(fragment, (id, icon, text) -> menu.addSubItem(id, icon, text), userId, chatId);
+    }
+
+    /** Drei-Punkte-Menue im Chat (falls in den Einstellungen aktiviert). */
+    public static void addChatItems(BaseFragment fragment, ActionBarMenuItem menu, long userId, long chatId) {
+        if (menu == null || !SparkConfig.get(SparkConfig.CHAT_MENU)) {
+            return;
+        }
+        addItems(fragment, (id, icon, text) -> menu.lazilyAddSubItem(id, icon, text), userId, chatId);
+    }
+
+    public static void addItems(BaseFragment fragment, Adder menu, long userId, long chatId) {
+        if (userId == 0 && chatId == 0) {
             return;
         }
         final int account = fragment.getCurrentAccount();
@@ -42,19 +62,19 @@ public class SparkProfileMenu {
         if (SparkConfig.get(SparkConfig.NOTES)) {
             long did = userId != 0 ? userId : -chatId;
             boolean has = SparkNotes.has(account, did);
-            menu.addSubItem(ID_NOTE, R.drawable.msg_stories_caption, SparkUi.mark(getString(has ? R.string.SparkNoteEdit : R.string.SparkNoteAdd)));
+            menu.add(ID_NOTE, R.drawable.msg_stories_caption, SparkUi.mark(getString(has ? R.string.SparkNoteEdit : R.string.SparkNoteAdd)));
         }
         if (SparkConfig.get(SparkConfig.PROFILE_COPY_ID)) {
-            menu.addSubItem(ID_COPY_ID, R.drawable.msg_copy, SparkUi.mark(getString(R.string.SparkCopyId)));
+            menu.add(ID_COPY_ID, R.drawable.msg_copy, SparkUi.mark(getString(R.string.SparkCopyId)));
         }
         if (SparkConfig.get(SparkConfig.PROFILE_INFO)) {
-            menu.addSubItem(ID_INFO, R.drawable.msg_info, SparkUi.mark(getString(R.string.SparkUserInfo)));
+            menu.add(ID_INFO, R.drawable.msg_info, SparkUi.mark(getString(R.string.SparkUserInfo)));
         }
         if (userId != 0 && !self && SparkConfig.get(SparkConfig.PROFILE_CLONE)) {
-            menu.addSubItem(ID_CLONE, R.drawable.msg_customize, SparkUi.mark(getString(R.string.SparkCloneProfile)));
+            menu.add(ID_CLONE, R.drawable.msg_customize, SparkUi.mark(getString(R.string.SparkCloneProfile)));
         }
         if (self && SparkConfig.get(SparkConfig.PHOTO_MANAGER)) {
-            menu.addSubItem(ID_PHOTOS, R.drawable.msg_photos, SparkUi.mark(getString(R.string.SparkPhotoManager)));
+            menu.add(ID_PHOTOS, R.drawable.msg_photos, SparkUi.mark(getString(R.string.SparkPhotoManager)));
         }
     }
 
@@ -116,6 +136,7 @@ public class SparkProfileMenu {
         final int account = fragment.getCurrentAccount();
         MessagesController mc = MessagesController.getInstance(account);
         StringBuilder sb = new StringBuilder();
+        final String[] link = new String[1];
         String title;
         if (userId != 0) {
             TLRPC.User user = mc.getUser(userId);
@@ -168,6 +189,16 @@ public class SparkProfileMenu {
                 line(sb, "Mitglieder", members);
             }
             line(sb, "Erstellt/beigetreten", date(chat.date));
+            if (username != null) {
+                line(sb, "Sichtbarkeit", "öffentlich");
+                link[0] = "https://t.me/" + username;
+            } else {
+                line(sb, "Sichtbarkeit", "privat");
+                if (full != null && full.exported_invite != null && !TextUtils.isEmpty(full.exported_invite.link)) {
+                    link[0] = full.exported_invite.link;
+                }
+            }
+            line(sb, "Link", link[0] != null ? link[0] : "kein Einladungslink sichtbar (nur für Admins)");
             if (full != null && full.chat_photo != null) {
                 line(sb, "Bild gesetzt", date(full.chat_photo.date));
             }
@@ -180,8 +211,16 @@ public class SparkProfileMenu {
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
         builder.setTitle(title);
         builder.setMessage(text);
-        builder.setPositiveButton(getString(R.string.OK), null);
-        builder.setNeutralButton(getString(R.string.Copy), (dialog, which) -> {
+        if (link[0] != null) {
+            builder.setPositiveButton(getString(R.string.SparkCopyLink), (dialog, which) -> {
+                AndroidUtilities.addToClipboard(link[0]);
+                BulletinFactory.of(fragment).createCopyBulletin(getString(R.string.LinkCopied)).show();
+            });
+            builder.setNegativeButton(getString(R.string.OK), null);
+        } else {
+            builder.setPositiveButton(getString(R.string.OK), null);
+        }
+        builder.setNeutralButton(getString(R.string.SparkCopyAll), (dialog, which) -> {
             AndroidUtilities.addToClipboard(text);
             BulletinFactory.of(fragment).createCopyBulletin(getString(R.string.TextCopied)).show();
         });
