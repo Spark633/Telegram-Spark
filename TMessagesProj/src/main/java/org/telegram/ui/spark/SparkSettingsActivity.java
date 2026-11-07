@@ -72,7 +72,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     @Override
     protected void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
         final boolean on = SparkConfig.getRaw(SparkConfig.MASTER);
-        items.add(UItem.asRippleCheck(ID_MASTER, getString(R.string.SparkMaster)).setChecked(on));
+        // Hauptschalter ist oben fest angeheftet (siehe createView), hier nur der Hinweis
         items.add(UItem.asShadow(getString(R.string.SparkMasterInfo)));
 
         final int start = items.size();
@@ -154,6 +154,29 @@ public class SparkSettingsActivity extends UniversalFragment {
         if (listView != null && listView.adapter != null) {
             listView.adapter.update(true);
         }
+    }
+
+    private org.telegram.ui.Cells.TextCheckCell masterCell;
+
+    @Override
+    public View createView(android.content.Context context) {
+        View view = super.createView(context);
+        // Hauptschalter oben fest angeheftet, bleibt beim Scrollen sichtbar
+        masterCell = new org.telegram.ui.Cells.TextCheckCell(context);
+        masterCell.setBackgroundColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhite));
+        masterCell.setTextAndCheck(getString(R.string.SparkMaster), SparkConfig.getRaw(SparkConfig.MASTER), false);
+        masterCell.setOnClickListener(v -> {
+            boolean value = SparkConfig.toggle(SparkConfig.MASTER);
+            masterCell.setChecked(value);
+            if (listView != null && listView.adapter != null) {
+                listView.adapter.update(true);
+            }
+        });
+        masterCell.setElevation(AndroidUtilities.dp(2));
+        ((android.widget.FrameLayout) view).addView(masterCell, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, 50, android.view.Gravity.TOP));
+        listView.setPadding(0, AndroidUtilities.dp(50), 0, 0);
+        listView.setClipToPadding(false);
+        return view;
     }
 
     @Override
