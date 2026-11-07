@@ -11768,6 +11768,11 @@
     <string name="SparkKeywordsToggle">Bei Schlagwörtern benachrichtigen</string>
     <string name="SparkKeywordsOpen">Schlagwörter und Treffer</string>
     <string name="SparkKeywordsInfo">Meldet eingehende Nachrichten mit deinen Schlagwörtern – in allen Chats und Gruppen, auch stummgeschalteten. Treffer werden gesammelt, Antippen springt zur Nachricht.</string>
+    <string name="SparkHeaderPeople">Personen</string>
+    <string name="SparkSearch">Suche nach Name / ID</string>
+    <string name="SparkOnlineLog">Online-Protokoll</string>
+    <string name="SparkOnlineLogToggle">Online-Protokoll aufzeichnen</string>
+    <string name="SparkOnlineLogInfo">Zeichnet auf, wann Personen online waren (im Profil-Menü → Online-Protokoll). Erfasst wird nur, was Telegram dir ohnehin meldet. „Kürzlich“ und andere verborgene Angaben werden getrennt markiert und zählen nicht als „gesehen“. Wird 30 Tage aufbewahrt und bleibt auf dem Gerät.</string>
     <string name="SparkHeaderTranslate">Übersetzen</string>
     <string name="SparkTranslateFreeToggle">Chats übersetzen ohne Premium</string>
     <string name="SparkTranslateOwnToggle">Eigene Nachricht vor dem Senden übersetzen</string>

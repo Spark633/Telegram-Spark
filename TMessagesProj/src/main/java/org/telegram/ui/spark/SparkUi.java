@@ -75,8 +75,8 @@ public class SparkUi {
         fragment.showDialog(builder.create());
     }
 
-    /** Rueckfrage nach einer Sprachaufnahme: anhoeren, senden oder verwerfen. */
-    public static void confirmVoice(String path, Runnable onSend, Runnable onDiscard) {
+    /** Rueckfrage nach einer Sprachaufnahme: anhoeren, zuschneiden, senden oder verwerfen. */
+    public static void confirmVoice(String path, org.telegram.tgnet.TLRPC.Document doc, Runnable onSend, Runnable onDiscard) {
         org.telegram.ui.ActionBar.BaseFragment f = org.telegram.ui.LaunchActivity.getSafeLastFragment();
         if (f == null || f.getParentActivity() == null) {
             onSend.run();
@@ -85,18 +85,86 @@ public class SparkUi {
         final android.app.Activity activity = f.getParentActivity();
         final android.media.MediaPlayer[] player = new android.media.MediaPlayer[1];
         final boolean[] decided = new boolean[1];
+        // Laenge der Aufnahme bestimmen
+        int durMs = 0;
+        try {
+            android.media.MediaPlayer probe = new android.media.MediaPlayer();
+            probe.setDataSource(path);
+            probe.prepare();
+            durMs = probe.getDuration();
+            probe.release();
+        } catch (Throwable ignore) {}
+        if (durMs <= 0 && doc != null) {
+            for (org.telegram.tgnet.TLRPC.DocumentAttribute a : doc.attributes) {
+                if (a instanceof org.telegram.tgnet.TLRPC.TL_documentAttributeAudio) durMs = (int) (a.duration * 1000);
+            }
+        }
+        final int total = Math.max(durMs, 1);
+        final int[] range = {0, total};
+        final Runnable[] watcher = new Runnable[1];
         final Runnable stop = () -> {
+            if (watcher[0] != null) {
+                AndroidUtilities.cancelRunOnUIThread(watcher[0]);
+                watcher[0] = null;
+            }
             if (player[0] != null) {
                 try { player[0].stop(); } catch (Throwable ignore) {}
                 try { player[0].release(); } catch (Throwable ignore) {}
                 player[0] = null;
             }
         };
+        android.widget.LinearLayout box = new android.widget.LinearLayout(activity);
+        box.setOrientation(android.widget.LinearLayout.VERTICAL);
         android.widget.TextView play = new android.widget.TextView(activity);
         play.setText("▶  Anhören");
         play.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 17);
         play.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlueText4));
         play.setPadding(AndroidUtilities.dp(24), AndroidUtilities.dp(12), AndroidUtilities.dp(24), AndroidUtilities.dp(4));
+        box.addView(play);
+        final android.widget.TextView rangeText = new android.widget.TextView(activity);
+        rangeText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 14);
+        rangeText.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteGrayText));
+        rangeText.setPadding(AndroidUtilities.dp(24), AndroidUtilities.dp(12), AndroidUtilities.dp(24), 0);
+        box.addView(rangeText);
+        final Runnable updateText = () -> rangeText.setText(String.format(java.util.Locale.GERMANY, "Zuschneiden: %.1f s – %.1f s  (%.1f s)",
+            range[0] / 1000f, range[1] / 1000f, (range[1] - range[0]) / 1000f));
+        updateText.run();
+        android.widget.SeekBar startBar = new android.widget.SeekBar(activity);
+        android.widget.SeekBar endBar = new android.widget.SeekBar(activity);
+        startBar.setMax(total);
+        endBar.setMax(total);
+        endBar.setProgress(total);
+        startBar.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(android.widget.SeekBar sb, int p, boolean user) {
+                if (p > range[1] - 500) { p = Math.max(0, range[1] - 500); sb.setProgress(p); }
+                range[0] = p;
+                updateText.run();
+            }
+            @Override public void onStartTrackingTouch(android.widget.SeekBar sb) {}
+            @Override public void onStopTrackingTouch(android.widget.SeekBar sb) {}
+        });
+        endBar.setOnSeekBarChangeListener(new android.widget.SeekBar.OnSeekBarChangeListener() {
+            @Override public void onProgressChanged(android.widget.SeekBar sb, int p, boolean user) {
+                if (p < range[0] + 500) { p = Math.min(total, range[0] + 500); sb.setProgress(p); }
+                range[1] = p;
+                updateText.run();
+            }
+            @Override public void onStartTrackingTouch(android.widget.SeekBar sb) {}
+            @Override public void onStopTrackingTouch(android.widget.SeekBar sb) {}
+        });
+        android.widget.TextView l1 = new android.widget.TextView(activity);
+        l1.setText("Anfang");
+        android.widget.TextView l2 = new android.widget.TextView(activity);
+        l2.setText("Ende");
+        for (android.widget.TextView l : new android.widget.TextView[]{l1, l2}) {
+            l.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 13);
+            l.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlackText));
+            l.setPadding(AndroidUtilities.dp(24), AndroidUtilities.dp(8), AndroidUtilities.dp(24), 0);
+        }
+        box.addView(l1);
+        box.addView(startBar, org.telegram.ui.Components.LayoutHelper.createLinear(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, 8, 0, 8, 0));
+        box.addView(l2);
+        box.addView(endBar, org.telegram.ui.Components.LayoutHelper.createLinear(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, 8, 0, 8, 8));
         play.setOnClickListener(v -> {
             if (player[0] != null) {
                 stop.run();
@@ -111,9 +179,24 @@ public class SparkUi {
                     play.setText("▶  Anhören");
                 });
                 mp.prepare();
+                mp.seekTo(range[0]);
                 mp.start();
                 player[0] = mp;
                 play.setText("■  Stopp");
+                // am gewaehlten Ende anhalten
+                watcher[0] = new Runnable() {
+                    @Override public void run() {
+                        try {
+                            if (player[0] != null && player[0].getCurrentPosition() >= range[1]) {
+                                stop.run();
+                                play.setText("▶  Anhören");
+                                return;
+                            }
+                        } catch (Throwable ignore) {}
+                        if (player[0] != null) AndroidUtilities.runOnUIThread(this, 100);
+                    }
+                };
+                AndroidUtilities.runOnUIThread(watcher[0], 100);
             } catch (Throwable e) {
                 stop.run();
                 play.setText("Abspielen nicht möglich");
@@ -121,11 +204,40 @@ public class SparkUi {
         });
         org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(activity);
         builder.setTitle(mark("Sprachnachricht senden?"));
-        builder.setView(play);
+        builder.setView(box);
         builder.setPositiveButton(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.Send), (d, w) -> {
             decided[0] = true;
             stop.run();
-            onSend.run();
+            final boolean cut = range[0] > 100 || range[1] < total - 100;
+            if (!cut) {
+                onSend.run();
+                return;
+            }
+            final long from = range[0], to = range[1];
+            org.telegram.messenger.Utilities.globalQueue.postRunnable(() -> {
+                String tmp = path + ".cut.ogg";
+                boolean ok = false;
+                try {
+                    ok = org.telegram.messenger.MediaController.cropOpusFile(path, tmp, from, to);
+                    if (ok) {
+                        java.io.File src = new java.io.File(path);
+                        src.delete();
+                        ok = new java.io.File(tmp).renameTo(src);
+                    }
+                    if (ok && doc != null) {
+                        for (org.telegram.tgnet.TLRPC.DocumentAttribute a : doc.attributes) {
+                            if (a instanceof org.telegram.tgnet.TLRPC.TL_documentAttributeAudio) {
+                                a.waveform = org.telegram.messenger.MediaController.getWaveform(path);
+                                a.duration = (to - from) / 1000.0;
+                            }
+                        }
+                        doc.size = new java.io.File(path).length();
+                    }
+                } catch (Throwable e) {
+                    org.telegram.messenger.FileLog.e(e);
+                }
+                AndroidUtilities.runOnUIThread(onSend);
+            });
         });
         builder.setNegativeButton("Verwerfen", (d, w) -> {
             decided[0] = true;

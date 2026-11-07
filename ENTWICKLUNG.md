@@ -15,7 +15,8 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   (oder wenn Spark633 „push, sofern keine Rückfrage“ sagt).
 - Keine PRs/Issues/Kommentare auf GitHub ohne ausdrückliche Bitte.
 - Nach jedem fertigen Bau: Neuerungen **und** eine Testliste („was am besten testen“) mitschicken.
-- Schlagwort-Alarm bei geschlossener App: nur mit Telegrams „Hintergrundverbindung“ (kein eigenes Push).
+- Schlagwort-Alarm/Online-Protokoll bei geschlossener App: nur mit Telegrams „Keep-Alive Service“ +
+  „Background Connection“ (Benachrichtigungen → ganz unten), kein eigenes Push.
 - Fester APK-Link: `https://github.com/Spark633/Telegram-Spark/releases/download/build-entwicklung/Sparkgram-entwicklung.apk`
 - Jede Funktion bekommt einen eigenen Schalter; Sparkgram-Optionen mit ✦ markiert.
 - Vorsicht vor Telegram-Limits: alles mit vielen Anfragen über `SparkRateLimit`.
@@ -63,7 +64,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   `SparkConfig` (Schalter, **pro Konto**; global: Updates/„Was ist neu“), `SparkProfiles` (Profil-Bibliothek),
   `SparkNotes`, `SparkMembership` (🚪 raus), `SparkRateLimit`, `SparkMessageStore` (gelöscht/Verlauf, SQLite),
   `SparkBulkDelete`, `SparkNameHistory`, `SparkLocalNames`, `SparkTimezones`, `SparkRegDate`,
-  `SparkUpdater`, `SparkChangelog`, `SparkCrashLog`, `SparkKeywords`, `SparkTranslate`.
+  `SparkUpdater`, `SparkChangelog`, `SparkCrashLog`, `SparkKeywords`, `SparkTranslate`, `SparkOnlineLog`.
 - `ui/spark/` – Oberfläche: `SparkSettingsActivity`, `SparkProfileMenu` (Profil-/Chat-Menü, Infos),
   `SparkProfileLibraryActivity`, `SparkProfilePreviewActivity`, `SparkPhotoManagerActivity`,
   `SparkNotesActivity`, `SparkOwnMessagesActivity`, `SparkChangelogActivity`, `SparkUi` (Helfer).
@@ -93,14 +94,18 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   Schlagwort-Check zusätzlich in Kurz-Updates (`TL_updateShortMessage/ShortChatMessage`) und in beiden
   `getDifference`-Wegen, doppelte Treffer per `SEEN`-Menge verhindert.
   Sprachnachricht-Rückfrage auch in `ChatActivityEnterView.sendMessageInternal` (Vorschau, `audioToSend`).
+  Sprachnachricht zuschneiden im Rückfrage-Fenster (`SparkUi.confirmVoice` mit Dokument, `MediaController.cropOpusFile`,
+  Wellenform/Dauer neu).
+  Etappe 5: `SparkOnlineLog` (SQLite `sparkgram_online_<account>.db`, 30 Tage, Hooks: `TL_updateUserStatus` und
+  `putUser` nur für Kontakte), `SparkOnlineLogActivity` (Profil-Menü 915), `SparkSearchActivity`
+  (lokal: Nutzer/Chats im Speicher, lokale + frühere Namen via `SparkNameHistory.search`; online: `resolveUsername`
+  bzw. `users.getUsers` mit access_hash 0, nur auf Knopfdruck).
 
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Weiterleiten ohne Limit, schneller markieren / Auswahl-Limit, Bild-Link kopieren.
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
 - **Etappe 4 Rest:** automatisch übersetzen, Senden über eigenen Bot.
-- **Etappe 5:** Online-Protokoll (echte Zeiten; „kürzlich“ getrennt markiert, fließt nicht in
-  „zuletzt aktiv gesehen“ ein), Suche nach Name/ID. (Lokale Namen, Ortszeit, Schlagwort-Alarm: erledigt.)
 - **Etappe 6:** Sticker/Packs herunterladen, fremde Sticker ins eigene Pack, alle Sticker eines Chats,
   unbegrenzte Favoriten + Ordner, Sprachnachrichten speichern/erneut senden, Galerie-Knopf im QR-Scanner.
 - **Etappe 7:** Chat-Anzahl, Ordner „Gelöschte Chats“, Ungelesen pro Konto, mehr Anheften (lokal),

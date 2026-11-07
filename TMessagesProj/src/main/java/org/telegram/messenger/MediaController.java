@@ -4728,8 +4728,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
             // Sparkgram: optional erst anhoeren / verwerfen (neuer Aufnahme-Weg V2)
             final int sparkAccount = recordingCurrentAccount;
             final File sparkFile = file;
+            final TLRPC.TL_document sparkDoc = recordingAudio;
             if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_VOICE)) {
-                AndroidUtilities.runOnUIThread(() -> org.telegram.ui.spark.SparkUi.confirmVoice(sparkFile.getAbsolutePath(),
+                AndroidUtilities.runOnUIThread(() -> org.telegram.ui.spark.SparkUi.confirmVoice(sparkFile.getAbsolutePath(), sparkDoc,
                     () -> SendMessagesHelper.getInstance(sparkAccount).sendMessage(params),
                     () -> {
                         AutoDeleteMediaTask.unlockFile(sparkFile);
@@ -5470,7 +5471,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                             final int sparkAccount = recordingCurrentAccount;
                             final File sparkFile = recordingAudioFileToSend;
                             if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_VOICE)) {
-                                AndroidUtilities.runOnUIThread(() -> org.telegram.ui.spark.SparkUi.confirmVoice(sparkFile.getAbsolutePath(),
+                                AndroidUtilities.runOnUIThread(() -> org.telegram.ui.spark.SparkUi.confirmVoice(sparkFile.getAbsolutePath(), audioToSend,
                                     () -> SendMessagesHelper.getInstance(sparkAccount).sendMessage(params),
                                     () -> {
                                         AutoDeleteMediaTask.unlockFile(sparkFile);

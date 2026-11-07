@@ -41,9 +41,10 @@ public class SparkProfileMenu {
     public static final int ID_ACTIVE = 912;
     public static final int ID_AUTHORS = 913;
     public static final int ID_TRANSLATE_INPUT = 914;
+    public static final int ID_ONLINE_LOG = 915;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_TRANSLATE_INPUT;
+        return id >= ID_COPY_ID && id <= ID_ONLINE_LOG;
     }
 
     public interface Adder {
@@ -102,6 +103,9 @@ public class SparkProfileMenu {
         }
         if (userId != 0 && !self && SparkConfig.get(SparkConfig.TIMEZONES)) {
             list.add(new Entry(ID_TIMEZONE, R.drawable.msg_recent, label(getString(R.string.SparkTimezone), marked)));
+        }
+        if (userId != 0 && !self && SparkConfig.get(SparkConfig.ONLINE_LOG)) {
+            list.add(new Entry(ID_ONLINE_LOG, R.drawable.msg_log, label(getString(R.string.SparkOnlineLog), marked)));
         }
         if (userId != 0 && !self && SparkConfig.get(SparkConfig.NAME_HISTORY)) {
             list.add(new Entry(ID_NAME_HISTORY, R.drawable.msg_log, label(getString(R.string.SparkNameHistory), marked)));
@@ -468,6 +472,9 @@ public class SparkProfileMenu {
     public static void handle(BaseFragment fragment, int id, long userId, long chatId) {
         final int account = fragment.getCurrentAccount();
         switch (id) {
+            case ID_ONLINE_LOG:
+                fragment.presentFragment(new SparkOnlineLogActivity(userId));
+                break;
             case ID_TRANSLATE_INPUT:
                 if (fragment instanceof org.telegram.ui.ChatActivity) {
                     translateInput((org.telegram.ui.ChatActivity) fragment, userId != 0 ? userId : -chatId, false);

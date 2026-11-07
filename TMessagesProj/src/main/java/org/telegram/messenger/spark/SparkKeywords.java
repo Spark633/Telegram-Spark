@@ -196,7 +196,7 @@ public class SparkKeywords {
             String sender = h.senderId != h.dialogId ? org.telegram.ui.spark.SparkNotesActivity.dialogName(account, h.senderId) + ": " : "";
             NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification)
-                .setContentTitle("✦ „" + h.keyword + "“ in " + chatName)
+                .setContentTitle("✦ Schlagwort: „" + h.keyword + "“ in " + chatName)
                 .setContentText(sender + h.text)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(sender + h.text))
                 .setAutoCancel(true)

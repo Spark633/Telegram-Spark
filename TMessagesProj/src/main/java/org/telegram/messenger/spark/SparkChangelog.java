@@ -20,10 +20,14 @@ public class SparkChangelog {
 
     public static final Release[] RELEASES = {
         new Release("0.11", "07.11.2026",
+            "Online-Protokoll: im Profil-Menü sehen, wann jemand online war (Zeiträume mit Dauer); „kürzlich“ & Co. getrennt mit ⚠ markiert",
+            "Suche nach Name, @Benutzername oder ID – auch nach lokalen und früheren Namen (Sparkgram-Einstellungen → Personen)",
+            "Sprachnachrichten direkt im Rückfrage-Fenster zuschneiden (Anfang/Ende), auch ohne Freihand-Aufnahme",
+            "Schlagwort-Benachrichtigung heißt jetzt „✦ Schlagwort: …“",
             "Übersetzen: „Chat übersetzen“ auch ohne Premium – über Google oder mit eigenem DeepL-Schlüssel",
             "Einzelne Nachrichten werden bei gewähltem DeepL ebenfalls über DeepL übersetzt",
             "Eigene Nachricht vor dem Senden übersetzen: Text eintippen → Drei-Punkte-Menü → „Eingabe übersetzen“ (Sprache wird pro Chat gemerkt, mit Rückgängig)",
-            "Schlagwort-Alarm kommt jetzt zuverlässig als normale Handy-Benachrichtigung (auch bei Privatchats, kleinen Gruppen und nachgeladenen Nachrichten)",
+            "Schlagwort-Alarm erkennt jetzt alle Nachrichten (auch Privatchats, kleine Gruppen und nachgeladene Nachrichten)",
             "Sprachnachrichten: Rückfrage jetzt auch beim Senden aus der Vorschau (freihändig aufgenommen / zugeschnitten)",
             "Mitglieder & Aktivität: Anzeige bleibt oben stehen, alle Mitglieder werden komplett geladen",
             "Admins anzeigen: anonyme Admins werden mit „· anonym“ markiert",

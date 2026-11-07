@@ -77,6 +77,8 @@ public class SparkConfig {
     public static final String TRANSLATE_FREE = "translateFree";
     // eigene Nachricht vor dem Senden uebersetzen (Chat-Menue)
     public static final String TRANSLATE_OWN = "translateOwn";
+    // Online-Protokoll (Status-Wechsel aufzeichnen)
+    public static final String ONLINE_LOG = "onlineLog";
     // Schlagwort-Alarm
     public static final String KEYWORDS = "keywords";
     // Kleine Markierung an allen Sparkgram-Funktionen
@@ -191,6 +193,7 @@ public class SparkConfig {
             case KEYWORDS:
             case TRANSLATE_FREE:
             case TRANSLATE_OWN:
+            case ONLINE_LOG:
             case LOCAL_NAMES:
             case TIMEZONES:
             case NAME_HISTORY:

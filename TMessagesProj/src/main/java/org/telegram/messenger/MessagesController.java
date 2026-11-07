@@ -6848,6 +6848,9 @@ public class MessagesController extends BaseController implements NotificationCe
             return false;
         }
         org.telegram.messenger.spark.SparkNameHistory.get(currentAccount).onUser(user); // Sparkgram: Namensverlauf
+        if (!fromCache && !user.min && user.contact && user.status != null) {
+            org.telegram.messenger.spark.SparkOnlineLog.get(currentAccount).onStatus(user.id, user.status); // Sparkgram: Online-Protokoll
+        }
         fromCache = fromCache && user.id / 1000 != 333 && user.id != 777000;
         TLRPC.User oldUser = users.get(user.id);
         if (oldUser == user && !force) {
@@ -19991,6 +19994,7 @@ public class MessagesController extends BaseController implements NotificationCe
                             currentUser.id = update.user_id;
                             currentUser.status = update.status;
                         }
+                        org.telegram.messenger.spark.SparkOnlineLog.get(currentAccount).onStatus(update.user_id, update.status); // Sparkgram: Online-Protokoll
                         TLRPC.User toDbUser = new TLRPC.TL_user();
                         toDbUser.id = update.user_id;
                         toDbUser.status = update.status;

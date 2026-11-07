@@ -110,6 +110,25 @@ public class SparkNameHistory {
         }
     }
 
+    /** Personen, die einen Namen/Benutzernamen mit diesem Text hatten (userId -> Treffer). */
+    public HashMap<Long, String> search(String query, int limit) {
+        HashMap<Long, String> map = new HashMap<>();
+        if (TextUtils.isEmpty(query)) return map;
+        String like = "%" + query.replace("%", "").replace("_", "") + "%";
+        try (Cursor c = helper.getReadableDatabase().rawQuery("SELECT user_id, value, kind FROM names WHERE value LIKE ? ORDER BY last_seen DESC LIMIT " + limit,
+                new String[]{like})) {
+            while (c.moveToNext()) {
+                long uid = c.getLong(0);
+                if (!map.containsKey(uid)) {
+                    map.put(uid, (c.getInt(2) == KIND_USERNAME ? "@" : "") + c.getString(1));
+                }
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+        return map;
+    }
+
     /** Alle bekannten Werte einer Person, neueste zuerst. */
     public ArrayList<Item> history(long userId, int kind) {
         ArrayList<Item> list = new ArrayList<>();
