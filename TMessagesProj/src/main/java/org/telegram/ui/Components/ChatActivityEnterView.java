@@ -238,6 +238,7 @@ public class ChatActivityEnterView extends FrameLayout implements
 {
 
     private boolean sparkConfirmBypass; // Sparkgram: Rueckfrage bereits bestaetigt
+    private boolean sparkVoicePreview; // Sparkgram: Vorschau wurde statt Rueckfrage geoeffnet
 
 
     private int commonInputType;
@@ -947,6 +948,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                     return;
                 }
 
+                sparkVoicePreview = false; // Sparkgram
                 delegate.needStartRecordAudio(1);
                 startedDraggingX = -1;
                 TL_stories.StoryItem storyItem = delegate != null ? delegate.getReplyToStory() : null;
@@ -3151,6 +3153,19 @@ public class ChatActivityEnterView extends FrameLayout implements
                                     AlertsCreator.ensurePaidMessageConfirmation(currentAccount, dialog_id, 1, payStars -> {
                                         sendMessageInternal(true, 0, 0, payStars, false);
                                     });
+                                    return true;
+                                }
+                                // Sparkgram: beim Loslassen erst in Telegrams Vorschau (anhoeren, zuschneiden, senden/verwerfen)
+                                if (recordingAudioVideo && !isInScheduleMode() && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_VOICE)) {
+                                    if (sendButtonVisible) {
+                                        calledRecordRunnable = true;
+                                    }
+                                    sparkVoicePreview = true;
+                                    MediaController.getInstance().toggleRecordingPause(voiceOnce);
+                                    delegate.needStartRecordAudio(0);
+                                    if (slideText != null) {
+                                        slideText.setEnabled(false);
+                                    }
                                     return true;
                                 }
                                 if (recordingAudioVideo && isInScheduleMode()) {
@@ -7304,7 +7319,9 @@ public class ChatActivityEnterView extends FrameLayout implements
                 return;
             }
             // Sparkgram: Rueckfrage auch beim Senden aus der Vorschau (freihaendig aufgenommen)
-            if (audioToSend != null && videoToSendMessageObject == null && !sparkConfirmBypass && parentActivity != null
+            final boolean sparkFromPreview = sparkVoicePreview;
+            sparkVoicePreview = false;
+            if (audioToSend != null && videoToSendMessageObject == null && !sparkConfirmBypass && !sparkFromPreview && parentActivity != null
                     && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_VOICE)) {
                 org.telegram.ui.ActionBar.AlertDialog.Builder sb = new org.telegram.ui.ActionBar.AlertDialog.Builder(parentActivity);
                 sb.setTitle(org.telegram.ui.spark.SparkUi.mark("Sprachnachricht senden?"));

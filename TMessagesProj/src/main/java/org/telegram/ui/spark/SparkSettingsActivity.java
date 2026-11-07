@@ -83,6 +83,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_TRANSLATE_OWN = 63;
     private static final int ID_ONLINE_LOG = 64;
     private static final int ID_SEARCH = 65;
+    private static final int ID_DELETED_NAMES = 66;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -150,6 +151,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asHeader(getString(R.string.SparkHeaderPeople)));
         items.add(UItem.asButton(ID_SEARCH, R.drawable.msg_search, getString(R.string.SparkSearch)));
         items.add(check(ID_ONLINE_LOG, R.string.SparkOnlineLogToggle, SparkConfig.ONLINE_LOG));
+        items.add(check(ID_DELETED_NAMES, R.string.SparkDeletedNamesToggle, SparkConfig.DELETED_NAMES));
         items.add(UItem.asShadow(getString(R.string.SparkOnlineLogInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderTranslate)));
@@ -312,6 +314,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_TRANSLATE_FREE: toggle(SparkConfig.TRANSLATE_FREE); break;
             case ID_TRANSLATE_OWN: toggle(SparkConfig.TRANSLATE_OWN); break;
             case ID_ONLINE_LOG: toggle(SparkConfig.ONLINE_LOG); break;
+            case ID_DELETED_NAMES: toggle(SparkConfig.DELETED_NAMES); break;
             case ID_SEARCH: presentFragment(new SparkSearchActivity()); break;
             case ID_TRANSLATE_PROVIDER: {
                 int p = org.telegram.messenger.spark.SparkTranslate.provider();

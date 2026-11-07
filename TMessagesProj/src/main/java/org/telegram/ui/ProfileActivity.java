@@ -360,6 +360,19 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private String nameTextViewRightDrawableContentDescription = null;
     private String nameTextViewRightDrawable2ContentDescription = null;
     private SimpleTextView[] onlineTextView = new SimpleTextView[4];
+    private SimpleTextView sparkSeenView; // Sparkgram: "zuletzt echt gesehen" unter dem Status
+
+    // Sparkgram: Zeile unter dem Status mitbewegen (zentriert, blendet beim Einklappen/Aufziehen aus)
+    private void sparkUpdateSeenView() {
+        if (sparkSeenView == null || onlineTextView[1] == null) return;
+        if (sparkSeenView.getVisibility() != View.VISIBLE) return;
+        float off = (onlineTextView[1].getMeasuredWidth() - sparkSeenView.getMeasuredWidth()) / 2f;
+        sparkSeenView.setTranslationX(onlineTextView[1].getTranslationX() + off);
+        sparkSeenView.setTranslationY(onlineTextView[1].getTranslationY());
+        float f = Utilities.clamp01((calculateHeaderExtraDiff() - 0.6f) / 0.4f);
+        if (isPulledDown || mediaHeaderVisible) f = 0;
+        sparkSeenView.setAlpha(onlineTextView[1].getAlpha() * f);
+    }
     private AudioPlayerAlert.ClippingTextViewSwitcher mediaCounterTextView;
     private RLottieImageView writeButton;
     private AnimatorSet writeButtonAnimation;
@@ -5659,11 +5672,13 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     public void setAlpha(float alpha) {
                         super.setAlpha(alpha);
                         checkPhotoDescriptionAlpha();
+                        sparkUpdateSeenView();
                     }
 
                     @Override
                     public void setTranslationY(float translationY) {
                         super.setTranslationY(translationY);
+                        sparkUpdateSeenView();
                         lastRatingViewTranslationYOffset = getRatingViewTranslationYOffset();
                         onlineTextView[2].setTranslationY(translationY);
                         onlineTextView[3].setTranslationY(translationY);
@@ -5675,6 +5690,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     @Override
                     public void setTranslationX(float translationX) {
                         super.setTranslationX(translationX);
+                        sparkUpdateSeenView();
                         lastRatingViewTranslationXOffset = getRatingViewTranslationXOffset();
                         onlineTextView[2].setTranslationX(translationX);
                         onlineTextView[3].setTranslationX(translationX);
@@ -5716,6 +5732,16 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             avatarContainer2.addView(onlineTextView[a], LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 109 - (a == 1 || a == 2 || a == 3 ? 4 : 0), (a == 1 || a == 2 || a == 3 ? -2 : 0), (a == 0 ? rightMargin - (hasTitleExpanded ? 10 : 0) : 8) - (a == 1 || a == 2 || a == 3 ? 4 : 0), 0));
         }
         checkPhotoDescriptionAlpha();
+        // Sparkgram: "zuletzt echt gesehen" (aus dem Online-Protokoll) unter dem Status
+        sparkSeenView = new SimpleTextView(context);
+        sparkSeenView.setTextSizePx(dp(12.5f));
+        sparkSeenView.setTextColor(applyPeerColor(getThemedColor(Theme.key_actionBarDefaultSubtitle), true, null));
+        sparkSeenView.setGravity(Gravity.LEFT);
+        sparkSeenView.setPadding(AndroidUtilities.dp(4), AndroidUtilities.dp(2), AndroidUtilities.dp(4), AndroidUtilities.dp(2));
+        sparkSeenView.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        sparkSeenView.setVisibility(View.GONE);
+        sparkSeenView.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> sparkUpdateSeenView());
+        avatarContainer2.addView(sparkSeenView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 109 - 4, -2 + 19, 8 - 4, 0));
         avatarContainer2.addView(animatedStatusView);
 
         ratingView = new StarRatingView(context);
@@ -11519,6 +11545,20 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         onlineTextView[1].setTextColor(applyPeerColor(getThemedColor(key), true, isOnline[0]));
                     }
                 }
+            }
+            // Sparkgram: bei verborgenem Status die echte letzte Zeit aus dem Online-Protokoll zeigen
+            if (sparkSeenView != null) {
+                String seen = null;
+                if (!isOnline[0] && user.status != null && (user.status instanceof TLRPC.TL_userStatusRecently || user.status instanceof TLRPC.TL_userStatusLastWeek || user.status instanceof TLRPC.TL_userStatusLastMonth)
+                        && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.ONLINE_LOG)) {
+                    long t = org.telegram.messenger.spark.SparkOnlineLog.get(currentAccount).lastReal(user.id);
+                    if (t > 0) {
+                        seen = "✦ zuletzt echt gesehen: " + org.telegram.messenger.spark.SparkOnlineLog.relative(t);
+                    }
+                }
+                sparkSeenView.setText(seen == null ? "" : seen);
+                sparkSeenView.setVisibility(seen == null ? View.GONE : View.VISIBLE);
+                sparkUpdateSeenView();
             }
             hasCustomPhoto = user.photo != null && user.photo.personal;
             try {

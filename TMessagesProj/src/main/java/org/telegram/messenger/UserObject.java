@@ -76,6 +76,13 @@ public class UserObject {
 
     @NonNull
     public static String getUserName(TLRPC.User user) {
+        if (user != null && isDeleted(user) && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.DELETED_NAMES)) {
+            // Sparkgram: bei geloeschten Konten den zuletzt bekannten Namen zeigen
+            String sparkOld = org.telegram.messenger.spark.SparkNameHistory.get(UserConfig.selectedAccount).lastKnown(user.id);
+            if (sparkOld != null) {
+                return sparkOld + " (gelöscht)";
+            }
+        }
         if (user == null || isDeleted(user)) {
             return LocaleController.getString(R.string.HiddenName);
         }

@@ -68,7 +68,7 @@ public class SparkNameHistory {
 
     /** Wird bei jedem bekannten Nutzer-Update aufgerufen (aus MessagesController.putUser). */
     public void onUser(TLRPC.User user) {
-        if (user == null || user.min || user.id <= 0 || !SparkConfig.get(SparkConfig.NAME_HISTORY)) {
+        if (user == null || user.min || user.id <= 0 || user.deleted || !SparkConfig.get(SparkConfig.NAME_HISTORY)) {
             return;
         }
         final String username = UserObject.getPublicUsername(user);
@@ -108,6 +108,32 @@ public class SparkNameHistory {
             v.put("first_seen", now);
             db.insertWithOnConflict("names", null, v, SQLiteDatabase.CONFLICT_IGNORE);
         }
+    }
+
+    // userId -> letzter bekannter Name ("" = keiner), fuer geloeschte Konten
+    private final HashMap<Long, String> lastNameCache = new HashMap<>();
+
+    /** Letzter bekannter Name (+ @Benutzername) einer Person, z. B. fuer geloeschte Konten. null wenn unbekannt. */
+    public String lastKnown(long userId) {
+        synchronized (lastNameCache) {
+            String c = lastNameCache.get(userId);
+            if (c != null) return c.isEmpty() ? null : c;
+        }
+        String name = null, un = null;
+        try (Cursor c = helper.getReadableDatabase().rawQuery("SELECT kind, value FROM names WHERE user_id = ? ORDER BY last_seen DESC",
+                new String[]{String.valueOf(userId)})) {
+            while (c.moveToNext()) {
+                if (c.getInt(0) == KIND_NAME && name == null) name = c.getString(1);
+                if (c.getInt(0) == KIND_USERNAME && un == null) un = c.getString(1);
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+        String result = name != null ? name + (un != null ? " (@" + un + ")" : "") : un != null ? "@" + un : null;
+        synchronized (lastNameCache) {
+            lastNameCache.put(userId, result == null ? "" : result);
+        }
+        return result;
     }
 
     /** Personen, die einen Namen/Benutzernamen mit diesem Text hatten (userId -> Treffer). */

@@ -155,6 +155,33 @@ public class SparkOnlineLog {
         return list;
     }
 
+    /** Letzte echte Zeit (online gesehen bzw. „zuletzt online um“), 0 wenn keine. */
+    public long lastReal(long userId) {
+        try (Cursor c = helper.getReadableDatabase().rawQuery("SELECT MAX(time) FROM ev WHERE user_id = ? AND kind IN (1, 2)",
+                new String[]{String.valueOf(userId)})) {
+            if (c.moveToFirst()) {
+                return c.getLong(0);
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+        return 0;
+    }
+
+    /** "heute 14:20", "gestern 09:12" oder "05.11. 22:10". */
+    public static String relative(long sec) {
+        java.util.Calendar now = java.util.Calendar.getInstance();
+        java.util.Calendar c = java.util.Calendar.getInstance();
+        c.setTimeInMillis(sec * 1000);
+        String time = new java.text.SimpleDateFormat("HH:mm", java.util.Locale.GERMANY).format(c.getTime());
+        int dDays = now.get(java.util.Calendar.DAY_OF_YEAR) - c.get(java.util.Calendar.DAY_OF_YEAR);
+        if (now.get(java.util.Calendar.YEAR) == c.get(java.util.Calendar.YEAR)) {
+            if (dDays == 0) return "heute " + time;
+            if (dDays == 1) return "gestern " + time;
+        }
+        return new java.text.SimpleDateFormat("dd.MM.", java.util.Locale.GERMANY).format(c.getTime()) + " " + time;
+    }
+
     public void clear(long userId) {
         synchronized (last) {
             last.remove(userId);

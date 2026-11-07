@@ -100,6 +100,12 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   `putUser` nur für Kontakte), `SparkOnlineLogActivity` (Profil-Menü 915), `SparkSearchActivity`
   (lokal: Nutzer/Chats im Speicher, lokale + frühere Namen via `SparkNameHistory.search`; online: `resolveUsername`
   bzw. `users.getUsers` mit access_hash 0, nur auf Knopfdruck).
+  Sprachnachricht: beim Loslassen (CONFIRM_VOICE) `MediaController.toggleRecordingPause` → Telegrams Vorschau
+  (wie der Paid-Message-Weg in `ChatActivityEnterView`), Flag `sparkVoicePreview` verhindert doppelte Rückfrage.
+  Das Fenster in `SparkUi.confirmVoice` (mit Reglern) bleibt für die übrigen Sendewege.
+  Profil: `sparkSeenView` unter `onlineTextView[1]` (folgt Translation/Alpha über deren Overrides),
+  `SparkOnlineLog.lastReal`/`relative`. Gelöschte Konten: `UserObject.getUserName` → `SparkNameHistory.lastKnown`
+  (Schalter `DELETED_NAMES`; gelöschte Konten werden nicht mehr in den Verlauf geschrieben).
 
 ## Roadmap (offen)
 

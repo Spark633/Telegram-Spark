@@ -79,6 +79,8 @@ public class SparkConfig {
     public static final String TRANSLATE_OWN = "translateOwn";
     // Online-Protokoll (Status-Wechsel aufzeichnen)
     public static final String ONLINE_LOG = "onlineLog";
+    // geloeschte Konten: zuletzt bekannten Namen zeigen
+    public static final String DELETED_NAMES = "deletedNames";
     // Schlagwort-Alarm
     public static final String KEYWORDS = "keywords";
     // Kleine Markierung an allen Sparkgram-Funktionen
@@ -194,6 +196,7 @@ public class SparkConfig {
             case TRANSLATE_FREE:
             case TRANSLATE_OWN:
             case ONLINE_LOG:
+            case DELETED_NAMES:
             case LOCAL_NAMES:
             case TIMEZONES:
             case NAME_HISTORY:

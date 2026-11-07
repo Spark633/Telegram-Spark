@@ -11772,7 +11772,8 @@
     <string name="SparkSearch">Suche nach Name / ID</string>
     <string name="SparkOnlineLog">Online-Protokoll</string>
     <string name="SparkOnlineLogToggle">Online-Protokoll aufzeichnen</string>
-    <string name="SparkOnlineLogInfo">Zeichnet auf, wann Personen online waren (im Profil-Menü → Online-Protokoll). Erfasst wird nur, was Telegram dir ohnehin meldet. „Kürzlich“ und andere verborgene Angaben werden getrennt markiert und zählen nicht als „gesehen“. Wird 30 Tage aufbewahrt und bleibt auf dem Gerät.</string>
+    <string name="SparkDeletedNamesToggle">Gelöschte Konten: früheren Namen zeigen</string>
+    <string name="SparkOnlineLogInfo">Online-Protokoll: zeichnet auf, wann Personen online waren (Profil-Menü → Online-Protokoll). Zeigt Telegram nur „kürzlich“, steht die letzte echte Zeit unter dem Status. Erfasst wird nur, was Telegram dir ohnehin meldet; „kürzlich“ &amp; Co. zählen nicht als „gesehen“. 30 Tage, nur auf dem Gerät.\n\nGelöschte Konten: zeigt den Namen, den Sparkgram vorher von der Person kannte (erst ab Installation erfasst).</string>
     <string name="SparkHeaderTranslate">Übersetzen</string>
     <string name="SparkTranslateFreeToggle">Chats übersetzen ohne Premium</string>
     <string name="SparkTranslateOwnToggle">Eigene Nachricht vor dem Senden übersetzen</string>
