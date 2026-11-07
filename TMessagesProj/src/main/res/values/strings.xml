@@ -11781,7 +11781,6 @@
     <string name="SparkMutePeopleToggle">Einzelne Personen stummschalten</string>
     <string name="SparkOrgInfo">Statistiken zeigen, wie viele Chats, Gruppen, Kanäle und Bots du hast. Textvorlagen fügst du im Chat-Menü ein. Eine Person stummschalten: im Profil-Menü – dann kommen von ihr keine Benachrichtigungen mehr, auch nicht in Gruppen (die Gruppe selbst bleibt laut).</string>
     <string name="SparkHeaderPeople">Personen</string>
-    <string name="SparkSearch">Suche nach Name / ID</string>
     <string name="SparkOnlineLog">Online-Protokoll</string>
     <string name="SparkOnlineLogToggle">Online-Protokoll aufzeichnen</string>
     <string name="SparkDeletedNamesToggle">Gelöschte Konten: früheren Namen zeigen</string>

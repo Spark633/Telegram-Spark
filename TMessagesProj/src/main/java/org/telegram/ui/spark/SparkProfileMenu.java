@@ -47,9 +47,10 @@ public class SparkProfileMenu {
     public static final int ID_COLLECTION = 918;
     public static final int ID_MUTE_PERSON = 919;
     public static final int ID_TEMPLATES = 920;
+    public static final int ID_TRANSLATE_CHAT = 921;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_TEMPLATES;
+        return id >= ID_COPY_ID && id <= ID_TRANSLATE_CHAT;
     }
 
     public interface Adder {
@@ -154,6 +155,9 @@ public class SparkProfileMenu {
             }
             if (SparkConfig.get(SparkConfig.STICKER_TOOLS)) {
                 list.add(new Entry(ID_CHAT_STICKERS, R.drawable.msg_sticker, label("Sticker dieses Chats", marked)));
+            }
+            if (SparkConfig.get(SparkConfig.TRANSLATE_FREE)) {
+                list.add(new Entry(ID_TRANSLATE_CHAT, R.drawable.msg_translate, label("Chat übersetzen an/aus", marked)));
             }
             if (SparkConfig.get(SparkConfig.TRANSLATE_OWN)) {
                 list.add(new Entry(ID_TRANSLATE_INPUT, R.drawable.msg_translate, label(getString(R.string.SparkTranslateInput), marked)));
@@ -436,6 +440,34 @@ public class SparkProfileMenu {
         return (ChatObject.isChannel(chat) ? "-100" : "-") + chatId;
     }
 
+    /** Aelteste Nachricht des Chats bei Telegram erfragen und dorthin springen (IDs beginnen nicht immer bei 1). */
+    private static void jumpToFirst(org.telegram.ui.ChatActivity chat, long dialogId) {
+        TLRPC.TL_messages_getHistory req = new TLRPC.TL_messages_getHistory();
+        req.peer = chat.getMessagesController().getInputPeer(dialogId);
+        req.offset_id = 1;
+        req.add_offset = -10;
+        req.limit = 10;
+        final AlertDialog progress = new AlertDialog(chat.getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER);
+        progress.showDelayed(400);
+        chat.getConnectionsManager().sendRequest(req, (res, err) -> AndroidUtilities.runOnUIThread(() -> {
+            try { progress.dismiss(); } catch (Throwable ignore) {}
+            int first = 0;
+            if (res instanceof TLRPC.messages_Messages) {
+                TLRPC.messages_Messages m = (TLRPC.messages_Messages) res;
+                chat.getMessagesController().putUsers(m.users, false);
+                chat.getMessagesController().putChats(m.chats, false);
+                for (TLRPC.Message msg : m.messages) {
+                    if (msg.id > 0 && (first == 0 || msg.id < first)) first = msg.id;
+                }
+            }
+            if (first == 0) {
+                BulletinFactory.of(chat).createErrorBulletin("Erste Nachricht nicht gefunden" + (err != null ? " (" + err.text + ")" : "")).show();
+                return;
+            }
+            chat.scrollToMessageId(first, 0, true, 0, true, 0);
+        }));
+    }
+
     /** Vorlage auswaehlen und ins Eingabefeld einfuegen. */
     private static void insertTemplate(org.telegram.ui.ChatActivity chat) {
         java.util.ArrayList<String> list = org.telegram.messenger.spark.SparkTemplates.list();
@@ -526,6 +558,14 @@ public class SparkProfileMenu {
                     m ? "✦ Keine Benachrichtigungen mehr von dieser Person – in allen Chats" : "✦ Benachrichtigungen von dieser Person wieder an").show();
                 break;
             }
+            case ID_TRANSLATE_CHAT: {
+                long did = userId != 0 ? userId : -chatId;
+                org.telegram.messenger.TranslateController tc = org.telegram.messenger.MessagesController.getInstance(account).getTranslateController();
+                boolean on = !tc.isTranslatingDialog(did);
+                tc.sparkForceTranslate(did, on);
+                BulletinFactory.of(fragment).createSimpleBulletin(R.raw.info, on ? "✦ Chat wird übersetzt (in " + tc.getDialogTranslateTo(did) + ")" : "✦ Übersetzung aus").show();
+                break;
+            }
             case ID_TEMPLATES:
                 if (fragment instanceof org.telegram.ui.ChatActivity) {
                     insertTemplate((org.telegram.ui.ChatActivity) fragment);
@@ -573,7 +613,7 @@ public class SparkProfileMenu {
                 break;
             case ID_JUMP_FIRST:
                 if (fragment instanceof org.telegram.ui.ChatActivity) {
-                    ((org.telegram.ui.ChatActivity) fragment).scrollToMessageId(1, 0, false, 0, true, 0);
+                    jumpToFirst((org.telegram.ui.ChatActivity) fragment, userId != 0 ? userId : -chatId);
                 }
                 break;
             case ID_DELETE_OWN:

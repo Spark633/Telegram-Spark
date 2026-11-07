@@ -426,14 +426,15 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
         if (error != null) {
             items.add(UItem.asShadow(error));
         }
+        // Knopf oben, damit er bei langen Listen sichtbar ist
+        if (!endReached && !loading) {
+            items.add(UItem.asButton(ID_MORE, R.drawable.msg_retry, mode == MODE_ACTIVE ? "Weiter durchsuchen (+1000 Nachrichten)" : "Weiter zurück durchsuchen (+1000)").accent());
+        }
         for (int i = 0; i < rows.size(); i++) {
             Row r = rows.get(i);
             String title = (mode == MODE_ACTIVE ? status(r.userId) : "✍️ ") + r.name;
             String value = r.count == 0 ? "0× · still" : r.count + "× · zuletzt " + df.format(new Date(r.lastDate * 1000L));
             items.add(UItem.asButton(ID_BASE + i, title, value));
-        }
-        if (!endReached && !loading) {
-            items.add(UItem.asButton(ID_MORE, R.drawable.msg_retry, mode == MODE_ACTIVE ? "Weiter durchsuchen (+1000 Nachrichten)" : "Weiter zurück durchsuchen (+1000)").accent());
         }
         if (mode == MODE_ACTIVE && membersHidden) {
             items.add(UItem.asShadow("Die Mitgliederliste dieser Gruppe ist verborgen – die Liste stammt deshalb nur aus dem Verlauf, stille Mitleser fehlen."));

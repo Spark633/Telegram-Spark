@@ -19,6 +19,13 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.13", "07.11.2026",
+            "„Zur ersten Nachricht“ funktioniert jetzt in allen Chats (fragt die älteste Nachricht direkt ab)",
+            "Chat-Menü: „Chat übersetzen an/aus“ – übersetzt jeden Chat, auch wenn Telegram ihn nicht als fremdsprachig erkennt",
+            "„Sticker dieses Chats“ als Raster mit den echten Stickern (Anzahl als Zahl, lange drücken = mehr)",
+            "Mitglieder & Aktivität: „Weiter durchsuchen“ steht jetzt oben",
+            "Suche nach Name/ID wieder entfernt"
+        ),
         new Release("0.12", "07.11.2026",
             "Einstellungen: Punkte mit Unterpunkten lassen sich auf- und zuklappen (Zeile antippen; Schalter = an/aus)",
             "Übersetzen: Nachrichten und ganze Chats lassen sich wieder übersetzen (Telegram hatte die Funktion für Sparkgram abgeschaltet)",

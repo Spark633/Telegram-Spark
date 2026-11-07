@@ -126,6 +126,10 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   `NotificationsController.processNewMessages`, Profil-Menü 919), `SparkTemplates` + `SparkTemplatesActivity`
   (Chat-Menü 920), `SparkStatsActivity` (Chat-Anzahl & Co.).
 
+- 0.13 (in Arbeit): Suche entfernt (auf Wunsch), Sprung zur ersten Nachricht per `getHistory(offset_id=1,
+  add_offset=-10)`, `TranslateController.sparkForceTranslate` (Chat-Menü 921), Sticker-Raster in
+  `SparkChatStickersActivity`, Weiter-Knopf oben in `SparkGroupListActivity`.
+
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).

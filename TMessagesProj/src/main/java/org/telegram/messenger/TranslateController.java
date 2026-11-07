@@ -235,6 +235,16 @@ public class TranslateController extends BaseController {
         return isFeatureAvailable(dialogId) && translatingDialogs.get(dialogId, isChatAutoTranslated(dialogId));
     }
 
+    // Sparkgram: Chat-Uebersetzung erzwingen, auch wenn Telegram den Chat nicht als fremdsprachig erkannt hat
+    public void sparkForceTranslate(long dialogId, boolean on) {
+        if (on) {
+            translatableDialogs.add(dialogId);
+            hideTranslateDialogs.remove(dialogId);
+        }
+        toggleTranslatingDialog(dialogId, on);
+        NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.dialogIsTranslatable, dialogId);
+    }
+
     public void toggleTranslatingDialog(long dialogId) {
         toggleTranslatingDialog(dialogId, !isTranslatingDialog(dialogId));
     }
