@@ -41,6 +41,8 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   `javac -Xmaxerrs 1000000 -XDshould-stop.at=FLOW -sourcepath . <Dateien>` und Meldungen wie
   „cannot find symbol / is ambiguous“ ignorieren (fehlende Bibliotheken). Echte Fehler (z. B.
   „effectively final“) fallen sonst unter das 100-Fehler-Limit!
+  Achtung: „cannot find symbol“ kann bei eigenen Dateien echt sein (z. B. fehlender
+  `import static org.telegram.messenger.LocaleController.getString;`) – neue Dateien darauf prüfen.
 
 ## Wichtige Erkenntnisse
 
