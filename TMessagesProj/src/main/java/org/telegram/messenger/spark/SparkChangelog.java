@@ -27,7 +27,9 @@ public class SparkChangelog {
             "Ortszeit in der Info-Zeile kurz: Uhrzeit und UTC-Zeitzone",
             "Gruppen: „Admins anzeigen“ mit Titeln (auch als normales Mitglied)",
             "Gruppen: „Aktive Mitglieder“ aus dem Verlauf mit Anzahl, zuletzt aktiv und ✅/❌ noch in der Gruppe",
-            "Kanäle: „Bekannte Autoren“ aus signierten Beiträgen"
+            "Kanäle: „Bekannte Autoren“ aus signierten Beiträgen",
+            "Aktive Mitglieder: stille Mitglieder aus der Mitgliederliste ergänzen (wenn sichtbar)",
+            "Schlagwort-Alarm: Benachrichtigung bei Schlagwörtern, Trefferliste mit Sprung zur Nachricht"
         ),
         new Release("0.9", "07.11.2026",
             "Notiz direkt im Profil als eigene Zeile – zeigt die Notiz oder „Notiz hinzufügen“",

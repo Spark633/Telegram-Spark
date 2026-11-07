@@ -11764,5 +11764,9 @@
     <string name="SparkActiveMembers">Aktive Mitglieder</string>
     <string name="SparkKnownAuthors">Bekannte Autoren</string>
     <string name="SparkKnownAuthorsToggle">Bekannte Autoren (Kanäle)</string>
+    <string name="SparkKeywords">Schlagwort-Alarm</string>
+    <string name="SparkKeywordsToggle">Bei Schlagwörtern benachrichtigen</string>
+    <string name="SparkKeywordsOpen">Schlagwörter und Treffer</string>
+    <string name="SparkKeywordsInfo">Meldet eingehende Nachrichten mit deinen Schlagwörtern – in allen Chats und Gruppen, auch stummgeschalteten. Treffer werden gesammelt, Antippen springt zur Nachricht.</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

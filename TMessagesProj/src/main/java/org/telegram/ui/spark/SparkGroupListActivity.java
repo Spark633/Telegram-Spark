@@ -39,6 +39,8 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
 
     private static final int ID_BASE = 1000;
     private static final int ID_MORE = 1;
+    private static final int ID_MEMBERS = 2;
+    private static final int MEMBER_LIMIT = 2000;
     private static final String FEATURE = "historyScan";
     private static final int PER_HOUR = 400;
     private static final int PAGES_PER_STEP = 10;
@@ -61,6 +63,10 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
     private int scanned;
     private int offsetId;
     private String error;
+    private boolean membersLoading;
+    private boolean membersLoaded;
+    private boolean membersHidden;
+    private int membersOffset;
     private final SimpleDateFormat df = new SimpleDateFormat("dd.MM.yy HH:mm", Locale.GERMANY);
 
     public SparkGroupListActivity(long chatId, int mode) {
@@ -231,6 +237,85 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
         }));
     }
 
+    // ------------------------------------------------------------------ normale Mitgliederliste
+
+    /** Laedt die Mitgliederliste (falls sichtbar) und ergaenzt stille Mitglieder. */
+    private void loadMembers() {
+        if (membersLoading || membersLoaded) {
+            return;
+        }
+        TLRPC.Chat chat = getMessagesController().getChat(chatId);
+        if (chat == null) {
+            return;
+        }
+        if (!ChatObject.isChannel(chat)) {
+            TLRPC.ChatFull full = getMessagesController().getChatFull(chatId);
+            if (full != null && full.participants != null) {
+                for (TLRPC.ChatParticipant p : full.participants.participants) {
+                    addMember(p.user_id);
+                }
+            }
+            membersLoaded = true;
+            Collections.sort(rows, (a, b) -> b.count - a.count);
+            update();
+            return;
+        }
+        long wait = SparkRateLimit.waitTime(FEATURE, PER_HOUR);
+        if (wait > 0) {
+            error = "Telegram bremst gerade – bitte später erneut versuchen.";
+            update();
+            return;
+        }
+        membersLoading = true;
+        TLRPC.TL_channels_getParticipants req = new TLRPC.TL_channels_getParticipants();
+        req.channel = MessagesController.getInputChannel(chat);
+        req.filter = new TLRPC.TL_channelParticipantsRecent();
+        req.offset = membersOffset;
+        req.limit = 200;
+        SparkRateLimit.use(FEATURE);
+        getConnectionsManager().sendRequest(req, (response, err) -> AndroidUtilities.runOnUIThread(() -> {
+            SparkRateLimit.onError(FEATURE, err);
+            membersLoading = false;
+            if (response instanceof TLRPC.channels_ChannelParticipants) {
+                TLRPC.channels_ChannelParticipants res = (TLRPC.channels_ChannelParticipants) response;
+                getMessagesController().putUsers(res.users, false);
+                for (TLRPC.ChannelParticipant p : res.participants) {
+                    long uid = p.peer != null ? org.telegram.messenger.DialogObject.getPeerDialogId(p.peer) : 0;
+                    addMember(uid);
+                }
+                membersOffset += res.participants.size();
+                if (res.participants.isEmpty() || membersOffset >= Math.min(MEMBER_LIMIT, res.count)) {
+                    membersLoaded = true;
+                    if (membersOffset == 0) {
+                        membersHidden = true;
+                    }
+                } else {
+                    AndroidUtilities.runOnUIThread(this::loadMembers, 700); // naechste Seite
+                }
+            } else {
+                membersLoaded = true;
+                membersHidden = true;
+            }
+            Collections.sort(rows, (a, b) -> b.count - a.count);
+            update();
+        }));
+    }
+
+    private void addMember(long uid) {
+        if (uid <= 0) {
+            return;
+        }
+        SparkMembership.markIn(currentAccount, chatId, uid);
+        String key = String.valueOf(uid);
+        if (!byKey.containsKey(key)) {
+            Row r = new Row();
+            r.userId = uid;
+            r.name = SparkNotesActivity.dialogName(currentAccount, uid);
+            byKey.put(key, r);
+            rows.add(r);
+        }
+    }
+
     private void count(String key, long uid, String name, int date) {
         Row r = byKey.get(key);
         if (r == null) {
@@ -285,19 +370,31 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
         for (int i = 0; i < rows.size(); i++) {
             Row r = rows.get(i);
             String title = (mode == MODE_ACTIVE ? status(r.userId) : "✍️ ") + r.name;
-            String value = r.count + "× · zuletzt " + df.format(new Date(r.lastDate * 1000L));
+            String value = r.count == 0 ? "0× · still" : r.count + "× · zuletzt " + df.format(new Date(r.lastDate * 1000L));
             items.add(UItem.asButton(ID_BASE + i, title, value));
         }
         if (!endReached && !loading) {
             items.add(UItem.asButton(ID_MORE, R.drawable.msg_retry, "Weiter zurück durchsuchen (+1000)").accent());
         }
+        if (mode == MODE_ACTIVE) {
+            if (membersHidden) {
+                items.add(UItem.asShadow("Die Mitgliederliste dieser Gruppe ist verborgen – stille Mitleser kann Telegram hier nicht liefern."));
+            } else if (!membersLoaded) {
+                items.add(UItem.asButton(ID_MEMBERS, R.drawable.msg_groups, membersLoading ? "Mitgliederliste wird geladen …" : "Stille Mitglieder aus der Mitgliederliste ergänzen").accent());
+            }
+        }
         items.add(UItem.asShadow(mode == MODE_ACTIVE
-            ? "Zeigt, wer im durchsuchten Verlauf geschrieben hat. ✅ noch in der Gruppe · ❌ nicht mehr · ❔ unbekannt. Stille Mitleser erscheinen nicht."
+            ? "Zeigt, wer im durchsuchten Verlauf geschrieben hat, und – falls die Mitgliederliste sichtbar ist – auch stille Mitglieder (bis " + MEMBER_LIMIT + "). ✅ noch in der Gruppe · ❌ nicht mehr · ❔ unbekannt."
             : "Bei Kanälen mit Signatur steht bei jedem Beitrag, wer ihn gepostet hat. Das ist meist nur ein Teil der Admins."));
     }
 
     @Override
     protected void onClick(UItem item, View view, int position, float x, float y) {
+        if (item.id == ID_MEMBERS) {
+            loadMembers();
+            update();
+            return;
+        }
         if (item.id == ID_MORE) {
             error = null;
             scanStep(PAGES_PER_STEP);

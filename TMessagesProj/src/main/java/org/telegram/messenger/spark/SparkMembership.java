@@ -125,6 +125,13 @@ public class SparkMembership {
         }
     }
 
+    /** Person steht sicher in der Mitgliederliste -> ohne Extra-Anfrage als "drin" markieren. */
+    public static void markIn(int account, long chatId, long userId) {
+        if (userId > 0) {
+            setState(account, chatId, userId, IN, System.currentTimeMillis());
+        }
+    }
+
     /** Pruefung einer bestimmten Person in einer Gruppe anstossen (z. B. aus der Liste "Aktive Mitglieder"). */
     public static void requestCheck(int account, long chatId, long userId, long lastActive) {
         if (!enabled() || userId <= 0 || userId == UserConfig.getInstance(account).getClientUserId()) {

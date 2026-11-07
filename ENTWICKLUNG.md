@@ -77,7 +77,9 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   lokale Namen, Ortszeit, Weiterleiten ohne Absender, Einstellungen pro Konto.
 - 0.10 (in Arbeit): Sprachnachricht-Rückfrage auch im V2-Aufnahmeweg (MediaController.completeAudioRecordingV2),
   Weiterleitungszähler, Kontoname als Untertitel, kurze Notiz-Vorschau, kurze Ortszeit,
-  Etappe 2 teilweise: Admins anzeigen, Aktive Mitglieder (✅/❌), Bekannte Autoren (`SparkGroupListActivity`).
+  Etappe 2 teilweise: Admins anzeigen, Aktive Mitglieder (✅/❌), Bekannte Autoren (`SparkGroupListActivity`),
+  stille Mitglieder aus Mitgliederliste, Schlagwort-Alarm (`SparkKeywords`, `SparkKeywordsActivity`,
+  Einhängepunkt neben `rememberRaw` in `MessagesController`).
 
 ## Roadmap (offen)
 
@@ -86,7 +88,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - **Etappe 4:** Übersetzen (einzeln, ganzer Chat, automatisch, eigene vor dem Senden; Google + DeepL),
   Senden über eigenen Bot.
 - **Etappe 5:** Online-Protokoll (echte Zeiten; „kürzlich“ getrennt markiert, fließt nicht in
-  „zuletzt aktiv gesehen“ ein), Suche nach Name/ID, Schlagwort-Alarm mit Sprung.
+  „zuletzt aktiv gesehen“ ein), Suche nach Name/ID. (Lokale Namen, Ortszeit, Schlagwort-Alarm: erledigt.)
 - **Etappe 6:** Sticker/Packs herunterladen, fremde Sticker ins eigene Pack, alle Sticker eines Chats,
   unbegrenzte Favoriten + Ordner, Sprachnachrichten speichern/erneut senden, Galerie-Knopf im QR-Scanner.
 - **Etappe 7:** Chat-Anzahl, Ordner „Gelöschte Chats“, Ungelesen pro Konto, mehr Anheften (lokal),

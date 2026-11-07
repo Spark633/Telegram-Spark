@@ -18539,6 +18539,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
                 if (!(baseUpdate instanceof TL_update.TL_updateNewScheduledMessage)) {
                     org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).rememberRaw(message); // Sparkgram
+                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); // Sparkgram: Schlagwort-Alarm
                 }
                 if (message instanceof TLRPC.TL_messageEmpty) {
                     continue;

@@ -73,6 +73,8 @@ public class SparkConfig {
     public static final String GROUP_ADMINS = "groupAdmins";
     public static final String GROUP_ACTIVE = "groupActive";
     public static final String CHANNEL_AUTHORS = "channelAuthors";
+    // Schlagwort-Alarm
+    public static final String KEYWORDS = "keywords";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
@@ -182,6 +184,7 @@ public class SparkConfig {
             case GROUP_ADMINS:
             case GROUP_ACTIVE:
             case CHANNEL_AUTHORS:
+            case KEYWORDS:
             case LOCAL_NAMES:
             case TIMEZONES:
             case NAME_HISTORY:
