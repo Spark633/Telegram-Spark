@@ -11712,5 +11712,8 @@
     <string name="SparkMemberInterval">Aktive Teilnehmer prüfen alle</string>
     <string name="SparkMemberInfo">Neben dem Namen erscheint „🚪 raus“, wenn der Absender die Gruppe verlassen hat. Geprüft wird beim Anzeigen der Nachrichten; wer gerade mitschreibt, wird im eingestellten Abstand geprüft. Im Zweifel erscheint keine Markierung statt einer falschen.</string>
     <string name="SparkMemberLeftHint">%1$s ist nicht mehr in der Gruppe</string>
+    <string name="SparkInfoRowToggle">Info-Zeile direkt im Profil</string>
+    <string name="SparkInfoRowLabel">Sparkgram-Infos · tippen für mehr, halten kopiert ID</string>
+    <string name="SparkPhotoDateToggle">Datum und Uhrzeit bei Profilbildern</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

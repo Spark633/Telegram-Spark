@@ -19,6 +19,10 @@ public class SparkConfig {
     // Profil-Werkzeuge im Profilmenue, jeweils einzeln schaltbar
     public static final String PROFILE_COPY_ID = "profileCopyId";
     public static final String PROFILE_INFO = "profileInfo";
+    // Kurze Info-Zeile direkt im Profil / in den Gruppen-Infos
+    public static final String PROFILE_INFO_ROW = "profileInfoRow";
+    // Datum/Uhrzeit beim Ansehen von Profilbildern
+    public static final String PHOTO_DATE = "photoDate";
     public static final String PROFILE_CLONE = "profileClone";
     // Mehrere eigene Profilbilder auf einmal loeschen
     public static final String PHOTO_MANAGER = "photoManager";
@@ -78,6 +82,8 @@ public class SparkConfig {
             case NOTES:
             case PROFILE_COPY_ID:
             case PROFILE_INFO:
+            case PROFILE_INFO_ROW:
+            case PHOTO_DATE:
             case PROFILE_CLONE:
             case PHOTO_MANAGER:
             case SPARK_MARKER:

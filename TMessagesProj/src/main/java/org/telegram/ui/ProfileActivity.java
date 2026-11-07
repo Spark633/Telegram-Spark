@@ -620,6 +620,34 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private int numberSectionRow;
     private int numberRow;
     public int birthdayRow;
+    private int sparkInfoRow = -1; // Sparkgram: Info-Zeile
+    private TextView sparkPhotoDateView; // Sparkgram: Datum des angezeigten Profilbilds
+
+    private void sparkUpdatePhotoDate() {
+        if (sparkPhotoDateView == null || avatarsViewPager == null) {
+            return;
+        }
+        if (!isPulledDown || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.PHOTO_DATE)) {
+            sparkPhotoDateView.setVisibility(View.GONE);
+            return;
+        }
+        int real = avatarsViewPager.getRealPosition();
+        TLRPC.Photo photo = avatarsViewPager.getPhoto(real);
+        int date = photo != null ? photo.date : 0;
+        if (date == 0 && real == 0) {
+            if (userId != 0 && userInfo != null && userInfo.profile_photo != null) {
+                date = userInfo.profile_photo.date;
+            } else if (chatId != 0 && chatInfo != null && chatInfo.chat_photo != null) {
+                date = chatInfo.chat_photo.date;
+            }
+        }
+        if (date <= 0) {
+            sparkPhotoDateView.setVisibility(View.GONE);
+            return;
+        }
+        sparkPhotoDateView.setText(org.telegram.ui.spark.SparkUi.photoDate(date));
+        sparkPhotoDateView.setVisibility(View.VISIBLE);
+    }
     private int setUsernameRow;
     private int bioRow;
     private int phoneSuggestionSectionRow;
@@ -1948,6 +1976,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     invalidateIndicatorRect(prevPage != realPosition);
                     prevPage = realPosition;
                     updateAvatarItems();
+                    sparkUpdatePhotoDate();
                 }
 
                 @Override
@@ -4671,6 +4700,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 Bundle args = new Bundle();
                 args.putLong("chat_id", userInfo.personal_channel_id);
                 presentFragment(new ChatActivity(args));
+            } else if (position == sparkInfoRow) {
+                org.telegram.ui.spark.SparkProfileMenu.handle(ProfileActivity.this, org.telegram.ui.spark.SparkProfileMenu.ID_INFO, userId, chatId);
             } else if (position == birthdayRow) {
                 if (birthdayEffect != null && birthdayEffect.start()) {
                     return;
@@ -5057,6 +5088,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         participant = visibleChatParticipants.get(position - membersStartRow);
                     }
                     return onMemberClick(participant, true, view);
+                } else if (position == sparkInfoRow) {
+                    org.telegram.ui.spark.SparkProfileMenu.handle(ProfileActivity.this, org.telegram.ui.spark.SparkProfileMenu.ID_COPY_ID, userId, chatId);
+                    return true;
                 } else if (position == birthdayRow) {
                     if (editRow(view, position)) return true;
                     if (userInfo == null) return false;
@@ -5531,6 +5565,15 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
 
         avatarsViewPagerIndicatorView = new PagerIndicatorView(context);
         avatarContainer2.addView(avatarsViewPagerIndicatorView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
+
+        // Sparkgram: Datum/Uhrzeit des Profilbilds in der aufgezogenen Galerie
+        sparkPhotoDateView = new TextView(context);
+        sparkPhotoDateView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+        sparkPhotoDateView.setTextColor(0xFFFFFFFF);
+        sparkPhotoDateView.setPadding(AndroidUtilities.dp(10), AndroidUtilities.dp(4), AndroidUtilities.dp(10), AndroidUtilities.dp(4));
+        sparkPhotoDateView.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(12), 0x66000000));
+        sparkPhotoDateView.setVisibility(View.GONE);
+        avatarContainer2.addView(sparkPhotoDateView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, (AndroidUtilities.statusBarHeight / AndroidUtilities.density) + 56 + 8, 0, 0));
 
         frameLayout.addView(actionBar);
 
@@ -8501,6 +8544,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                             searchItem.setEnabled(false);
                         }
                         isPulledDown = true;
+                        sparkUpdatePhotoDate();
                         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.needCheckSystemBarColors, true);
                         overlaysView.setOverlaysVisible(true, durationFactor);
                         avatarsViewPagerIndicatorView.refreshVisibility(durationFactor);
@@ -8583,6 +8627,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 } else {
                     if (isPulledDown) {
                         isPulledDown = false;
+                        sparkUpdatePhotoDate();
                         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.needCheckSystemBarColors, true);
                         if (otherItem != null) {
                             otherItem.hideSubItem(gallery_menu_save);
@@ -10505,6 +10550,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         numberSectionRow = -1;
         numberRow = -1;
         birthdayRow = -1;
+        sparkInfoRow = -1;
         setUsernameRow = -1;
         bioRow = -1;
         channelRow = -1;
@@ -10779,6 +10825,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         noteRow = rowCount++;
                     }
                 }
+                if (org.telegram.ui.spark.SparkProfileMenu.showInfoRow()) {
+                    sparkInfoRow = rowCount++; // Sparkgram
+                }
                 if (actionsView == null && userId != getUserConfig().getClientUserId()) {
                     notificationsRow = rowCount++;
                 }
@@ -10930,6 +10979,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 } else {
                     emptyRow = rowCount++;
                 }
+            }
+            if (org.telegram.ui.spark.SparkProfileMenu.showInfoRow()) {
+                sparkInfoRow = rowCount++; // Sparkgram
             }
             if (actionsView == null) {
                 if (infoHeaderRow != -1) {
@@ -13520,7 +13572,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     TextDetailCell detailCell = (TextDetailCell) holder.itemView;
                     boolean containsQr = false;
                     boolean containsGift = false;
-                    if (position == birthdayRow) {
+                    if (position == sparkInfoRow) {
+                        detailCell.setTextAndValue(org.telegram.ui.spark.SparkProfileMenu.infoLine(currentAccount, userId, chatId), org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkInfoRowLabel)), false);
+                    } else if (position == birthdayRow) {
                         TLRPC.UserFull userFull = getMessagesController().getUserFull(userId);
                         if (userFull != null && userFull.birthday != null) {
                             final boolean today = BirthdayController.isToday(userFull);
@@ -14349,7 +14403,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         position == faqRow || position == policyRow || position == sendLogsRow || position == sendLastLogsRow ||
                         position == clearLogsRow || position == switchBackendRow || position == setAvatarRow ||
                         position == addToGroupButtonRow || position == premiumRow || position == premiumGiftingRow ||
-                        position == businessRow || position == liteModeRow || position == birthdayRow || position == channelRow ||
+                        position == businessRow || position == liteModeRow || position == birthdayRow || position == sparkInfoRow || position == channelRow ||
                         position == starsRow || position == tonRow || position == linkedCommunityRow;
             }
             if (holder.itemView instanceof UserCell) {
@@ -14378,7 +14432,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             if (position == infoHeaderRow || position == membersHeaderRow || position == settingsSectionRow2 ||
                     position == numberSectionRow || position == helpHeaderRow || position == debugHeaderRow || position == botPermissionsHeader) {
                 return VIEW_TYPE_HEADER;
-            } else if (position == phoneRow || position == locationRow || position == numberRow || position == birthdayRow) {
+            } else if (position == phoneRow || position == locationRow || position == numberRow || position == birthdayRow || position == sparkInfoRow) {
                 return VIEW_TYPE_TEXT_DETAIL;
             } else if (position == usernameRow || position == setUsernameRow) {
                 return VIEW_TYPE_TEXT_DETAIL_MULTILINE;
@@ -15816,6 +15870,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             put(++pointer, bizHoursRow, sparseIntArray);
             put(++pointer, bizLocationRow, sparseIntArray);
             put(++pointer, birthdayRow, sparseIntArray);
+            put(++pointer, sparkInfoRow, sparseIntArray);
             put(++pointer, channelRow, sparseIntArray);
             put(++pointer, botStarsBalanceRow, sparseIntArray);
             put(++pointer, botTonBalanceRow, sparseIntArray);

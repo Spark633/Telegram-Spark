@@ -49,6 +49,8 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_MEMBER_CHECK = 23;
     private static final int ID_MEMBER_HINT = 24;
     private static final int ID_MEMBER_INTERVAL = 25;
+    private static final int ID_INFO_ROW = 26;
+    private static final int ID_PHOTO_DATE = 27;
 
     @Override
     protected CharSequence getTitle() {
@@ -74,6 +76,8 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asHeader(getString(R.string.SparkHeaderProfile)));
         items.add(check(ID_COPY_ID, R.string.SparkCopyIdToggle, SparkConfig.PROFILE_COPY_ID));
         items.add(check(ID_INFO, R.string.SparkInfoToggle, SparkConfig.PROFILE_INFO));
+        items.add(check(ID_INFO_ROW, R.string.SparkInfoRowToggle, SparkConfig.PROFILE_INFO_ROW));
+        items.add(check(ID_PHOTO_DATE, R.string.SparkPhotoDateToggle, SparkConfig.PHOTO_DATE));
         items.add(check(ID_CLONE, R.string.SparkCloneToggle, SparkConfig.PROFILE_CLONE));
         if (SparkConfig.getRaw(SparkConfig.PROFILE_CLONE)) {
             items.add(subCheck(ID_CLONE_NAME, R.string.SparkCloneName, SparkConfig.CLONE_NAME));
@@ -150,6 +154,8 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_MASTER: toggle(SparkConfig.MASTER); break;
             case ID_COPY_ID: toggle(SparkConfig.PROFILE_COPY_ID); break;
             case ID_INFO: toggle(SparkConfig.PROFILE_INFO); break;
+            case ID_INFO_ROW: toggle(SparkConfig.PROFILE_INFO_ROW); break;
+            case ID_PHOTO_DATE: toggle(SparkConfig.PHOTO_DATE); break;
             case ID_CLONE: toggle(SparkConfig.PROFILE_CLONE); break;
             case ID_CLONE_NAME: toggle(SparkConfig.CLONE_NAME); break;
             case ID_CLONE_BIO: toggle(SparkConfig.CLONE_BIO); break;

@@ -14873,8 +14873,20 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             if (avatarsDialogId != 0) {
                 title = DialogObject.getName(avatarsDialogId);
                 ImageLocation imageLocation = imagesArrLocations.get(index);
-                if (imageLocation != null && imageLocation.photo != null) {
-                    actionBarContainer.setSubtitle(LocaleController.formatDateTime(imageLocation.photo.date, true), animated);
+                int sparkDate = imageLocation != null && imageLocation.photo != null ? imageLocation.photo.date : 0;
+                if (sparkDate == 0 && index == 0 && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.PHOTO_DATE)) {
+                    // Sparkgram: Datum des aktuellen Profilbilds aus den Profildaten
+                    if (avatarsDialogId > 0) {
+                        TLRPC.UserFull uf = MessagesController.getInstance(currentAccount).getUserFull(avatarsDialogId);
+                        if (uf != null && uf.profile_photo != null) sparkDate = uf.profile_photo.date;
+                    } else {
+                        TLRPC.ChatFull cf = MessagesController.getInstance(currentAccount).getChatFull(-avatarsDialogId);
+                        if (cf != null && cf.chat_photo != null) sparkDate = cf.chat_photo.date;
+                    }
+                }
+                if (sparkDate > 0) {
+                    actionBarContainer.setSubtitle(org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.PHOTO_DATE)
+                        ? org.telegram.ui.spark.SparkUi.photoDate(sparkDate) : LocaleController.formatDateTime(sparkDate, true), animated);
                 } else {
                     actionBarContainer.setSubtitle("", animated);
                 }

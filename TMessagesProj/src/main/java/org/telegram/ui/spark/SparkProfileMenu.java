@@ -130,6 +130,48 @@ public class SparkProfileMenu {
         fragment.showDialog(builder.create());
     }
 
+    /** Info-Zeile direkt im Profil anzeigen? */
+    public static boolean showInfoRow() {
+        return SparkConfig.get(SparkConfig.PROFILE_INFO_ROW);
+    }
+
+    /** Kurze Zusammenfassung fuer die Info-Zeile im Profil bzw. in den Gruppen-Infos. */
+    public static String infoLine(int account, long userId, long chatId) {
+        MessagesController mc = MessagesController.getInstance(account);
+        StringBuilder sb = new StringBuilder();
+        sb.append("ID ").append(peerId(account, userId, chatId));
+        if (userId != 0) {
+            TLRPC.User user = mc.getUser(userId);
+            TLRPC.UserFull full = mc.getUserFull(userId);
+            if (user != null && user.photo != null && user.photo.dc_id != 0) {
+                sb.append(" · DC").append(user.photo.dc_id);
+            }
+            if (full != null && full.profile_photo != null && full.profile_photo.date > 0) {
+                sb.append(" · Bild seit ").append(LocaleController.formatDateChat(full.profile_photo.date));
+            }
+            if (user != null && user.premium) {
+                sb.append(" · Premium");
+            }
+            if (full != null && full.common_chats_count > 0) {
+                sb.append(" · ").append(full.common_chats_count).append(" gem. Gruppen");
+            }
+        } else {
+            TLRPC.Chat chat = mc.getChat(chatId);
+            TLRPC.ChatFull full = mc.getChatFull(chatId);
+            if (chat != null) {
+                sb.append(ChatObject.getPublicUsername(chat) != null ? " · öffentlich" : " · privat");
+                int members = full != null && full.participants_count > 0 ? full.participants_count : chat.participants_count;
+                if (members > 0) {
+                    sb.append(" · ").append(members).append(" Mitgl.");
+                }
+                if (chat.photo != null && chat.photo.dc_id != 0) {
+                    sb.append(" · DC").append(chat.photo.dc_id);
+                }
+            }
+        }
+        return sb.toString();
+    }
+
     public static String peerId(int account, long userId, long chatId) {
         if (userId != 0) {
             return String.valueOf(userId);

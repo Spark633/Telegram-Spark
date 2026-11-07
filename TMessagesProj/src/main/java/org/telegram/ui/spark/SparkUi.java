@@ -40,6 +40,11 @@ public class SparkUi {
         return sb;
     }
 
+    /** "Profilbild vom 07.11.2026, 14:32" */
+    public static String photoDate(int unixTime) {
+        return "Profilbild vom " + new java.text.SimpleDateFormat("dd.MM.yyyy, HH:mm", java.util.Locale.GERMANY).format(new java.util.Date(unixTime * 1000L));
+    }
+
     /** Laedt ein Bild verkleinert (laengste Seite etwa maxSize Pixel). */
     public static Bitmap decode(String path, int maxSize) {
         if (path == null) {
