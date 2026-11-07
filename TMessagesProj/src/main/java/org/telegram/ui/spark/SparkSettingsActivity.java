@@ -73,7 +73,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     protected void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
         final boolean on = SparkConfig.getRaw(SparkConfig.MASTER);
         items.add(UItem.asRippleCheck(ID_MASTER, getString(R.string.SparkMaster)).setChecked(on));
-        items.add(UItem.asShadow(getString(on ? R.string.SparkMasterInfo : R.string.SparkMasterOffInfo)));
+        items.add(UItem.asShadow(getString(R.string.SparkMasterInfo)));
 
         final int start = items.size();
 
