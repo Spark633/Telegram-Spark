@@ -11761,7 +11761,7 @@
     <string name="SparkForwardNoSenderToggle">Weiterleiten standardmäßig ohne Absender</string>
     <string name="SparkForwardCountToggle">Anzeige, wie oft weitergeleitet</string>
     <string name="SparkAdminsList">Admins anzeigen</string>
-    <string name="SparkActiveMembers">Aktive Mitglieder</string>
+    <string name="SparkActiveMembers">Mitglieder &amp; Aktivität</string>
     <string name="SparkKnownAuthors">Bekannte Autoren</string>
     <string name="SparkKnownAuthorsToggle">Bekannte Autoren (Kanäle)</string>
     <string name="SparkKeywords">Schlagwort-Alarm</string>

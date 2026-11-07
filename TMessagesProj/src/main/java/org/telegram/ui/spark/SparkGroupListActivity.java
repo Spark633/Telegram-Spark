@@ -64,6 +64,7 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
     private int offsetId;
     private String error;
     private boolean membersLoading;
+    private boolean scanStarted;
     private boolean membersLoaded;
     private boolean membersHidden;
     private int membersOffset;
@@ -79,6 +80,8 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
         getNotificationCenter().addObserver(this, NotificationCenter.updateInterfaces);
         if (mode == MODE_ADMINS) {
             loadAdmins();
+        } else if (mode == MODE_ACTIVE) {
+            loadMembers(); // normaler Weg: Mitgliederliste; danach Verlauf fuer Anzahl/zuletzt aktiv
         } else {
             scanStep(PAGES_PER_STEP);
         }
@@ -103,7 +106,7 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
     protected CharSequence getTitle() {
         switch (mode) {
             case MODE_ADMINS: return "Admins";
-            case MODE_ACTIVE: return "Aktive Mitglieder";
+            case MODE_ACTIVE: return "Mitglieder & Aktivität";
             default: return "Bekannte Autoren";
         }
     }
@@ -239,13 +242,22 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
 
     // ------------------------------------------------------------------ normale Mitgliederliste
 
-    /** Laedt die Mitgliederliste (falls sichtbar) und ergaenzt stille Mitglieder. */
+    /** Nach der Mitgliederliste: Verlauf durchsuchen (Anzahl, zuletzt aktiv; bei verborgener Liste die einzige Quelle). */
+    private void afterMembers() {
+        if (!scanStarted) {
+            scanStarted = true;
+            scanStep(PAGES_PER_STEP);
+        }
+    }
+
+    /** Laedt die Mitgliederliste (falls sichtbar). */
     private void loadMembers() {
         if (membersLoading || membersLoaded) {
             return;
         }
         TLRPC.Chat chat = getMessagesController().getChat(chatId);
         if (chat == null) {
+            afterMembers();
             return;
         }
         if (!ChatObject.isChannel(chat)) {
@@ -258,12 +270,14 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
             membersLoaded = true;
             Collections.sort(rows, (a, b) -> b.count - a.count);
             update();
+            afterMembers();
             return;
         }
         long wait = SparkRateLimit.waitTime(FEATURE, PER_HOUR);
         if (wait > 0) {
             error = "Telegram bremst gerade – bitte später erneut versuchen.";
             update();
+            afterMembers();
             return;
         }
         membersLoading = true;
@@ -289,12 +303,14 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
                     if (membersOffset == 0) {
                         membersHidden = true;
                     }
+                    afterMembers();
                 } else {
                     AndroidUtilities.runOnUIThread(this::loadMembers, 700); // naechste Seite
                 }
             } else {
                 membersLoaded = true;
                 membersHidden = true;
+                afterMembers();
             }
             Collections.sort(rows, (a, b) -> b.count - a.count);
             update();
@@ -362,7 +378,12 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
             items.add(UItem.asShadow("Antippen öffnet das Profil."));
             return;
         }
-        String info = scanned + " Nachrichten durchsucht" + (loading ? " …" : "") + (endReached ? " (Anfang erreicht)" : "");
+        String info;
+        if (mode == MODE_ACTIVE && !membersLoaded) {
+            info = "Mitgliederliste wird geladen … " + rows.size();
+        } else {
+            info = (mode == MODE_ACTIVE && !membersHidden ? rows.size() + " Mitglieder · " : "") + scanned + " Nachrichten durchsucht" + (loading ? " …" : "") + (endReached ? " (Anfang erreicht)" : "");
+        }
         items.add(UItem.asHeader(info));
         if (error != null) {
             items.add(UItem.asShadow(error));
@@ -376,25 +397,16 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
         if (!endReached && !loading) {
             items.add(UItem.asButton(ID_MORE, R.drawable.msg_retry, "Weiter zurück durchsuchen (+1000)").accent());
         }
-        if (mode == MODE_ACTIVE) {
-            if (membersHidden) {
-                items.add(UItem.asShadow("Die Mitgliederliste dieser Gruppe ist verborgen – stille Mitleser kann Telegram hier nicht liefern."));
-            } else if (!membersLoaded) {
-                items.add(UItem.asButton(ID_MEMBERS, R.drawable.msg_groups, membersLoading ? "Mitgliederliste wird geladen …" : "Stille Mitglieder aus der Mitgliederliste ergänzen").accent());
-            }
+        if (mode == MODE_ACTIVE && membersHidden) {
+            items.add(UItem.asShadow("Die Mitgliederliste dieser Gruppe ist verborgen – die Liste stammt deshalb nur aus dem Verlauf, stille Mitleser fehlen."));
         }
         items.add(UItem.asShadow(mode == MODE_ACTIVE
-            ? "Zeigt, wer im durchsuchten Verlauf geschrieben hat, und – falls die Mitgliederliste sichtbar ist – auch stille Mitglieder (bis " + MEMBER_LIMIT + "). ✅ noch in der Gruppe · ❌ nicht mehr · ❔ unbekannt."
+            ? "Grundlage ist die Mitgliederliste (bis " + MEMBER_LIMIT + "); der Verlauf ergänzt, wie oft und wann zuletzt jemand geschrieben hat. Ist die Liste verborgen, stammt alles aus dem Verlauf. ✅ noch in der Gruppe · ❌ nicht mehr · ❔ unbekannt."
             : "Bei Kanälen mit Signatur steht bei jedem Beitrag, wer ihn gepostet hat. Das ist meist nur ein Teil der Admins."));
     }
 
     @Override
     protected void onClick(UItem item, View view, int position, float x, float y) {
-        if (item.id == ID_MEMBERS) {
-            loadMembers();
-            update();
-            return;
-        }
         if (item.id == ID_MORE) {
             error = null;
             scanStep(PAGES_PER_STEP);
