@@ -21,7 +21,7 @@ public class SparkChangelog {
     public static final Release[] RELEASES = {
         new Release("0.6", "07.11.2026",
             "Gelöschte Nachrichten bleiben im Chat stehen – roter Balken und rot „🗑 gelöscht“",
-            "Bearbeitungsverlauf: bearbeitete Nachrichten zeigen ✏️, lange drücken → alle Fassungen",
+            "Bearbeitungsverlauf: bearbeitete Nachrichten zeigen ✏️, antippen → alle Fassungen",
             "„Was ist neu?“ in den Sparkgram-Einstellungen, Hinweis nach Updates",
             "Versionsnummern für Sparkgram",
             "Info-Zeile im Profil jetzt untereinander",

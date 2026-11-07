@@ -55,6 +55,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_EDIT_HISTORY = 29;
     private static final int ID_CHANGELOG = 30;
     private static final int ID_WHATS_NEW_HINT = 31;
+    private static final int ID_KEEP_OWN_DELETED = 32;
 
     @Override
     protected CharSequence getTitle() {
@@ -97,6 +98,9 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderMessages)));
         items.add(check(ID_KEEP_DELETED, R.string.SparkKeepDeletedToggle, SparkConfig.KEEP_DELETED));
+        if (SparkConfig.getRaw(SparkConfig.KEEP_DELETED)) {
+            items.add(subCheck(ID_KEEP_OWN_DELETED, R.string.SparkKeepOwnDeletedToggle, SparkConfig.KEEP_OWN_DELETED));
+        }
         items.add(check(ID_EDIT_HISTORY, R.string.SparkEditHistoryToggle, SparkConfig.EDIT_HISTORY));
         items.add(UItem.asShadow(getString(R.string.SparkMessagesInfo)));
 
@@ -192,6 +196,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_INFO_ROW: toggle(SparkConfig.PROFILE_INFO_ROW); break;
             case ID_PHOTO_DATE: toggle(SparkConfig.PHOTO_DATE); break;
             case ID_KEEP_DELETED: toggle(SparkConfig.KEEP_DELETED); break;
+            case ID_KEEP_OWN_DELETED: toggle(SparkConfig.KEEP_OWN_DELETED); break;
             case ID_CHANGELOG: presentFragment(new SparkChangelogActivity()); break;
             case ID_WHATS_NEW_HINT: toggle(SparkConfig.WHATS_NEW_HINT); break;
             case ID_EDIT_HISTORY: toggle(SparkConfig.EDIT_HISTORY); break;

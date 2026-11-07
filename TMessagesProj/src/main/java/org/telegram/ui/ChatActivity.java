@@ -1265,6 +1265,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_WELCOME_REVERT = 116;
     public final static int OPTION_SEND_MONEY = 117;
     public final static int OPTION_SPARK_HISTORY = 900; // Sparkgram
+    public final static int OPTION_SPARK_REMOVE = 901; // Sparkgram
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -31306,6 +31307,12 @@ public class ChatActivity extends BaseFragment implements
                 icons.add(R.drawable.msg_calendar2);
             }
 
+            // Sparkgram: als geloescht markierte Nachricht endgueltig entfernen
+            if (selectedObject != null && org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).isDeleted(selectedObject.getDialogId(), selectedObject.getId())) {
+                items.add(org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkRemoveForever)));
+                options.add(OPTION_SPARK_REMOVE);
+                icons.add(R.drawable.msg_delete);
+            }
             // Sparkgram: Bearbeitungsverlauf
             if (selectedObject != null && org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).hasHistory(selectedObject.getDialogId(), selectedObject.getId())) {
                 items.add(org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkEditHistory)));
@@ -33633,6 +33640,21 @@ public class ChatActivity extends BaseFragment implements
         switch (option) {
             case OPTION_SPARK_HISTORY: {
                 org.telegram.ui.spark.SparkUi.showEditHistory(this, selectedObject);
+                break;
+            }
+            case OPTION_SPARK_REMOVE: {
+                final ArrayList<Integer> ids = new ArrayList<>();
+                if (selectedObjectGroup != null) {
+                    for (MessageObject m : selectedObjectGroup.messages) {
+                        ids.add(m.getId());
+                    }
+                } else {
+                    ids.add(selectedObject.getId());
+                }
+                final long did = selectedObject.getDialogId();
+                org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).forget(did, ids);
+                // nur lokal entfernen (auf dem Server ist die Nachricht ohnehin schon geloescht)
+                getMessagesController().deleteMessages(ids, null, null, did, (int) getTopicId(), false, chatMode, true);
                 break;
             }
             case OPTION_RETRY: {

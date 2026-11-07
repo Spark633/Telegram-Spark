@@ -50,17 +50,19 @@ public class SparkMessageStore {
     private final Helper helper;
     // dialogId -> geloeschte Nachrichten-IDs (Cache fuer die Anzeige)
     private final HashMap<Long, HashSet<Integer>> deleted = new HashMap<>();
+    // dialogId -> selbst geloeschte Nachrichten-IDs
+    private final HashMap<Long, HashSet<Integer>> deletedSelf = new HashMap<>();
     // dialogId -> IDs mit Verlauf
     private final HashMap<Long, HashSet<Integer>> withHistory = new HashMap<>();
 
     private static class Helper extends SQLiteOpenHelper {
         Helper(int account) {
-            super(ApplicationLoader.applicationContext, "sparkgram_messages_" + account + ".db", null, 1);
+            super(ApplicationLoader.applicationContext, "sparkgram_messages_" + account + ".db", null, 2);
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL("CREATE TABLE deleted(dialog_id INTEGER, mid INTEGER, deleted_at INTEGER, PRIMARY KEY(dialog_id, mid))");
+            db.execSQL("CREATE TABLE deleted(dialog_id INTEGER, mid INTEGER, deleted_at INTEGER, by_self INTEGER DEFAULT 0, PRIMARY KEY(dialog_id, mid))");
             db.execSQL("CREATE TABLE known(dialog_id INTEGER, mid INTEGER, text TEXT, edit_date INTEGER, PRIMARY KEY(dialog_id, mid))");
             db.execSQL("CREATE TABLE history(dialog_id INTEGER, mid INTEGER, text TEXT, edit_date INTEGER, saved_at INTEGER)");
             db.execSQL("CREATE INDEX history_idx ON history(dialog_id, mid)");
@@ -68,6 +70,9 @@ public class SparkMessageStore {
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            if (oldVersion < 2) {
+                db.execSQL("ALTER TABLE deleted ADD COLUMN by_self INTEGER DEFAULT 0");
+            }
         }
     }
 
@@ -94,6 +99,33 @@ public class SparkMessageStore {
             }
             cache.put(dialogId, set);
             return set;
+        }
+    }
+
+    public static final int NOT_DELETED = 0;
+    public static final int DELETED_BY_OTHERS = 1;
+    public static final int DELETED_BY_SELF = 2;
+
+    /** 0 = nicht geloescht, 1 = von anderen geloescht, 2 = von dir geloescht. */
+    public int deletedState(long dialogId, int mid) {
+        if (!isDeleted(dialogId, mid)) {
+            return NOT_DELETED;
+        }
+        HashSet<Integer> self;
+        synchronized (deletedSelf) {
+            self = deletedSelf.get(dialogId);
+            if (self == null) {
+                self = new HashSet<>();
+                try (Cursor c = helper.getReadableDatabase().rawQuery("SELECT mid FROM deleted WHERE dialog_id = ? AND by_self = 1", new String[]{String.valueOf(dialogId)})) {
+                    while (c.moveToNext()) {
+                        self.add(c.getInt(0));
+                    }
+                } catch (Exception e) {
+                    FileLog.e(e);
+                }
+                deletedSelf.put(dialogId, self);
+            }
+            return self.contains(mid) ? DELETED_BY_SELF : DELETED_BY_OTHERS;
         }
     }
 
@@ -273,7 +305,36 @@ public class SparkMessageStore {
         return true;
     }
 
+    /**
+     * Eigene Loeschung in Sparkgram. Rueckgabe true = lokal behalten (Telegram loescht nur auf dem Server).
+     */
+    public boolean onOwnDelete(long dialogId, ArrayList<Integer> mids) {
+        if (!SparkConfig.get(SparkConfig.KEEP_DELETED) || !SparkConfig.get(SparkConfig.KEEP_OWN_DELETED) || mids == null || mids.isEmpty() || dialogId == 0) {
+            return false;
+        }
+        for (Integer mid : mids) {
+            if (mid == null || mid <= 0) {
+                return false; // noch nicht gesendete Nachrichten wirklich loeschen
+            }
+        }
+        // sofort im Cache markieren, damit die Anzeige direkt stimmt
+        synchronized (deleted) {
+            HashSet<Integer> set = deleted.get(dialogId);
+            if (set != null) set.addAll(mids);
+        }
+        synchronized (deletedSelf) {
+            HashSet<Integer> set = deletedSelf.get(dialogId);
+            if (set != null) set.addAll(mids);
+        }
+        store(dialogId, new ArrayList<>(mids), true);
+        return true;
+    }
+
     private void store(long dialogId, ArrayList<Integer> mids) {
+        store(dialogId, mids, false);
+    }
+
+    private void store(long dialogId, ArrayList<Integer> mids, boolean bySelf) {
         queue.postRunnable(() -> {
             try {
                 SQLiteDatabase db = helper.getWritableDatabase();
@@ -285,6 +346,7 @@ public class SparkMessageStore {
                         v.put("dialog_id", dialogId);
                         v.put("mid", mid);
                         v.put("deleted_at", now);
+                        v.put("by_self", bySelf ? 1 : 0);
                         db.insertWithOnConflict("deleted", null, v, SQLiteDatabase.CONFLICT_IGNORE);
                     }
                     db.setTransactionSuccessful();
@@ -314,6 +376,12 @@ public class SparkMessageStore {
                 }
                 synchronized (deleted) {
                     HashSet<Integer> set = deleted.get(dialogId);
+                    if (set != null) {
+                        set.removeAll(mids);
+                    }
+                }
+                synchronized (deletedSelf) {
+                    HashSet<Integer> set = deletedSelf.get(dialogId);
                     if (set != null) {
                         set.removeAll(mids);
                     }

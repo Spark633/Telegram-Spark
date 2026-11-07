@@ -18537,10 +18537,11 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             timeString = formatString(R.string.ScheduledTimeApprox, timeString);
         }
         // Sparkgram: geloeschte / bearbeitete Nachrichten kennzeichnen
-        sparkDeletedState = org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).isDeleted(currentMessageObject.getDialogId(), currentMessageObject.getId());
+        final int sparkDelState = org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).deletedState(currentMessageObject.getDialogId(), currentMessageObject.getId());
+        sparkDeletedState = sparkDelState != 0;
         sparkHistoryState = org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).hasHistory(currentMessageObject.getDialogId(), currentMessageObject.getId());
         if (sparkDeletedState) {
-            timeString = "🗑 gelöscht · " + timeString;
+            timeString = (sparkDelState == org.telegram.messenger.spark.SparkMessageStore.DELETED_BY_SELF ? "🗑 von dir gelöscht · " : "🗑 gelöscht · ") + timeString;
         } else if (sparkHistoryState) {
             timeString = "✏️ " + timeString;
         }
@@ -18558,10 +18559,11 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         // Sparkgram: "geloescht" rot einfaerben
         if (sparkDeletedState) {
             CharSequence cs = currentTimeString;
-            int start = cs.toString().indexOf("🗑 gelöscht");
+            String marker = cs.toString().contains("🗑 von dir gelöscht") ? "🗑 von dir gelöscht" : "🗑 gelöscht";
+            int start = cs.toString().indexOf(marker);
             if (start >= 0) {
                 SpannableStringBuilder sb = new SpannableStringBuilder(cs);
-                sb.setSpan(new android.text.style.ForegroundColorSpan(SPARK_DELETED_COLOR), start, start + "🗑 gelöscht".length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                sb.setSpan(new android.text.style.ForegroundColorSpan(SPARK_DELETED_COLOR), start, start + marker.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 currentTimeString = sb;
             }
         }

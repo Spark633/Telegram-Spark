@@ -37,6 +37,8 @@ public class SparkConfig {
     public static final String MEMBER_CHECK_HINT = "memberCheckHint";
     // Geloeschte Nachrichten im Chat behalten und markieren
     public static final String KEEP_DELETED = "keepDeleted";
+    // Auch selbst geloeschte Nachrichten lokal behalten
+    public static final String KEEP_OWN_DELETED = "keepOwnDeleted";
     // Bearbeitungsverlauf speichern
     public static final String EDIT_HISTORY = "editHistory";
     // Nach einem Update einmal "Was ist neu?" anzeigen
@@ -96,6 +98,7 @@ public class SparkConfig {
             case CHAT_MENU:
             case WHATS_NEW_HINT:
             case KEEP_DELETED:
+            case KEEP_OWN_DELETED:
             case EDIT_HISTORY:
             case MEMBER_CHECK:
             case MEMBER_CHECK_HINT:

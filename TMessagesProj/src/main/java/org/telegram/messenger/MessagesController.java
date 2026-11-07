@@ -9317,6 +9317,7 @@ public class MessagesController extends BaseController implements NotificationCe
         }
         ArrayList<Integer> toSend = null;
         long channelId;
+        boolean sparkKeepLocal = false;
         if (taskId == 0) {
             if (dialogId != 0 && DialogObject.isChatDialog(dialogId)) {
                 TLRPC.Chat chat = getChat(-dialogId);
@@ -9342,6 +9343,9 @@ public class MessagesController extends BaseController implements NotificationCe
                 getMessagesStorage().markMessagesAsDeleted(dialogId, messages, true, false, ChatActivity.MODE_QUICK_REPLIES, topicId);
             } else if (welcomeMessages) {
                 getMessagesStorage().markMessagesAsDeleted(dialogId, messages, true, false, ChatActivity.MODE_WELCOME_MESSAGES, topicId);
+            } else if (!cacheOnly && encryptedChat == null && org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).onOwnDelete(dialogId, messages)) {
+                // Sparkgram: eigene Loeschung nur auf dem Server, lokal mit Markierung behalten
+                sparkKeepLocal = true;
             } else {
                 if (channelId == 0) {
                     for (int a = 0; a < messages.size(); a++) {
@@ -9357,7 +9361,11 @@ public class MessagesController extends BaseController implements NotificationCe
                 getMessagesStorage().markMessagesAsDeleted(dialogId, messages, true, forAll, 0, topicId);
                 getMessagesStorage().updateDialogsWithDeletedMessages(dialogId, channelId, messages, null);
             }
-            getNotificationCenter().postNotificationName(NotificationCenter.messagesDeleted, messages, channelId, scheduled, false, movedToScheduled, movedToScheduledMessageId);
+            if (sparkKeepLocal) {
+                getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_NAME);
+            } else {
+                getNotificationCenter().postNotificationName(NotificationCenter.messagesDeleted, messages, channelId, scheduled, false, movedToScheduled, movedToScheduledMessageId);
+            }
         } else {
             if (taskRequest instanceof TLRPC.TL_channels_deleteMessages) {
                 channelId = ((TLRPC.TL_channels_deleteMessages) taskRequest).channel.channel_id;
