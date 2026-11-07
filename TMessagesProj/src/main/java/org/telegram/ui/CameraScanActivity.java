@@ -152,6 +152,11 @@ public class CameraScanActivity extends BaseFragment {
 
     private boolean needGalleryButton;
 
+    // Sparkgram: Galerie-Knopf auch in QR-Scannern, in denen Telegram ihn ausblendet
+    private boolean sparkGallery() {
+        return currentType != TYPE_MRZ && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.QR_GALLERY);
+    }
+
     private int currentType;
 
     public static final int TYPE_MRZ = 0;
@@ -378,7 +383,7 @@ public class CameraScanActivity extends BaseFragment {
                     recognizedMrzView.layout(0, getMeasuredHeight() - recognizedMrzView.getMeasuredHeight(), getMeasuredWidth(), getMeasuredHeight());
 
                     int x;
-                    if (needGalleryButton) {
+                    if (needGalleryButton || sparkGallery()) {
                         x = width / 2 + dp(35);
                     } else {
                         x = width / 2 - flashButton.getMeasuredWidth() / 2;
@@ -668,7 +673,7 @@ public class CameraScanActivity extends BaseFragment {
             }
             viewGroup.addView(recognizedMrzView);
 
-            if (needGalleryButton) {
+            if (needGalleryButton || sparkGallery()) {
                 galleryButton = new ImageView(context);
                 galleryButton.setScaleType(ImageView.ScaleType.CENTER);
                 galleryButton.setImageResource(R.drawable.qr_gallery);

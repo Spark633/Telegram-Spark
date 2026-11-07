@@ -117,14 +117,17 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   `update()` hält die Liste oben. Freihand-Rückfrage entfernt (Telegrams Vorschau reicht).
   Etappe 3 Rest: `SparkConfig.selectLimit()` (ChatActivity, 2 Stellen), `deleteMessages` teilt >100 auf
   (Weiterleiten teilt Telegram selbst), `ChatActivity.sparkSelectRange` (Langdruck im Auswahlmodus).
+  Bot: `SparkBot` (Bot API sendMessage, Token global in Prefs, Chat-ID -100… für Kanäle/Supergruppen,
+  Antwort nur in Supergruppen/Kanälen, da dort die IDs gleich sind), Chat-Menü 916.
+  Etappe 6: `SparkCollection` (SQLite, ganze Nachricht serialisiert, Senden als Kopie ohne Absender →
+  Original muss noch existieren), `SparkCollectionActivity`, `SparkMedia` (Nachrichtenmenü `OPTION_SPARK_MEDIA` 904),
+  `SparkChatStickersActivity` (Chat-Menü 917), QR-Galerie: `CameraScanActivity.sparkGallery()`.
 
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
-- **Etappe 4 Rest:** automatisch übersetzen, Senden über eigenen Bot.
-- **Etappe 6:** Sticker/Packs herunterladen, fremde Sticker ins eigene Pack, alle Sticker eines Chats,
-  unbegrenzte Favoriten + Ordner, Sprachnachrichten speichern/erneut senden, Galerie-Knopf im QR-Scanner.
+- **Etappe 4 Rest:** automatisch übersetzen.
 - **Etappe 7:** Chat-Anzahl, Ordner „Gelöschte Chats“, Ungelesen pro Konto, mehr Anheften (lokal),
   einzelne stummschalten, In-App-Benachrichtigungen, Export PDF/HTML, Bookmarks mit Schlagwörtern,
   Duplikate in „Gespeichertes“, RP: Persona pro Chat, Textvorlagen, Zitieren mit Formatierung,

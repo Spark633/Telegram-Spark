@@ -85,6 +85,13 @@ public class SparkConfig {
     public static final String SELECT_NO_LIMIT = "selectNoLimit";
     // Bereich markieren: lange druecken waehrend der Auswahl markiert alles dazwischen
     public static final String SELECT_RANGE = "selectRange";
+    // Etappe 6: Medien
+    public static final String QR_GALLERY = "qrGallery";
+    public static final String STICKER_TOOLS = "stickerTools";
+    public static final String COLLECTION = "collection";
+    public static final String VOICE_TOOLS = "voiceTools";
+    // Senden ueber eigenen Bot
+    public static final String BOT_SEND = "botSend";
 
     public static int selectLimit() {
         return get(SELECT_NO_LIMIT) ? 1000 : 100;
@@ -207,6 +214,11 @@ public class SparkConfig {
             case DELETED_NAMES:
             case SELECT_NO_LIMIT:
             case SELECT_RANGE:
+            case QR_GALLERY:
+            case STICKER_TOOLS:
+            case COLLECTION:
+            case VOICE_TOOLS:
+            case BOT_SEND:
             case LOCAL_NAMES:
             case TIMEZONES:
             case NAME_HISTORY:

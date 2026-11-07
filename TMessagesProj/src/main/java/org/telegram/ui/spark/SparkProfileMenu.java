@@ -42,9 +42,12 @@ public class SparkProfileMenu {
     public static final int ID_AUTHORS = 913;
     public static final int ID_TRANSLATE_INPUT = 914;
     public static final int ID_ONLINE_LOG = 915;
+    public static final int ID_BOT_SEND = 916;
+    public static final int ID_CHAT_STICKERS = 917;
+    public static final int ID_COLLECTION = 918;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_ONLINE_LOG;
+        return id >= ID_COPY_ID && id <= ID_COLLECTION;
     }
 
     public interface Adder {
@@ -134,6 +137,15 @@ public class SparkProfileMenu {
         }
         // nur im geoeffneten Chat
         if (fragment instanceof org.telegram.ui.ChatActivity) {
+            if (SparkConfig.get(SparkConfig.COLLECTION)) {
+                list.add(new Entry(ID_COLLECTION, R.drawable.msg_saved, label("Sammlung", marked)));
+            }
+            if (SparkConfig.get(SparkConfig.BOT_SEND) && !android.text.TextUtils.isEmpty(org.telegram.messenger.spark.SparkBot.token())) {
+                list.add(new Entry(ID_BOT_SEND, R.drawable.msg_bot, label("Über Bot senden", marked)));
+            }
+            if (SparkConfig.get(SparkConfig.STICKER_TOOLS)) {
+                list.add(new Entry(ID_CHAT_STICKERS, R.drawable.msg_sticker, label("Sticker dieses Chats", marked)));
+            }
             if (SparkConfig.get(SparkConfig.TRANSLATE_OWN)) {
                 list.add(new Entry(ID_TRANSLATE_INPUT, R.drawable.msg_translate, label(getString(R.string.SparkTranslateInput), marked)));
             }
@@ -472,6 +484,17 @@ public class SparkProfileMenu {
     public static void handle(BaseFragment fragment, int id, long userId, long chatId) {
         final int account = fragment.getCurrentAccount();
         switch (id) {
+            case ID_COLLECTION:
+                fragment.presentFragment(new SparkCollectionActivity(userId != 0 ? userId : -chatId));
+                break;
+            case ID_BOT_SEND:
+                if (fragment instanceof org.telegram.ui.ChatActivity) {
+                    SparkMedia.sendViaBot((org.telegram.ui.ChatActivity) fragment, userId != 0 ? userId : -chatId);
+                }
+                break;
+            case ID_CHAT_STICKERS:
+                fragment.presentFragment(new SparkChatStickersActivity(userId != 0 ? userId : -chatId));
+                break;
             case ID_ONLINE_LOG:
                 fragment.presentFragment(new SparkOnlineLogActivity(userId));
                 break;

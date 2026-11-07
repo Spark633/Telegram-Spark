@@ -1268,6 +1268,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_SPARK_REMOVE = 901; // Sparkgram
     public final static int OPTION_SPARK_DETAILS = 902; // Sparkgram
     public final static int OPTION_SPARK_REPEAT = 903; // Sparkgram
+    public final static int OPTION_SPARK_MEDIA = 904; // Sparkgram
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -31361,6 +31362,11 @@ public class ChatActivity extends BaseFragment implements
                     options.add(OPTION_SPARK_REPEAT);
                     icons.add(R.drawable.msg_retry);
                 }
+                if (org.telegram.ui.spark.SparkMedia.hasActions(selectedObject)) {
+                    items.add(org.telegram.ui.spark.SparkUi.mark("Medien …"));
+                    options.add(OPTION_SPARK_MEDIA);
+                    icons.add(R.drawable.msg_download);
+                }
                 if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MSG_DETAILS)) {
                     items.add(org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkMessageDetails)));
                     options.add(OPTION_SPARK_DETAILS);
@@ -33700,6 +33706,10 @@ public class ChatActivity extends BaseFragment implements
         switch (option) {
             case OPTION_SPARK_HISTORY: {
                 org.telegram.ui.spark.SparkUi.showEditHistory(this, selectedObject);
+                break;
+            }
+            case OPTION_SPARK_MEDIA: {
+                org.telegram.ui.spark.SparkMedia.showActions(this, selectedObject);
                 break;
             }
             case OPTION_SPARK_DETAILS: {

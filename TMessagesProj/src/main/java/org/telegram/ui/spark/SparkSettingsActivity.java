@@ -86,6 +86,13 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_DELETED_NAMES = 66;
     private static final int ID_SELECT_NO_LIMIT = 67;
     private static final int ID_SELECT_RANGE = 68;
+    private static final int ID_QR_GALLERY = 69;
+    private static final int ID_STICKER_TOOLS = 70;
+    private static final int ID_VOICE_TOOLS = 71;
+    private static final int ID_COLLECTION = 72;
+    private static final int ID_COLLECTION_OPEN = 73;
+    private static final int ID_BOT_SEND = 74;
+    private static final int ID_BOT_TOKEN = 75;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -177,6 +184,24 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_SELECT_NO_LIMIT, R.string.SparkSelectNoLimitToggle, SparkConfig.SELECT_NO_LIMIT));
         items.add(check(ID_SELECT_RANGE, R.string.SparkSelectRangeToggle, SparkConfig.SELECT_RANGE));
         items.add(UItem.asShadow(getString(R.string.SparkMsgToolsInfo)));
+
+        items.add(UItem.asHeader("Medien"));
+        items.add(expandable(ID_COLLECTION, R.string.SparkCollectionToggle, SparkConfig.COLLECTION, 1));
+        if (open(SparkConfig.COLLECTION)) {
+            items.add(UItem.asButton(ID_COLLECTION_OPEN, R.drawable.msg_saved, "Sammlung öffnen"));
+        }
+        items.add(check(ID_STICKER_TOOLS, R.string.SparkStickerToolsToggle, SparkConfig.STICKER_TOOLS));
+        items.add(check(ID_VOICE_TOOLS, R.string.SparkVoiceToolsToggle, SparkConfig.VOICE_TOOLS));
+        items.add(check(ID_QR_GALLERY, R.string.SparkQrGalleryToggle, SparkConfig.QR_GALLERY));
+        items.add(UItem.asShadow(getString(R.string.SparkMediaInfo)));
+
+        items.add(UItem.asHeader("Bot"));
+        items.add(expandable(ID_BOT_SEND, R.string.SparkBotSendToggle, SparkConfig.BOT_SEND, 1));
+        if (open(SparkConfig.BOT_SEND)) {
+            String bn = org.telegram.messenger.spark.SparkBot.botName();
+            items.add(UItem.asButton(ID_BOT_TOKEN, "      Bot-Token", android.text.TextUtils.isEmpty(org.telegram.messenger.spark.SparkBot.token()) ? "fehlt" : (bn != null ? bn : "gesetzt")));
+        }
+        items.add(UItem.asShadow(getString(R.string.SparkBotInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderPeople)));
         items.add(UItem.asButton(ID_SEARCH, R.drawable.msg_search, getString(R.string.SparkSearch)));
@@ -330,6 +355,13 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_DELETE_OWN_ALL: toggle(SparkConfig.DELETE_OWN_ALL); break;
             case ID_SELECT_NO_LIMIT: toggle(SparkConfig.SELECT_NO_LIMIT); break;
             case ID_SELECT_RANGE: toggle(SparkConfig.SELECT_RANGE); break;
+            case ID_QR_GALLERY: toggle(SparkConfig.QR_GALLERY); break;
+            case ID_STICKER_TOOLS: toggle(SparkConfig.STICKER_TOOLS); break;
+            case ID_VOICE_TOOLS: toggle(SparkConfig.VOICE_TOOLS); break;
+            case ID_COLLECTION: expand(SparkConfig.COLLECTION); break;
+            case ID_COLLECTION_OPEN: presentFragment(new SparkCollectionActivity(0)); break;
+            case ID_BOT_SEND: expand(SparkConfig.BOT_SEND); break;
+            case ID_BOT_TOKEN: SparkMedia.editBotToken(this, () -> listView.adapter.update(true)); break;
             case ID_CONFIRM_STICKER: toggle(SparkConfig.CONFIRM_STICKER); break;
             case ID_CONFIRM_GIF: toggle(SparkConfig.CONFIRM_GIF); break;
             case ID_CONFIRM_VOICE: toggle(SparkConfig.CONFIRM_VOICE); break;

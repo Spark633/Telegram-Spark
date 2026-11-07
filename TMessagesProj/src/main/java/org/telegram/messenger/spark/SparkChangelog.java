@@ -28,7 +28,12 @@ public class SparkChangelog {
             "Mitglieder & Aktivität: Pause nach je 1000 Nachrichten ist zurück, die Liste bleibt oben",
             "Sprachnachrichten: keine extra Rückfrage mehr beim Senden aus der Freihand-Vorschau",
             "Bis zu 1000 Nachrichten markieren – Weiterleiten und Löschen laufen automatisch in 100er-Paketen",
-            "Bereich markieren: während der Auswahl eine andere Nachricht lange drücken markiert alles dazwischen"
+            "Bereich markieren: während der Auswahl eine andere Nachricht lange drücken markiert alles dazwischen",
+            "Über eigenen Bot senden: Bot-Token eintragen, dann im Chat-Menü „Über Bot senden“",
+            "Sammlung: unbegrenzt Sticker, GIFs und Sprachnachrichten mit eigenen Ordnern – im Chat antippen = senden",
+            "„✦ Medien …“ an Nachrichten: speichern (Downloads), ohne Absender weitersenden, Pack-Link kopieren, ganzes Pack herunterladen, in eigenes Pack übernehmen",
+            "„Sticker dieses Chats“: alle im Chat benutzten Packs mit Anzahl",
+            "Galerie-Knopf im QR-Scanner"
         ),
         new Release("0.11", "07.11.2026",
             "Online-Protokoll: im Profil-Menü sehen, wann jemand online war (Zeiträume mit Dauer); „kürzlich“ & Co. getrennt mit ⚠ markiert",
