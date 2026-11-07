@@ -148,8 +148,18 @@ public class SparkKeywords {
         if (found == null) {
             return;
         }
+        long did = MessageObject.getDialogId(m);
+        // gleiche Nachricht kann ueber mehrere Wege kommen (Update, Kurz-Update, Nachladen)
+        synchronized (SEEN) {
+            if (!SEEN.add(account + "_" + did + "_" + m.id)) {
+                return;
+            }
+            if (SEEN.size() > 2000) {
+                SEEN.clear();
+            }
+        }
         Hit h = new Hit();
-        h.dialogId = MessageObject.getDialogId(m);
+        h.dialogId = did;
         h.messageId = m.id;
         h.senderId = m.from_id != null ? org.telegram.messenger.DialogObject.getPeerDialogId(m.from_id) : h.dialogId;
         h.keyword = found;
@@ -159,12 +169,16 @@ public class SparkKeywords {
         notify(account, h);
     }
 
+    private static final java.util.HashSet<String> SEEN = new java.util.HashSet<>();
+
     private static void notify(int account, Hit h) {
         try {
             Context ctx = ApplicationLoader.applicationContext;
             NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
             if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CHANNEL_ID) == null) {
                 NotificationChannel ch = new NotificationChannel(CHANNEL_ID, "Sparkgram Schlagwort-Alarm", NotificationManager.IMPORTANCE_HIGH);
+                ch.enableVibration(true);
+                ch.enableLights(true);
                 nm.createNotificationChannel(ch);
             }
             Intent intent = new Intent(ctx, LaunchActivity.class);
@@ -187,6 +201,10 @@ public class SparkKeywords {
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(sender + h.text))
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setWhen(h.date * 1000L)
+                .setShowWhen(true)
                 .setContentIntent(pi);
             nm.notify(CHANNEL_ID.hashCode() + (int) (h.dialogId % 1000) * 1000 + (h.messageId % 1000), b.build());
         } catch (Throwable e) {

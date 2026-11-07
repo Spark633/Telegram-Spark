@@ -22,6 +22,9 @@ public class SparkChangelog {
         new Release("0.11", "07.11.2026",
             "Übersetzen: „Chat übersetzen“ auch ohne Premium – über Google oder mit eigenem DeepL-Schlüssel",
             "Einzelne Nachrichten werden bei gewähltem DeepL ebenfalls über DeepL übersetzt",
+            "Eigene Nachricht vor dem Senden übersetzen: Text eintippen → Drei-Punkte-Menü → „Eingabe übersetzen“ (Sprache wird pro Chat gemerkt, mit Rückgängig)",
+            "Schlagwort-Alarm kommt jetzt zuverlässig als normale Handy-Benachrichtigung (auch bei Privatchats, kleinen Gruppen und nachgeladenen Nachrichten)",
+            "Sprachnachrichten: Rückfrage jetzt auch beim Senden aus der Vorschau (freihändig aufgenommen / zugeschnitten)",
             "Mitglieder & Aktivität: Anzeige bleibt oben stehen, alle Mitglieder werden komplett geladen",
             "Admins anzeigen: anonyme Admins werden mit „· anonym“ markiert",
             "Notiz-Zeile im Profil zeigt „…“, wenn die Notiz weitergeht"

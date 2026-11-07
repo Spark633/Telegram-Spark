@@ -80,6 +80,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_TRANSLATE_FREE = 60;
     private static final int ID_TRANSLATE_PROVIDER = 61;
     private static final int ID_DEEPL_KEY = 62;
+    private static final int ID_TRANSLATE_OWN = 63;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -146,6 +147,7 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderTranslate)));
         items.add(check(ID_TRANSLATE_FREE, R.string.SparkTranslateFreeToggle, SparkConfig.TRANSLATE_FREE));
+        items.add(check(ID_TRANSLATE_OWN, R.string.SparkTranslateOwnToggle, SparkConfig.TRANSLATE_OWN));
         if (SparkConfig.getRaw(SparkConfig.TRANSLATE_FREE)) {
             items.add(UItem.asButton(ID_TRANSLATE_PROVIDER, "      " + getString(R.string.SparkTranslateProvider),
                 org.telegram.messenger.spark.SparkTranslate.provider() == org.telegram.messenger.spark.SparkTranslate.PROVIDER_DEEPL ? "DeepL" : "Google"));
@@ -301,6 +303,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_CHANNEL_AUTHORS: toggle(SparkConfig.CHANNEL_AUTHORS); break;
             case ID_KEYWORDS: toggle(SparkConfig.KEYWORDS); break;
             case ID_TRANSLATE_FREE: toggle(SparkConfig.TRANSLATE_FREE); break;
+            case ID_TRANSLATE_OWN: toggle(SparkConfig.TRANSLATE_OWN); break;
             case ID_TRANSLATE_PROVIDER: {
                 int p = org.telegram.messenger.spark.SparkTranslate.provider();
                 org.telegram.messenger.spark.SparkTranslate.setProvider(p == 0 ? 1 : 0);

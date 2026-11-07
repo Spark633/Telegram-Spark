@@ -15,6 +15,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   (oder wenn Spark633 „push, sofern keine Rückfrage“ sagt).
 - Keine PRs/Issues/Kommentare auf GitHub ohne ausdrückliche Bitte.
 - Nach jedem fertigen Bau: Neuerungen **und** eine Testliste („was am besten testen“) mitschicken.
+- Schlagwort-Alarm bei geschlossener App: nur mit Telegrams „Hintergrundverbindung“ (kein eigenes Push).
 - Fester APK-Link: `https://github.com/Spark633/Telegram-Spark/releases/download/build-entwicklung/Sparkgram-entwicklung.apk`
 - Jede Funktion bekommt einen eigenen Schalter; Sparkgram-Optionen mit ✦ markiert.
 - Vorsicht vor Telegram-Limits: alles mit vielen Anfragen über `SparkRateLimit`.
@@ -87,12 +88,17 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   Schalter `TRANSLATE_FREE`; Eingriffe in `TranslateController` (`isFeatureAvailable`, `sparkUseAlternative`)
   und `TranslateAlert2` (DeepL vor Google in `alternativeTranslateInternal`, Einzelnachricht → `translateAlt`).
   Mitgliederliste: Kopf fest oben, bis 10000 Mitglieder, Komplett-Scan; anonyme Admins markiert; Notiz „…“.
+  Etappe 4 Teil 2a: „Eingabe übersetzen“ (`SparkProfileMenu.translateInput`, Schalter `TRANSLATE_OWN`,
+  Sprache pro Chat in globalen Prefs `translateOut_<dialogId>`).
+  Schlagwort-Check zusätzlich in Kurz-Updates (`TL_updateShortMessage/ShortChatMessage`) und in beiden
+  `getDifference`-Wegen, doppelte Treffer per `SEEN`-Menge verhindert.
+  Sprachnachricht-Rückfrage auch in `ChatActivityEnterView.sendMessageInternal` (Vorschau, `audioToSend`).
 
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Weiterleiten ohne Limit, schneller markieren / Auswahl-Limit, Bild-Link kopieren.
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
-- **Etappe 4 Rest:** eigene Nachrichten vor dem Senden übersetzen, Senden über eigenen Bot.
+- **Etappe 4 Rest:** automatisch übersetzen, Senden über eigenen Bot.
 - **Etappe 5:** Online-Protokoll (echte Zeiten; „kürzlich“ getrennt markiert, fließt nicht in
   „zuletzt aktiv gesehen“ ein), Suche nach Name/ID. (Lokale Namen, Ortszeit, Schlagwort-Alarm: erledigt.)
 - **Etappe 6:** Sticker/Packs herunterladen, fremde Sticker ins eigene Pack, alle Sticker eines Chats,

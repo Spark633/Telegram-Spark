@@ -75,6 +75,8 @@ public class SparkConfig {
     public static final String CHANNEL_AUTHORS = "channelAuthors";
     // Uebersetzen: Chat-Uebersetzung ohne Premium (Google/DeepL)
     public static final String TRANSLATE_FREE = "translateFree";
+    // eigene Nachricht vor dem Senden uebersetzen (Chat-Menue)
+    public static final String TRANSLATE_OWN = "translateOwn";
     // Schlagwort-Alarm
     public static final String KEYWORDS = "keywords";
     // Kleine Markierung an allen Sparkgram-Funktionen
@@ -188,6 +190,7 @@ public class SparkConfig {
             case CHANNEL_AUTHORS:
             case KEYWORDS:
             case TRANSLATE_FREE:
+            case TRANSLATE_OWN:
             case LOCAL_NAMES:
             case TIMEZONES:
             case NAME_HISTORY:

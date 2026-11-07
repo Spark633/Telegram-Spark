@@ -14,6 +14,7 @@ import org.telegram.messenger.UserObject;
 import org.telegram.messenger.spark.SparkConfig;
 import org.telegram.messenger.spark.SparkNotes;
 import org.telegram.messenger.spark.SparkProfiles;
+import org.telegram.messenger.spark.SparkTranslate;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBarMenuItem;
 import org.telegram.ui.ActionBar.AlertDialog;
@@ -39,9 +40,10 @@ public class SparkProfileMenu {
     public static final int ID_ADMINS = 911;
     public static final int ID_ACTIVE = 912;
     public static final int ID_AUTHORS = 913;
+    public static final int ID_TRANSLATE_INPUT = 914;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_AUTHORS;
+        return id >= ID_COPY_ID && id <= ID_TRANSLATE_INPUT;
     }
 
     public interface Adder {
@@ -128,6 +130,9 @@ public class SparkProfileMenu {
         }
         // nur im geoeffneten Chat
         if (fragment instanceof org.telegram.ui.ChatActivity) {
+            if (SparkConfig.get(SparkConfig.TRANSLATE_OWN)) {
+                list.add(new Entry(ID_TRANSLATE_INPUT, R.drawable.msg_translate, label(getString(R.string.SparkTranslateInput), marked)));
+            }
             if (SparkConfig.get(SparkConfig.JUMP_FIRST)) {
                 list.add(new Entry(ID_JUMP_FIRST, R.drawable.msg_go_up, label(getString(R.string.SparkJumpFirst), marked)));
             }
@@ -406,9 +411,68 @@ public class SparkProfileMenu {
         return (ChatObject.isChannel(chat) ? "-100" : "-") + chatId;
     }
 
+    private static final String[][] LANGS = {
+        {"en", "Englisch"}, {"de", "Deutsch"}, {"es", "Spanisch"}, {"fr", "Französisch"}, {"it", "Italienisch"},
+        {"pt", "Portugiesisch"}, {"nl", "Niederländisch"}, {"pl", "Polnisch"}, {"tr", "Türkisch"}, {"ru", "Russisch"},
+        {"uk", "Ukrainisch"}, {"ar", "Arabisch"}, {"ja", "Japanisch"}, {"zh", "Chinesisch"}, {"ko", "Koreanisch"}
+    };
+
+    private static String langName(String code) {
+        for (String[] l : LANGS) if (l[0].equals(code)) return l[1];
+        return code;
+    }
+
+    /** Text im Eingabefeld uebersetzen und ersetzen (mit Rueckgaengig). Sprache wird pro Chat gemerkt. */
+    public static void translateInput(org.telegram.ui.ChatActivity chat, long dialogId, boolean chooseOnly) {
+        org.telegram.ui.Components.ChatActivityEnterView input = chat.getChatActivityEnterView();
+        if (input == null || chat.getParentActivity() == null) {
+            return;
+        }
+        final CharSequence original = input.getFieldText();
+        if (TextUtils.isEmpty(original) || original.toString().trim().isEmpty()) {
+            BulletinFactory.of(chat).createSimpleBulletin(R.raw.info, "Schreib zuerst deine Nachricht ins Eingabefeld.").show();
+            return;
+        }
+        final String key = "translateOut_" + dialogId;
+        String last = SparkConfig.prefs().getString(key, null);
+        String[] names = new String[LANGS.length];
+        for (int i = 0; i < LANGS.length; i++) {
+            names[i] = LANGS[i][1] + (LANGS[i][0].equals(last) ? "  ✓" : "");
+        }
+        AlertDialog.Builder b = new AlertDialog.Builder(chat.getParentActivity());
+        b.setTitle(SparkUi.mark("Übersetzen in …"));
+        b.setItems(names, (d, which) -> {
+            String lang = LANGS[which][0];
+            SparkConfig.prefs().edit().putString(key, lang).apply();
+            doTranslateInput(chat, input, original, lang);
+        });
+        b.setNegativeButton(getString(R.string.Cancel), null);
+        chat.showDialog(b.create());
+    }
+
+    private static void doTranslateInput(org.telegram.ui.ChatActivity chat, org.telegram.ui.Components.ChatActivityEnterView input, CharSequence original, String lang) {
+        final AlertDialog progress = new AlertDialog(chat.getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER);
+        progress.showDelayed(300);
+        org.telegram.ui.Components.TranslateAlert2.alternativeTranslate(original.toString(), "auto", lang, (res, rateLimit) -> {
+            try { progress.dismiss(); } catch (Throwable ignore) {}
+            if (TextUtils.isEmpty(res)) {
+                BulletinFactory.of(chat).createErrorBulletin(rateLimit ? "Zu viele Übersetzungen – bitte kurz warten." : "Übersetzen fehlgeschlagen.").show();
+                return;
+            }
+            input.setFieldText(res);
+            BulletinFactory.of(chat).createSimpleBulletin(R.raw.info, "Übersetzt in " + langName(lang) + (SparkTranslate.useDeepl() ? " (DeepL)" : ""),
+                "Rückgängig", () -> input.setFieldText(original)).show();
+        });
+    }
+
     public static void handle(BaseFragment fragment, int id, long userId, long chatId) {
         final int account = fragment.getCurrentAccount();
         switch (id) {
+            case ID_TRANSLATE_INPUT:
+                if (fragment instanceof org.telegram.ui.ChatActivity) {
+                    translateInput((org.telegram.ui.ChatActivity) fragment, userId != 0 ? userId : -chatId, false);
+                }
+                break;
             case ID_GROUP:
                 showGroup(fragment, userId, chatId);
                 break;

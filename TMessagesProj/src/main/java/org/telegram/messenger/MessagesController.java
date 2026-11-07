@@ -16758,6 +16758,7 @@ public class MessagesController extends BaseController implements NotificationCe
                                     if (message instanceof TLRPC.TL_messageEmpty) {
                                         continue;
                                     }
+                                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); // Sparkgram: Schlagwort-Alarm
                                     message.unread = !(channelFinal != null && channelFinal.left || (message.out ? outboxValue : inboxValue) >= message.id || message.action instanceof TLRPC.TL_messageActionChannelCreate);
 
                                     boolean isDialogCreated = createdDialogIds.contains(dialogId);
@@ -17010,6 +17011,7 @@ public class MessagesController extends BaseController implements NotificationCe
                                     if (message instanceof TLRPC.TL_messageEmpty) {
                                         continue;
                                     }
+                                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); // Sparkgram: Schlagwort-Alarm
                                     MessageObject.getDialogId(message);
 
                                     if (!DialogObject.isEncryptedDialog(message.dialog_id)) {
@@ -18046,6 +18048,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         message.out = true;
                     }
 
+                    org.telegram.messenger.spark.SparkKeywords.check(currentAccount, message); // Sparkgram: Schlagwort-Alarm
                     getMessagesStorage().setLastPtsValue(updates.pts);
                     boolean isDialogCreated = createdDialogIds.contains(message.dialog_id);
                     MessageObject obj = new MessageObject(currentAccount, message, isDialogCreated, isDialogCreated);

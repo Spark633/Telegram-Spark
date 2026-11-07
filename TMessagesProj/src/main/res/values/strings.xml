@@ -11770,8 +11770,10 @@
     <string name="SparkKeywordsInfo">Meldet eingehende Nachrichten mit deinen Schlagwörtern – in allen Chats und Gruppen, auch stummgeschalteten. Treffer werden gesammelt, Antippen springt zur Nachricht.</string>
     <string name="SparkHeaderTranslate">Übersetzen</string>
     <string name="SparkTranslateFreeToggle">Chats übersetzen ohne Premium</string>
+    <string name="SparkTranslateOwnToggle">Eigene Nachricht vor dem Senden übersetzen</string>
+    <string name="SparkTranslateInput">Eingabe übersetzen</string>
     <string name="SparkTranslateProvider">Übersetzer</string>
     <string name="SparkDeeplKey">DeepL-API-Schlüssel</string>
-    <string name="SparkTranslateInfo">Schaltet Telegrams „Chat übersetzen“ (oben im Chat bzw. im Drei-Punkte-Menü) auch ohne Premium frei. Übersetzt wird über Google oder – mit eigenem Schlüssel – über DeepL; fällt DeepL aus, springt Google ein. Einzelne Nachrichten: Nachricht antippen → Übersetzen. Voraussetzung: Telegram-Einstellungen → Sprache → „Übersetzen-Knopf zeigen“ bzw. „Chats übersetzen“ an.</string>
+    <string name="SparkTranslateInfo">Schaltet Telegrams „Chat übersetzen“ (oben im Chat bzw. im Drei-Punkte-Menü) auch ohne Premium frei. Übersetzt wird über Google oder – mit eigenem Schlüssel – über DeepL; fällt DeepL aus, springt Google ein. Einzelne Nachrichten: Nachricht antippen → Übersetzen. Eigene Nachricht: Text eintippen → Drei-Punkte-Menü → „Eingabe übersetzen“. Voraussetzung: Telegram-Einstellungen → Sprache → „Übersetzen-Knopf zeigen“ bzw. „Chats übersetzen“ an.</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>
