@@ -48,9 +48,11 @@ public class SparkProfileMenu {
     public static final int ID_MUTE_PERSON = 919;
     public static final int ID_TEMPLATES = 920;
     public static final int ID_TRANSLATE_CHAT = 921;
+    public static final int ID_MARK_READ = 922;
+    public static final int ID_EXPORT = 923;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_TRANSLATE_CHAT;
+        return id >= ID_COPY_ID && id <= ID_EXPORT;
     }
 
     public interface Adder {
@@ -146,6 +148,12 @@ public class SparkProfileMenu {
         if (fragment instanceof org.telegram.ui.ChatActivity) {
             if (SparkConfig.get(SparkConfig.COLLECTION)) {
                 list.add(new Entry(ID_COLLECTION, R.drawable.msg_saved, label("Sammlung", marked)));
+            }
+            if (SparkConfig.ghost(SparkConfig.GHOST_READ)) {
+                list.add(new Entry(ID_MARK_READ, R.drawable.msg_markread, label("Jetzt als gelesen melden", marked)));
+            }
+            if (SparkConfig.get(SparkConfig.EXPORT)) {
+                list.add(new Entry(ID_EXPORT, R.drawable.msg_download, label("Chat exportieren (HTML)", marked)));
             }
             if (SparkConfig.get(SparkConfig.TEMPLATES)) {
                 list.add(new Entry(ID_TEMPLATES, R.drawable.msg_stories_caption, label("Textvorlagen", marked)));
@@ -558,6 +566,12 @@ public class SparkProfileMenu {
                     m ? "✦ Keine Benachrichtigungen mehr von dieser Person – in allen Chats" : "✦ Benachrichtigungen von dieser Person wieder an").show();
                 break;
             }
+            case ID_MARK_READ:
+                SparkExport.markReadNow(fragment, userId != 0 ? userId : -chatId);
+                break;
+            case ID_EXPORT:
+                SparkExport.exportChat(fragment, userId != 0 ? userId : -chatId);
+                break;
             case ID_TRANSLATE_CHAT: {
                 long did = userId != 0 ? userId : -chatId;
                 org.telegram.messenger.TranslateController tc = org.telegram.messenger.MessagesController.getInstance(account).getTranslateController();

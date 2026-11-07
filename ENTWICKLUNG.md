@@ -129,6 +129,9 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - 0.13 (in Arbeit): Suche entfernt (auf Wunsch), Sprung zur ersten Nachricht per `getHistory(offset_id=1,
   add_offset=-10)`, `TranslateController.sparkForceTranslate` (Chat-Menü 921), Sticker-Raster in
   `SparkChatStickersActivity`, Weiter-Knopf oben in `SparkGroupListActivity`.
+  Ghost-Modus: `SparkConfig.ghost(part)`; Eingriffe in MessagesController: Status-Timer (nie online),
+  `sendTyping` (früh raus), `completeReadTask` (kein readHistory, außer geheime Chats);
+  `SparkExport.markReadNow` (Chat-Menü 922). Export: `SparkExport.exportChat` (Chat-Menü 923, HTML in Downloads).
 
 ## Roadmap (offen)
 
@@ -136,10 +139,10 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
 - **Etappe 4 Rest:** automatisch übersetzen.
 - **Etappe 7 Rest:** Ordner „Gelöschte Chats“, Ungelesen pro Konto, mehr Anheften (lokal),
-  In-App-Benachrichtigungen, Export PDF/HTML, Bookmarks mit Schlagwörtern,
+  In-App-Benachrichtigungen, Export PDF, Bookmarks mit Schlagwörtern,
   Duplikate in „Gespeichertes“, RP: Persona pro Chat, Zitieren mit Formatierung,
   Nachrichtenverlauf einer Person, Auto-Ordner, Sortierung, Backup.
-- **Etappe 8:** Ghost-Modus (gelesen/schreibt/online getrennt), Menüs aufräumen, Doppeltipp-Aktion,
+- **Etappe 8 Rest:** Menüs aufräumen, Doppeltipp-Aktion,
   App-Sperre, versteckte Konten, Zwischenablage-Schutz, Proxy-Verwaltung (+ Anleitung).
 - Nebenher: eigenes Firebase für Push, mehr Konten ohne Start-Nachteil, Übernahme nach `main`.
 - Gestrichen: Sprachnachricht→Text, „Nachricht zeichnen“, Gerätetyp anderer, „zuletzt online“ erzwingen,

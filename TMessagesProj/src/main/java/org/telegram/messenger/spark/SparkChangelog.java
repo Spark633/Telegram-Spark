@@ -24,7 +24,9 @@ public class SparkChangelog {
             "Chat-Menü: „Chat übersetzen an/aus“ – übersetzt jeden Chat, auch wenn Telegram ihn nicht als fremdsprachig erkennt",
             "„Sticker dieses Chats“ als Raster mit den echten Stickern (Anzahl als Zahl, lange drücken = mehr)",
             "Mitglieder & Aktivität: „Weiter durchsuchen“ steht jetzt oben",
-            "Suche nach Name/ID wieder entfernt"
+            "Suche nach Name/ID wieder entfernt",
+            "Ghost-Modus (Privatsphäre): keine Lesebestätigung, kein „schreibt …“, nicht online – einzeln wählbar; im Chat-Menü „Jetzt als gelesen melden“",
+            "Chat als HTML exportieren (Chat-Menü): 1.000 / 5.000 / 20.000 Nachrichten oder ganzer Chat → Downloads"
         ),
         new Release("0.12", "07.11.2026",
             "Einstellungen: Punkte mit Unterpunkten lassen sich auf- und zuklappen (Zeile antippen; Schalter = an/aus)",

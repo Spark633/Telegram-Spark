@@ -11780,6 +11780,12 @@
     <string name="SparkTemplatesToggle">Textvorlagen</string>
     <string name="SparkMutePeopleToggle">Einzelne Personen stummschalten</string>
     <string name="SparkOrgInfo">Statistiken zeigen, wie viele Chats, Gruppen, Kanäle und Bots du hast. Textvorlagen fügst du im Chat-Menü ein. Eine Person stummschalten: im Profil-Menü – dann kommen von ihr keine Benachrichtigungen mehr, auch nicht in Gruppen (die Gruppe selbst bleibt laut).</string>
+    <string name="SparkExportToggle">Chat exportieren (HTML)</string>
+    <string name="SparkGhostToggle">Ghost-Modus</string>
+    <string name="SparkGhostRead">Keine Lesebestätigung senden</string>
+    <string name="SparkGhostTyping">Kein „schreibt …“ senden</string>
+    <string name="SparkGhostOffline">Nicht online erscheinen</string>
+    <string name="SparkGhostInfo">Ghost-Modus: Sparkgram sendet die gewählten Dinge einfach nicht an Telegram – das ist unauffällig. Ohne Lesebestätigung bleiben Chats für andere ungelesen (Haken bleiben grau); im Chat-Menü gibt es „Jetzt als gelesen melden“. Nach einem Neustart können Chats wieder als ungelesen erscheinen. Wenn du selbst schreibst, kann Telegram dich trotzdem kurz als online zeigen. Geheime Chats sind ausgenommen.</string>
     <string name="SparkHeaderPeople">Personen</string>
     <string name="SparkOnlineLog">Online-Protokoll</string>
     <string name="SparkOnlineLogToggle">Online-Protokoll aufzeichnen</string>

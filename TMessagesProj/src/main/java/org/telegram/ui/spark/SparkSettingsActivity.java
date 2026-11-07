@@ -97,6 +97,11 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_TEMPLATES = 77;
     private static final int ID_TEMPLATES_OPEN = 78;
     private static final int ID_MUTE_PEOPLE = 79;
+    private static final int ID_GHOST = 80;
+    private static final int ID_GHOST_READ = 81;
+    private static final int ID_GHOST_TYPING = 82;
+    private static final int ID_GHOST_OFFLINE = 83;
+    private static final int ID_EXPORT = 84;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -207,6 +212,15 @@ public class SparkSettingsActivity extends UniversalFragment {
         }
         items.add(UItem.asShadow(getString(R.string.SparkBotInfo)));
 
+        items.add(UItem.asHeader("Privatsphäre"));
+        items.add(expandable(ID_GHOST, R.string.SparkGhostToggle, SparkConfig.GHOST, 3));
+        if (open(SparkConfig.GHOST)) {
+            items.add(subCheck(ID_GHOST_READ, R.string.SparkGhostRead, SparkConfig.GHOST_READ));
+            items.add(subCheck(ID_GHOST_TYPING, R.string.SparkGhostTyping, SparkConfig.GHOST_TYPING));
+            items.add(subCheck(ID_GHOST_OFFLINE, R.string.SparkGhostOffline, SparkConfig.GHOST_OFFLINE));
+        }
+        items.add(UItem.asShadow(getString(R.string.SparkGhostInfo)));
+
         items.add(UItem.asHeader("Organisation"));
         items.add(UItem.asButton(ID_STATS, R.drawable.msg_stats, "Statistiken"));
         items.add(expandable(ID_TEMPLATES, R.string.SparkTemplatesToggle, SparkConfig.TEMPLATES, 1));
@@ -214,6 +228,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(UItem.asButton(ID_TEMPLATES_OPEN, R.drawable.msg_stories_caption, "Vorlagen verwalten"));
         }
         items.add(check(ID_MUTE_PEOPLE, R.string.SparkMutePeopleToggle, SparkConfig.MUTE_PEOPLE));
+        items.add(check(ID_EXPORT, R.string.SparkExportToggle, SparkConfig.EXPORT));
         items.add(UItem.asShadow(getString(R.string.SparkOrgInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderPeople)));
@@ -377,6 +392,11 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_TEMPLATES: expand(SparkConfig.TEMPLATES); break;
             case ID_TEMPLATES_OPEN: presentFragment(new SparkTemplatesActivity()); break;
             case ID_MUTE_PEOPLE: toggle(SparkConfig.MUTE_PEOPLE); break;
+            case ID_EXPORT: toggle(SparkConfig.EXPORT); break;
+            case ID_GHOST: expand(SparkConfig.GHOST); break;
+            case ID_GHOST_READ: toggle(SparkConfig.GHOST_READ); break;
+            case ID_GHOST_TYPING: toggle(SparkConfig.GHOST_TYPING); break;
+            case ID_GHOST_OFFLINE: toggle(SparkConfig.GHOST_OFFLINE); break;
             case ID_BOT_TOKEN: SparkMedia.editBotToken(this, () -> listView.adapter.update(true)); break;
             case ID_CONFIRM_STICKER: toggle(SparkConfig.CONFIRM_STICKER); break;
             case ID_CONFIRM_GIF: toggle(SparkConfig.CONFIRM_GIF); break;

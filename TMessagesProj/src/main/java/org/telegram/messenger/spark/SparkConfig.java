@@ -95,6 +95,17 @@ public class SparkConfig {
     // Etappe 7: Organisation
     public static final String MUTE_PEOPLE = "mutePeople";
     public static final String TEMPLATES = "templates";
+    // Etappe 8: Ghost-Modus (Oberschalter + einzelne Teile)
+    public static final String GHOST = "ghost";
+    public static final String GHOST_READ = "ghostRead";
+    public static final String GHOST_TYPING = "ghostTyping";
+    public static final String GHOST_OFFLINE = "ghostOffline";
+    // Chat als HTML exportieren
+    public static final String EXPORT = "export";
+
+    public static boolean ghost(String part) {
+        return get(GHOST) && get(part);
+    }
 
     public static int selectLimit() {
         return get(SELECT_NO_LIMIT) ? 1000 : 100;
@@ -224,6 +235,10 @@ public class SparkConfig {
             case BOT_SEND:
             case MUTE_PEOPLE:
             case TEMPLATES:
+            case GHOST_READ:
+            case GHOST_TYPING:
+            case GHOST_OFFLINE:
+            case EXPORT:
             case LOCAL_NAMES:
             case TIMEZONES:
             case NAME_HISTORY:
