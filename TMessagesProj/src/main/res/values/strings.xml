@@ -11780,7 +11780,7 @@
     <string name="SparkTemplatesToggle">Textvorlagen</string>
     <string name="SparkMutePeopleToggle">Einzelne Personen stummschalten</string>
     <string name="SparkOrgInfo">Statistiken zeigen, wie viele Chats, Gruppen, Kanäle und Bots du hast. Textvorlagen fügst du im Chat-Menü ein. Eine Person stummschalten: im Profil-Menü – dann kommen von ihr keine Benachrichtigungen mehr, auch nicht in Gruppen (die Gruppe selbst bleibt laut).</string>
-    <string name="SparkExportToggle">Chat exportieren (HTML)</string>
+    <string name="SparkExportToggle">Chat exportieren (PDF/HTML)</string>
     <string name="SparkGhostToggle">Ghost-Modus</string>
     <string name="SparkGhostRead">Keine Lesebestätigung senden</string>
     <string name="SparkGhostTyping">Kein „schreibt …“ senden</string>

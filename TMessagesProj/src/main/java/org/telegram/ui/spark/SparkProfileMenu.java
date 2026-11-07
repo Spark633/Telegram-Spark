@@ -153,7 +153,7 @@ public class SparkProfileMenu {
                 list.add(new Entry(ID_MARK_READ, R.drawable.msg_markread, label("Jetzt als gelesen melden", marked)));
             }
             if (SparkConfig.get(SparkConfig.EXPORT)) {
-                list.add(new Entry(ID_EXPORT, R.drawable.msg_download, label("Chat exportieren (HTML)", marked)));
+                list.add(new Entry(ID_EXPORT, R.drawable.msg_download, label("Chat exportieren (PDF/HTML)", marked)));
             }
             if (SparkConfig.get(SparkConfig.TEMPLATES)) {
                 list.add(new Entry(ID_TEMPLATES, R.drawable.msg_stories_caption, label("Textvorlagen", marked)));

@@ -131,7 +131,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   `SparkChatStickersActivity`, Weiter-Knopf oben in `SparkGroupListActivity`.
   Ghost-Modus: `SparkConfig.ghost(part)`; Eingriffe in MessagesController: Status-Timer (nie online),
   `sendTyping` (früh raus), `completeReadTask` (kein readHistory, außer geheime Chats);
-  `SparkExport.markReadNow` (Chat-Menü 922). Export: `SparkExport.exportChat` (Chat-Menü 923, HTML in Downloads).
+  `SparkExport.markReadNow` (Chat-Menü 922). Export: `SparkExport.exportChat` (Chat-Menü 923, PDF über `android.graphics.pdf.PdfDocument` + StaticLayout, oder HTML; in Downloads).
 
 ## Roadmap (offen)
 
@@ -139,7 +139,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
 - **Etappe 4 Rest:** automatisch übersetzen.
 - **Etappe 7 Rest:** Ordner „Gelöschte Chats“, Ungelesen pro Konto, mehr Anheften (lokal),
-  In-App-Benachrichtigungen, Export PDF, Bookmarks mit Schlagwörtern,
+  In-App-Benachrichtigungen, Bookmarks mit Schlagwörtern,
   Duplikate in „Gespeichertes“, RP: Persona pro Chat, Zitieren mit Formatierung,
   Nachrichtenverlauf einer Person, Auto-Ordner, Sortierung, Backup.
 - **Etappe 8 Rest:** Menüs aufräumen, Doppeltipp-Aktion,

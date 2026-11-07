@@ -60,14 +60,24 @@ public class SparkExport {
         }));
     }
 
-    /** Fragt, wie viele Nachrichten exportiert werden sollen, und startet den Export. */
+    /** Fragt Format und Umfang ab und startet den Export. */
     public static void exportChat(BaseFragment fragment, long dialogId) {
-        String[] names = {"Letzte 1.000 Nachrichten", "Letzte 5.000 Nachrichten", "Letzte 20.000 Nachrichten", "Ganzer Chat"};
-        int[] limits = {1000, 5000, 20000, Integer.MAX_VALUE};
-        AlertDialog.Builder b = new AlertDialog.Builder(fragment.getParentActivity());
-        b.setTitle(SparkUi.mark("Chat als HTML exportieren"));
-        b.setItems(names, (d, w) -> new Job(fragment, dialogId, limits[w]).start());
-        fragment.showDialog(b.create());
+        AlertDialog.Builder f = new AlertDialog.Builder(fragment.getParentActivity());
+        f.setTitle(SparkUi.mark("Chat exportieren"));
+        f.setItems(new CharSequence[]{"PDF (zum Lesen/Drucken)", "HTML (im Browser öffnen)"}, (d0, which) -> {
+            final boolean pdf = which == 0;
+            String[] names = {"Letzte 1.000 Nachrichten", "Letzte 5.000 Nachrichten", "Letzte 20.000 Nachrichten", "Ganzer Chat"};
+            int[] limits = {1000, 5000, 20000, Integer.MAX_VALUE};
+            AlertDialog.Builder b = new AlertDialog.Builder(fragment.getParentActivity());
+            b.setTitle(SparkUi.mark(pdf ? "Als PDF exportieren" : "Als HTML exportieren"));
+            b.setItems(names, (d, w) -> new Job(fragment, dialogId, limits[w], pdf).start());
+            fragment.showDialog(b.create());
+        });
+        fragment.showDialog(f.create());
+    }
+
+    private interface TextDrawer {
+        void accept(CharSequence text, android.text.TextPaint paint);
     }
 
     private static class Job {
@@ -76,14 +86,16 @@ public class SparkExport {
         final int limit;
         final int account;
         final ArrayList<TLRPC.Message> messages = new ArrayList<>();
+        final boolean pdf;
         int offsetId;
         boolean cancelled;
         AlertDialog progress;
 
-        Job(BaseFragment fragment, long dialogId, int limit) {
+        Job(BaseFragment fragment, long dialogId, int limit, boolean pdf) {
             this.fragment = fragment;
             this.dialogId = dialogId;
             this.limit = limit;
+            this.pdf = pdf;
             this.account = fragment.getCurrentAccount();
         }
 
@@ -139,9 +151,13 @@ public class SparkExport {
                 File out = null;
                 try {
                     Collections.reverse(list);
-                    out = new File(ApplicationLoader.applicationContext.getCacheDir(), "sparkgram_export.html");
-                    try (OutputStreamWriter w = new OutputStreamWriter(new FileOutputStream(out), StandardCharsets.UTF_8)) {
-                        writeHtml(w, title, list, note);
+                    out = new File(ApplicationLoader.applicationContext.getCacheDir(), pdf ? "sparkgram_export.pdf" : "sparkgram_export.html");
+                    if (pdf) {
+                        writePdf(out, title, list, note);
+                    } else {
+                        try (OutputStreamWriter w = new OutputStreamWriter(new FileOutputStream(out), StandardCharsets.UTF_8)) {
+                            writeHtml(w, title, list, note);
+                        }
                     }
                 } catch (Exception e) {
                     FileLog.e(e);
@@ -155,8 +171,8 @@ public class SparkExport {
                         BulletinFactory.of(fragment).createErrorBulletin("Export fehlgeschlagen: " + err).show();
                         return;
                     }
-                    String name = "Chat_" + title.replaceAll("[^A-Za-z0-9ÄÖÜäöüß_-]+", "_") + "_" + new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(new Date()) + ".html";
-                    MediaController.saveFile(file.getAbsolutePath(), fragment.getParentActivity(), 2, name, "text/html", uri ->
+                    String name = "Chat_" + title.replaceAll("[^A-Za-z0-9ÄÖÜäöüß_-]+", "_") + "_" + new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(new Date()) + (pdf ? ".pdf" : ".html");
+                    MediaController.saveFile(file.getAbsolutePath(), fragment.getParentActivity(), 2, name, pdf ? "application/pdf" : "text/html", uri ->
                         BulletinFactory.of(fragment).createSimpleBulletin(R.raw.ic_download, "✦ " + list.size() + " Nachrichten exportiert → Downloads/" + name).show());
                 });
             });
@@ -197,6 +213,93 @@ public class SparkExport {
                 return "[Datei" + (d.mime_type != null ? " " + d.mime_type : "") + "]";
             }
             return "[Medium]";
+        }
+
+        /** PDF (A4) mit Android-Bordmitteln: Tagesueberschriften, Absender, Uhrzeit, Text. */
+        private void writePdf(File out, String title, ArrayList<TLRPC.Message> list, String note) throws Exception {
+            final int pageW = 595, pageH = 842, margin = 40, width = pageW - 2 * margin;
+            android.graphics.pdf.PdfDocument doc = new android.graphics.pdf.PdfDocument();
+            android.text.TextPaint body = new android.text.TextPaint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            body.setTextSize(10f);
+            body.setColor(0xff111111);
+            android.text.TextPaint bold = new android.text.TextPaint(body);
+            bold.setFakeBoldText(true);
+            bold.setColor(0xff2a6fb0);
+            android.text.TextPaint gray = new android.text.TextPaint(body);
+            gray.setTextSize(8.5f);
+            gray.setColor(0xff777777);
+            android.text.TextPaint head = new android.text.TextPaint(body);
+            head.setTextSize(16f);
+            head.setFakeBoldText(true);
+            SimpleDateFormat day = new SimpleDateFormat("EEEE, dd. MMMM yyyy", Locale.GERMANY);
+            SimpleDateFormat time = new SimpleDateFormat("HH:mm", Locale.GERMANY);
+
+            final int[] pageNo = {0};
+            final android.graphics.pdf.PdfDocument.Page[] page = {null};
+            final float[] y = {0};
+            Runnable newPage = () -> {
+                if (page[0] != null) doc.finishPage(page[0]);
+                pageNo[0]++;
+                page[0] = doc.startPage(new android.graphics.pdf.PdfDocument.PageInfo.Builder(pageW, pageH, pageNo[0]).create());
+                android.graphics.Canvas c = page[0].getCanvas();
+                c.drawText(title + " · Seite " + pageNo[0], margin, pageH - 20, gray);
+                y[0] = margin;
+            };
+            newPage.run();
+
+            TextDrawer draw = (text, paint) -> {
+                android.text.StaticLayout l = new android.text.StaticLayout(text, paint, width, android.text.Layout.Alignment.ALIGN_NORMAL, 1.1f, 0, false);
+                int line = 0;
+                while (line < l.getLineCount()) {
+                    // so viele Zeilen wie auf die Seite passen
+                    int lastLine = line;
+                    while (lastLine < l.getLineCount() && y[0] + (l.getLineBottom(lastLine) - l.getLineTop(line)) <= pageH - margin) {
+                        lastLine++;
+                    }
+                    if (lastLine == line) {
+                        newPage.run();
+                        continue;
+                    }
+                    android.graphics.Canvas c = page[0].getCanvas();
+                    c.save();
+                    c.translate(margin, y[0] - l.getLineTop(line));
+                    c.clipRect(0, l.getLineTop(line), width, l.getLineTop(lastLine));
+                    l.draw(c);
+                    c.restore();
+                    y[0] += l.getLineTop(lastLine) - l.getLineTop(line);
+                    line = lastLine;
+                    if (line < l.getLineCount()) newPage.run();
+                }
+            };
+
+            draw.accept(title, head);
+            y[0] += 4;
+            draw.accept("Exportiert mit Sparkgram am " + new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMANY).format(new Date()) + " · " + list.size() + " Nachrichten" + (note != null ? " · " + note : ""), gray);
+            y[0] += 10;
+            String lastDay = null;
+            for (TLRPC.Message m : list) {
+                String d = day.format(new Date(m.date * 1000L));
+                if (!d.equals(lastDay)) {
+                    y[0] += 8;
+                    draw.accept("— " + d + " —", gray);
+                    y[0] += 4;
+                    lastDay = d;
+                }
+                if (m instanceof TLRPC.TL_messageService) {
+                    draw.accept(time.format(new Date(m.date * 1000L)) + "  Service-Nachricht", gray);
+                    continue;
+                }
+                draw.accept(sender(m) + "  ·  " + time.format(new Date(m.date * 1000L)) + (m.edit_date != 0 ? "  ✏️" : "") + (m.fwd_from != null ? "  ↪ weitergeleitet" + (m.fwd_from.from_name != null ? " von " + m.fwd_from.from_name : "") : ""), bold);
+                String med = media(m);
+                if (med != null) draw.accept(med, gray);
+                if (!TextUtils.isEmpty(m.message)) draw.accept(m.message, body);
+                y[0] += 6;
+            }
+            doc.finishPage(page[0]);
+            try (FileOutputStream fos = new FileOutputStream(out)) {
+                doc.writeTo(fos);
+            }
+            doc.close();
         }
 
         private void writeHtml(OutputStreamWriter w, String title, ArrayList<TLRPC.Message> list, String note) throws Exception {
