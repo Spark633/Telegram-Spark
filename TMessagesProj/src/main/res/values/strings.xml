@@ -11701,8 +11701,9 @@
     <string name="SparkMarkerInfo">Zeigt ein ✦ neben allen Menüpunkten und Optionen, die von Sparkgram kommen.</string>
     <string name="SparkProfileTapPhoto">Bild antippen für Vollbild</string>
     <string name="SparkChatMenuToggle">Auch im Chat-Menü anzeigen</string>
-    <string name="SparkLookInfo">Sparkgram-Funktionen wie Notiz, ID und Infos erscheinen dann auch im Drei-Punkte-Menü eines geöffneten Chats. Das ✦ markiert alle Optionen, die von Sparkgram kommen.</string>
+    <string name="SparkLookInfo">„Auch im Chat-Menü anzeigen“ zeigt Notiz, ID, Infos usw. zusätzlich im Drei-Punkte-Menü eines geöffneten Chats. „Unter einem Knopf sammeln“ fasst sie in Profil- und Chat-Menü zu einem Eintrag „Sparkgram ✦“ zusammen. Das ✦ markiert alle Optionen von Sparkgram.</string>
     <string name="SparkCopyLink">Link kopieren</string>
     <string name="SparkCopyAll">Alles kopieren</string>
+    <string name="SparkMenuGroupedToggle">Unter einem Knopf „Sparkgram“ sammeln</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

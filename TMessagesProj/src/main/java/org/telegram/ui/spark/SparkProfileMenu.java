@@ -20,6 +20,8 @@ import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.Components.BulletinFactory;
 
+import java.util.ArrayList;
+
 /** Sparkgram-Eintraege im Drei-Punkte-Menue von Profilen, Gruppen und Kanaelen. */
 public class SparkProfileMenu {
 
@@ -28,9 +30,10 @@ public class SparkProfileMenu {
     public static final int ID_CLONE = 902;
     public static final int ID_NOTE = 903;
     public static final int ID_PHOTOS = 904;
+    public static final int ID_GROUP = 905;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_PHOTOS;
+        return id >= ID_COPY_ID && id <= ID_GROUP;
     }
 
     public interface Adder {
@@ -53,29 +56,78 @@ public class SparkProfileMenu {
         addItems(fragment, (id, icon, text) -> menu.lazilyAddSubItem(id, icon, text), userId, chatId);
     }
 
-    public static void addItems(BaseFragment fragment, Adder menu, long userId, long chatId) {
+    private static class Entry {
+        final int id;
+        final int icon;
+        final CharSequence text;
+
+        Entry(int id, int icon, CharSequence text) {
+            this.id = id;
+            this.icon = icon;
+            this.text = text;
+        }
+    }
+
+    /** Alle aktiven Sparkgram-Eintraege fuer dieses Profil/diesen Chat. */
+    private static ArrayList<Entry> entries(BaseFragment fragment, long userId, long chatId, boolean marked) {
+        ArrayList<Entry> list = new ArrayList<>();
         if (userId == 0 && chatId == 0) {
-            return;
+            return list;
         }
         final int account = fragment.getCurrentAccount();
         final boolean self = userId != 0 && userId == UserConfig.getInstance(account).getClientUserId();
         if (SparkConfig.get(SparkConfig.NOTES)) {
             long did = userId != 0 ? userId : -chatId;
             boolean has = SparkNotes.has(account, did);
-            menu.add(ID_NOTE, R.drawable.msg_stories_caption, SparkUi.mark(getString(has ? R.string.SparkNoteEdit : R.string.SparkNoteAdd)));
+            list.add(new Entry(ID_NOTE, R.drawable.msg_stories_caption, label(getString(has ? R.string.SparkNoteEdit : R.string.SparkNoteAdd), marked)));
         }
         if (SparkConfig.get(SparkConfig.PROFILE_COPY_ID)) {
-            menu.add(ID_COPY_ID, R.drawable.msg_copy, SparkUi.mark(getString(R.string.SparkCopyId)));
+            list.add(new Entry(ID_COPY_ID, R.drawable.msg_copy, label(getString(R.string.SparkCopyId), marked)));
         }
         if (SparkConfig.get(SparkConfig.PROFILE_INFO)) {
-            menu.add(ID_INFO, R.drawable.msg_info, SparkUi.mark(getString(R.string.SparkUserInfo)));
+            list.add(new Entry(ID_INFO, R.drawable.msg_info, label(getString(R.string.SparkUserInfo), marked)));
         }
         if (userId != 0 && !self && SparkConfig.get(SparkConfig.PROFILE_CLONE)) {
-            menu.add(ID_CLONE, R.drawable.msg_customize, SparkUi.mark(getString(R.string.SparkCloneProfile)));
+            list.add(new Entry(ID_CLONE, R.drawable.msg_customize, label(getString(R.string.SparkCloneProfile), marked)));
         }
         if (self && SparkConfig.get(SparkConfig.PHOTO_MANAGER)) {
-            menu.add(ID_PHOTOS, R.drawable.msg_photos, SparkUi.mark(getString(R.string.SparkPhotoManager)));
+            list.add(new Entry(ID_PHOTOS, R.drawable.msg_photos, label(getString(R.string.SparkPhotoManager), marked)));
         }
+        return list;
+    }
+
+    private static CharSequence label(String text, boolean marked) {
+        return marked ? SparkUi.mark(text) : text;
+    }
+
+    public static void addItems(BaseFragment fragment, Adder menu, long userId, long chatId) {
+        if (SparkConfig.get(SparkConfig.MENU_GROUPED)) {
+            if (!entries(fragment, userId, chatId, false).isEmpty()) {
+                menu.add(ID_GROUP, R.drawable.settings_features, SparkUi.mark("Sparkgram"));
+            }
+            return;
+        }
+        for (Entry e : entries(fragment, userId, chatId, true)) {
+            menu.add(e.id, e.icon, e.text);
+        }
+    }
+
+    /** Kleines Auswahlfenster mit allen Sparkgram-Funktionen (gesammelte Ansicht). */
+    private static void showGroup(BaseFragment fragment, long userId, long chatId) {
+        final ArrayList<Entry> list = entries(fragment, userId, chatId, false);
+        if (list.isEmpty()) {
+            return;
+        }
+        CharSequence[] texts = new CharSequence[list.size()];
+        int[] icons = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            texts[i] = list.get(i).text;
+            icons[i] = list.get(i).icon;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
+        builder.setTitle(SparkUi.mark("Sparkgram"));
+        builder.setItems(texts, icons, (dialog, which) -> handle(fragment, list.get(which).id, userId, chatId));
+        fragment.showDialog(builder.create());
     }
 
     public static String peerId(int account, long userId, long chatId) {
@@ -89,6 +141,9 @@ public class SparkProfileMenu {
     public static void handle(BaseFragment fragment, int id, long userId, long chatId) {
         final int account = fragment.getCurrentAccount();
         switch (id) {
+            case ID_GROUP:
+                showGroup(fragment, userId, chatId);
+                break;
             case ID_COPY_ID: {
                 String value = peerId(account, userId, chatId);
                 AndroidUtilities.addToClipboard(value);

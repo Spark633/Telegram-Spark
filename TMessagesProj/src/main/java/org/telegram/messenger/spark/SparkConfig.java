@@ -24,6 +24,8 @@ public class SparkConfig {
     public static final String PHOTO_MANAGER = "photoManager";
     // Sparkgram-Funktionen auch im Drei-Punkte-Menue eines Chats
     public static final String CHAT_MENU = "chatMenu";
+    // Sparkgram-Eintraege im Menue unter einem Knopf "Sparkgram" sammeln statt einzeln
+    public static final String MENU_GROUPED = "menuGrouped";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
