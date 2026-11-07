@@ -226,9 +226,21 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_UPDATE_CHECK: checkForUpdate(); break;
             case ID_REPO: Browser.openUrl(getParentActivity(), SparkUpdater.REPO_URL); break;
             case ID_VERSION: {
-                String text = "Sparkgram " + SparkUpdater.buildLabel() + "\nTelegram-Basis " + org.telegram.messenger.BuildConfig.BUILD_VERSION_STRING + "\nCommit " + org.telegram.messenger.BuildConfig.SPARK_COMMIT;
-                AndroidUtilities.addToClipboard(text);
-                BulletinFactory.of(this).createCopyBulletin(getString(R.string.TextCopied)).show();
+                String c = org.telegram.messenger.BuildConfig.SPARK_COMMIT;
+                final String text = "Sparkgram-Version: " + org.telegram.messenger.BuildConfig.SPARK_VERSION
+                    + "\nKanal: " + org.telegram.messenger.BuildConfig.SPARK_CHANNEL
+                    + "\nGebaut: " + new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.GERMANY).format(new java.util.Date(org.telegram.messenger.BuildConfig.SPARK_BUILD_TIME))
+                    + "\nCommit: " + (c == null || c.isEmpty() ? "lokal" : c)
+                    + "\nTelegram-Basis: " + org.telegram.messenger.BuildConfig.BUILD_VERSION_STRING;
+                AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
+                builder.setTitle(getString(R.string.SparkVersion));
+                builder.setMessage(text);
+                builder.setPositiveButton(getString(R.string.OK), null);
+                builder.setNeutralButton(getString(R.string.Copy), (d, w) -> {
+                    AndroidUtilities.addToClipboard(text);
+                    BulletinFactory.of(this).createCopyBulletin(getString(R.string.TextCopied)).show();
+                });
+                showDialog(builder.create());
                 break;
             }
             case ID_CRASH: {
