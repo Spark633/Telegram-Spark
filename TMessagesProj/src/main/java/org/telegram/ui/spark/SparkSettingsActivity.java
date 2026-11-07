@@ -67,6 +67,10 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_CONFIRM_VOICE = 47;
     private static final int ID_NAME_HISTORY = 48;
     private static final int ID_CONFIRM_REPEAT = 49;
+    private static final int ID_HIDE_PREMIUM_AUTO = 50;
+    private static final int ID_LOCAL_NAMES = 51;
+    private static final int ID_TIMEZONES = 52;
+    private static final int ID_FORWARD_NO_SENDER = 53;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -98,6 +102,8 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_INFO_ROW, R.string.SparkInfoRowToggle, SparkConfig.PROFILE_INFO_ROW));
         items.add(check(ID_PHOTO_DATE, R.string.SparkPhotoDateToggle, SparkConfig.PHOTO_DATE));
         items.add(check(ID_NAME_HISTORY, R.string.SparkNameHistoryToggle, SparkConfig.NAME_HISTORY));
+        items.add(check(ID_LOCAL_NAMES, R.string.SparkLocalNamesToggle, SparkConfig.LOCAL_NAMES));
+        items.add(check(ID_TIMEZONES, R.string.SparkTimezonesToggle, SparkConfig.TIMEZONES));
         items.add(check(ID_CLONE, R.string.SparkCloneToggle, SparkConfig.PROFILE_CLONE));
         if (SparkConfig.getRaw(SparkConfig.PROFILE_CLONE)) {
             items.add(subCheck(ID_CLONE_NAME, R.string.SparkCloneName, SparkConfig.CLONE_NAME));
@@ -123,6 +129,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_MSG_DETAILS, R.string.SparkMsgDetailsToggle, SparkConfig.MSG_DETAILS));
         items.add(check(ID_MSG_REPEAT, R.string.SparkMsgRepeatToggle, SparkConfig.MSG_REPEAT));
         items.add(check(ID_FORWARD_TIME, R.string.SparkForwardTimeToggle, SparkConfig.FORWARD_TIME));
+        items.add(check(ID_FORWARD_NO_SENDER, R.string.SparkForwardNoSenderToggle, SparkConfig.FORWARD_NO_SENDER));
         items.add(check(ID_JUMP_FIRST, R.string.SparkJumpFirstToggle, SparkConfig.JUMP_FIRST));
         items.add(check(ID_DELETE_OWN_ALL, R.string.SparkDeleteOwnToggle, SparkConfig.DELETE_OWN_ALL));
         items.add(UItem.asShadow(getString(R.string.SparkMsgToolsInfo)));
@@ -151,6 +158,9 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderHide)));
         items.add(check(ID_HIDE_PREMIUM, R.string.SparkHidePremium, SparkConfig.HIDE_PREMIUM));
+        if (SparkConfig.getRaw(SparkConfig.HIDE_PREMIUM)) {
+            items.add(subCheck(ID_HIDE_PREMIUM_AUTO, R.string.SparkHidePremiumAuto, SparkConfig.HIDE_PREMIUM_AUTO));
+        }
         items.add(check(ID_HIDE_STARS, R.string.SparkHideStars, SparkConfig.HIDE_STARS));
         items.add(check(ID_HIDE_BUSINESS, R.string.SparkHideBusiness, SparkConfig.HIDE_BUSINESS));
         items.add(check(ID_HIDE_WALLET, R.string.SparkHideWallet, SparkConfig.HIDE_WALLET));
@@ -244,6 +254,10 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_CONFIRM_GIF: toggle(SparkConfig.CONFIRM_GIF); break;
             case ID_CONFIRM_VOICE: toggle(SparkConfig.CONFIRM_VOICE); break;
             case ID_CONFIRM_REPEAT: toggle(SparkConfig.CONFIRM_REPEAT); break;
+            case ID_HIDE_PREMIUM_AUTO: toggle(SparkConfig.HIDE_PREMIUM_AUTO); break;
+            case ID_LOCAL_NAMES: toggle(SparkConfig.LOCAL_NAMES); break;
+            case ID_TIMEZONES: toggle(SparkConfig.TIMEZONES); break;
+            case ID_FORWARD_NO_SENDER: toggle(SparkConfig.FORWARD_NO_SENDER); break;
             case ID_NAME_HISTORY: toggle(SparkConfig.NAME_HISTORY); break;
             case ID_HIDE_STARS: toggle(SparkConfig.HIDE_STARS); break;
             case ID_HIDE_BUSINESS: toggle(SparkConfig.HIDE_BUSINESS); break;

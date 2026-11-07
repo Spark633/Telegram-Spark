@@ -200,6 +200,8 @@ public class MessagePreviewParams {
         this.isSecret = secret;
         this.noforwards = secret || noforwards;
         this.monoforum = monoforum;
+        // Sparkgram: Weiterleiten standardmaessig ohne Absender
+        this.hideForwardSendersName = org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.FORWARD_NO_SENDER);
     }
 
     public void updateReply(MessageObject replyMessageObject, MessageObject.GroupedMessages group, long dialogId, ChatActivity.ReplyQuote replyQuote) {

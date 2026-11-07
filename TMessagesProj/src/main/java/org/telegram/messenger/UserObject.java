@@ -79,6 +79,11 @@ public class UserObject {
         if (user == null || isDeleted(user)) {
             return LocaleController.getString(R.string.HiddenName);
         }
+        // Sparkgram: lokaler Spitzname (nur auf diesem Geraet sichtbar)
+        String sparkLocal = org.telegram.messenger.spark.SparkLocalNames.get(user.id);
+        if (sparkLocal != null) {
+            return sparkLocal;
+        }
         String name = AndroidUtilities.removeRTL(AndroidUtilities.removeDiacritics(ContactsController.formatName(user.first_name, user.last_name)));
         return name.length() != 0 || TextUtils.isEmpty(user.phone) ? name : PhoneFormat.getInstance().format("+" + user.phone);
     }

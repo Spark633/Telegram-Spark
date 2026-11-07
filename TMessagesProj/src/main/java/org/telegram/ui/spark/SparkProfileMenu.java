@@ -34,9 +34,11 @@ public class SparkProfileMenu {
     public static final int ID_JUMP_FIRST = 906;
     public static final int ID_DELETE_OWN = 907;
     public static final int ID_NAME_HISTORY = 908;
+    public static final int ID_LOCAL_NAME = 909;
+    public static final int ID_TIMEZONE = 910;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_NAME_HISTORY;
+        return id >= ID_COPY_ID && id <= ID_TIMEZONE;
     }
 
     public interface Adder {
@@ -89,6 +91,12 @@ public class SparkProfileMenu {
         }
         if (SparkConfig.get(SparkConfig.PROFILE_INFO)) {
             list.add(new Entry(ID_INFO, R.drawable.msg_info, label(getString(R.string.SparkUserInfo), marked)));
+        }
+        if (userId != 0 && SparkConfig.get(SparkConfig.LOCAL_NAMES)) {
+            list.add(new Entry(ID_LOCAL_NAME, R.drawable.msg_edit, label(getString(R.string.SparkLocalName), marked)));
+        }
+        if (userId != 0 && !self && SparkConfig.get(SparkConfig.TIMEZONES)) {
+            list.add(new Entry(ID_TIMEZONE, R.drawable.msg_recent, label(getString(R.string.SparkTimezone), marked)));
         }
         if (userId != 0 && !self && SparkConfig.get(SparkConfig.NAME_HISTORY)) {
             list.add(new Entry(ID_NAME_HISTORY, R.drawable.msg_log, label(getString(R.string.SparkNameHistory), marked)));
@@ -188,6 +196,60 @@ public class SparkProfileMenu {
         return (seconds / 3600) + " h";
     }
 
+    private static void editLocalName(BaseFragment fragment, long userId) {
+        final int account = fragment.getCurrentAccount();
+        TLRPC.User user = MessagesController.getInstance(account).getUser(userId);
+        final String real = user != null ? org.telegram.messenger.ContactsController.formatName(user.first_name, user.last_name) : "";
+        final android.widget.EditText input = new android.widget.EditText(fragment.getParentActivity());
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        String cur = org.telegram.messenger.spark.SparkLocalNames.get(userId);
+        input.setText(cur == null ? "" : cur);
+        input.setHint(real);
+        input.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlackText));
+        input.setHintTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteHintText));
+        android.widget.FrameLayout box = new android.widget.FrameLayout(fragment.getParentActivity());
+        box.addView(input, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, 0, 24, 0, 24, 0));
+        AlertDialog.Builder b = new AlertDialog.Builder(fragment.getParentActivity());
+        b.setTitle(SparkUi.mark(getString(R.string.SparkLocalName)));
+        b.setMessage("Nur auf diesem Gerät sichtbar. Echter Name: " + real);
+        b.setView(box);
+        b.setPositiveButton(getString(R.string.Save), (d, w) -> {
+            org.telegram.messenger.spark.SparkLocalNames.set(userId, input.getText().toString());
+            org.telegram.messenger.NotificationCenter.getInstance(account).postNotificationName(org.telegram.messenger.NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_NAME);
+            org.telegram.messenger.NotificationCenter.getInstance(account).postNotificationName(org.telegram.messenger.NotificationCenter.dialogsNeedReload);
+        });
+        if (cur != null) {
+            b.setNeutralButton("Zurücksetzen", (d, w) -> {
+                org.telegram.messenger.spark.SparkLocalNames.set(userId, null);
+                org.telegram.messenger.NotificationCenter.getInstance(account).postNotificationName(org.telegram.messenger.NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_NAME);
+                org.telegram.messenger.NotificationCenter.getInstance(account).postNotificationName(org.telegram.messenger.NotificationCenter.dialogsNeedReload);
+            });
+        }
+        b.setNegativeButton(getString(R.string.Cancel), null);
+        fragment.showDialog(b.create());
+    }
+
+    private static void chooseTimezone(BaseFragment fragment, long userId) {
+        String[][] zones = org.telegram.messenger.spark.SparkTimezones.ZONES;
+        String cur = org.telegram.messenger.spark.SparkTimezones.get(userId);
+        CharSequence[] names = new CharSequence[zones.length + 1];
+        names[0] = "— keine (entfernen)";
+        for (int i = 0; i < zones.length; i++) {
+            names[i + 1] = (zones[i][1].equals(cur) ? "✓ " : "") + zones[i][0];
+        }
+        AlertDialog.Builder b = new AlertDialog.Builder(fragment.getParentActivity());
+        b.setTitle(SparkUi.mark(getString(R.string.SparkTimezone)));
+        b.setItems(names, (d, which) -> {
+            org.telegram.messenger.spark.SparkTimezones.set(userId, which == 0 ? null : zones[which - 1][1]);
+            org.telegram.messenger.NotificationCenter.getInstance(fragment.getCurrentAccount()).postNotificationName(org.telegram.messenger.NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_STATUS);
+            String t = org.telegram.messenger.spark.SparkTimezones.localTime(userId);
+            if (t != null) {
+                BulletinFactory.of(fragment).createSimpleBulletin(R.raw.contact_check, "Ortszeit: " + t).show();
+            }
+        });
+        fragment.showDialog(b.create());
+    }
+
     /** Fruehere Benutzernamen und Namen einer Person – nur auf Anfrage. */
     private static void showNameHistory(BaseFragment fragment, long userId) {
         final int account = fragment.getCurrentAccount();
@@ -284,6 +346,12 @@ public class SparkProfileMenu {
         sb.append("ID: ").append(peerId(account, userId, chatId));
         if (userId != 0) {
             TLRPC.UserFull full = mc.getUserFull(userId);
+            if (SparkConfig.get(SparkConfig.TIMEZONES)) {
+                String lt = org.telegram.messenger.spark.SparkTimezones.localTime(userId);
+                if (lt != null) {
+                    sb.append("\nOrtszeit: ").append(lt);
+                }
+            }
             sb.append("\nKonto erstellt: ").append(org.telegram.messenger.spark.SparkRegDate.shortText(userId));
             if (full != null && full.profile_photo != null && full.profile_photo.date > 0) {
                 sb.append("\nProfilbild seit: ").append(LocaleController.formatDateChat(full.profile_photo.date));
@@ -324,6 +392,12 @@ public class SparkProfileMenu {
         switch (id) {
             case ID_GROUP:
                 showGroup(fragment, userId, chatId);
+                break;
+            case ID_LOCAL_NAME:
+                editLocalName(fragment, userId);
+                break;
+            case ID_TIMEZONE:
+                chooseTimezone(fragment, userId);
                 break;
             case ID_NAME_HISTORY:
                 showNameHistory(fragment, userId);

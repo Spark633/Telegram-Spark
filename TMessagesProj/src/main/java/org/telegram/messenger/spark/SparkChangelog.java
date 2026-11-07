@@ -26,7 +26,10 @@ public class SparkChangelog {
             "Optionale Rückfrage vor dem Wiederholen einer Nachricht",
             "Profil-Bibliothek: Original immer oben, Favoriten ⭐ darunter",
             "Frühere Namen und Benutzernamen auf Anfrage: Profilmenü → „Frühere Namen“ (mit Zeitraum)",
-            "„Ausblenden → Telegram Premium“ blendet auch Premium-Optionen wie „Teilen deaktivieren“ aus"
+            "„Ausblenden → Telegram Premium“ blendet auch Premium-Optionen wie „Teilen deaktivieren“ aus – optional automatisch aus, sobald du Premium hast",
+            "Namen nur für dich ändern (auch deinen eigenen) – Profilmenü → „Name nur für mich“",
+            "Ortszeit von Kontakten: Zeitzone im Profilmenü festlegen, aktuelle Uhrzeit steht in der Info-Zeile",
+            "Weiterleiten standardmäßig ohne Absender (abschaltbar)"
         ),
         new Release("0.8", "07.11.2026",
             "Eigenes Sparkgram-App-Symbol: hellblauer Flieger mit orangen Funken (auch für Themed Icons)",

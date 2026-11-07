@@ -735,7 +735,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             items.add(UItem.asShadow(null));
         }
 
-        if (!getMessagesController().premiumFeaturesBlocked() && !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_PREMIUM)) {
+        if (!getMessagesController().premiumFeaturesBlocked() && !org.telegram.messenger.spark.SparkConfig.hidePremium()) {
             items.add(SettingCell.Factory.of(11, 0xFFB659FF, 0xFF617CFF, R.drawable.settings_premium, getString(R.string.TelegramPremium)));
         }
         if (getMessagesController().starsPurchaseAvailable() && !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_STARS)) {

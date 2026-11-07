@@ -61,6 +61,12 @@ public class SparkConfig {
     public static final String CONFIRM_REPEAT = "confirmRepeat";
     // Verlauf frueherer Benutzernamen/Namen
     public static final String NAME_HISTORY = "nameHistory";
+    // Premium-Ausblenden automatisch aus, sobald ein Konto Premium hat
+    public static final String HIDE_PREMIUM_AUTO = "hidePremiumAuto";
+    // Lokale Spitznamen, Zeitzonen, Weiterleiten ohne Absender
+    public static final String LOCAL_NAMES = "localNames";
+    public static final String TIMEZONES = "timezones";
+    public static final String FORWARD_NO_SENDER = "forwardNoSender";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
@@ -85,6 +91,22 @@ public class SparkConfig {
             return false;
         }
         return getRaw(key);
+    }
+
+    /** Premium ausblenden – entfaellt automatisch, wenn ein Konto Premium hat (falls so eingestellt). */
+    public static boolean hidePremium() {
+        if (!get(HIDE_PREMIUM)) {
+            return false;
+        }
+        if (get(HIDE_PREMIUM_AUTO)) {
+            try {
+                if (org.telegram.messenger.UserConfig.hasPremiumOnAccounts()) {
+                    return false;
+                }
+            } catch (Throwable ignore) {
+            }
+        }
+        return true;
     }
 
     /** Gespeicherter Wert ohne Hauptschalter (fuer die Anzeige in den Einstellungen). */
@@ -114,6 +136,9 @@ public class SparkConfig {
             case PHOTO_MANAGER:
             case SPARK_MARKER:
             case CHAT_MENU:
+            case HIDE_PREMIUM_AUTO:
+            case LOCAL_NAMES:
+            case TIMEZONES:
             case NAME_HISTORY:
             case MSG_DETAILS:
             case MSG_REPEAT:

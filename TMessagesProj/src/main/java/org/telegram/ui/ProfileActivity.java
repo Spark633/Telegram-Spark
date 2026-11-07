@@ -9386,7 +9386,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     }
 
                     final boolean forwardsAllowed = !userInfo.noforwards_my_enabled && !userInfo.noforwards_peer_enabled;
-                    otherItem.setSubItemShown(enable_no_forwards, forwardsAllowed && !(org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_PREMIUM) && !getUserConfig().isPremium())); // Sparkgram: Premium-Funktion ausblendbar
+                    otherItem.setSubItemShown(enable_no_forwards, forwardsAllowed && !(org.telegram.messenger.spark.SparkConfig.hidePremium() && !getUserConfig().isPremium())); // Sparkgram: Premium-Funktion ausblendbar
                     otherItem.setSubItemShown(disable_no_forwards, !forwardsAllowed);
                 }
             }
@@ -12314,7 +12314,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         otherItem.addSubItem(disable_no_forwards, R.drawable.menu_share_on_24, getString(R.string.EnableSharing));
 
                         final boolean forwardsAllowed = !userInfo.noforwards_my_enabled && !userInfo.noforwards_peer_enabled;
-                        otherItem.setSubItemShown(enable_no_forwards, forwardsAllowed && !(org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_PREMIUM) && !getUserConfig().isPremium())); // Sparkgram: Premium-Funktion ausblendbar
+                        otherItem.setSubItemShown(enable_no_forwards, forwardsAllowed && !(org.telegram.messenger.spark.SparkConfig.hidePremium() && !getUserConfig().isPremium())); // Sparkgram: Premium-Funktion ausblendbar
                         otherItem.setSubItemShown(disable_no_forwards, !forwardsAllowed);
                     }
                 }
