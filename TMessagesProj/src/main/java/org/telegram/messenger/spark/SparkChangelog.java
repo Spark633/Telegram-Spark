@@ -19,6 +19,14 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.7", "07.11.2026",
+            "Auch selbst gelöschte Nachrichten bleiben bei dir stehen – rot „🗑 von dir gelöscht“ (abschaltbar)",
+            "Nachricht antippen → „Endgültig entfernen“ für als gelöscht markierte Nachrichten",
+            "Ausblenden: Telegram Premium, Sterne und Geschenke, Business, Wallet/TON, Stories-Leiste",
+            "Info-Zeile im Profil jetzt wirklich untereinander",
+            "„Installierte Version“ zeigt alle Details in einem Fenster",
+            "Kürzere Texte bei den Sammel-Optionen"
+        ),
         new Release("0.6", "07.11.2026",
             "Gelöschte Nachrichten bleiben im Chat stehen – roter Balken und rot „🗑 gelöscht“",
             "Bearbeitungsverlauf: bearbeitete Nachrichten zeigen ✏️, antippen → alle Fassungen",

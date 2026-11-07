@@ -43,6 +43,12 @@ public class SparkConfig {
     public static final String EDIT_HISTORY = "editHistory";
     // Nach einem Update einmal "Was ist neu?" anzeigen
     public static final String WHATS_NEW_HINT = "whatsNewHint";
+    // Oberflaeche aufraeumen
+    public static final String HIDE_PREMIUM = "hidePremium";
+    public static final String HIDE_STARS = "hideStars";
+    public static final String HIDE_BUSINESS = "hideBusiness";
+    public static final String HIDE_WALLET = "hideWallet";
+    public static final String HIDE_STORIES = "hideStories";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen

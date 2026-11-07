@@ -710,7 +710,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         }
 
         final boolean walletAbove = getConnectionsManager().getCurrentTime() - 1791538462 < 4 * 7 * 24 * 60 * 60;
-        if (walletAbove && getMessagesController().config.walletAvailable.get()) {
+        if (walletAbove && getMessagesController().config.walletAvailable.get() && !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_WALLET)) {
             final GramWallet wallet = GramWallet.getInstance(currentAccount);
             items.add(SettingCell.Factory.of(25, 0, 0, Theme.isCurrentThemeDark() ? R.drawable.settings_wallet_dark : R.drawable.settings_wallet, TextCell.applyNewSpanTimed(getString(R.string.WalletAttachMoney), 1790679020), null, wallet.getBalance() > 0 ? GramWallet.formatGrams(wallet.getBalance()) : null));
             items.add(UItem.asShadow(null));
@@ -729,31 +729,31 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         items.add(SettingCell.Factory.of(50, IconBackgroundColors.ORANGE_DEEP.top, IconBackgroundColors.ORANGE_DEEP.bottom, R.drawable.settings_features, org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkSettings)), getString(R.string.SparkSettingsInfo)));
 
         items.add(UItem.asShadow(null));
-        if (!walletAbove && getMessagesController().config.walletAvailable.get()) {
+        if (!walletAbove && getMessagesController().config.walletAvailable.get() && !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_WALLET)) {
             final GramWallet wallet = GramWallet.getInstance(currentAccount);
             items.add(SettingCell.Factory.of(25, 0, 0, Theme.isCurrentThemeDark() ? R.drawable.settings_wallet_dark : R.drawable.settings_wallet, TextCell.applyNewSpanTimed(getString(R.string.WalletAttachMoney), 1790679020), null, wallet.getBalance() > 0 ? GramWallet.formatGrams(wallet.getBalance()) : null));
             items.add(UItem.asShadow(null));
         }
 
-        if (!getMessagesController().premiumFeaturesBlocked()) {
+        if (!getMessagesController().premiumFeaturesBlocked() && !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_PREMIUM)) {
             items.add(SettingCell.Factory.of(11, 0xFFB659FF, 0xFF617CFF, R.drawable.settings_premium, getString(R.string.TelegramPremium)));
         }
-        if (getMessagesController().starsPurchaseAvailable()) {
+        if (getMessagesController().starsPurchaseAvailable() && !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_STARS)) {
             StarsController c = StarsController.getInstance(currentAccount);
             long balance = c.getBalance().amount;
             items.add(SettingCell.Factory.of(12, 0xFFEFA612, 0xFFE77512, R.drawable.settings_stars, getString(R.string.TelegramStars), null, c.balanceAvailable() && balance > 0 ? StarsIntroActivity.formatStarsAmount(c.getBalance(), 0.85f, ' ') : ""));
         }
         StarsController.getInstance(currentAccount, true).getBalance();
-        if (ApplicationLoader.isBetaBuild() || ApplicationLoader.isStandaloneBuild() || ApplicationLoader.isHuaweiStoreBuild() || (StarsController.getInstance(currentAccount, true).balanceAvailable() && (StarsController.getInstance(currentAccount, true).hasTransactions() || StarsController.getInstance(currentAccount, true).getBalance().positive()))) {
+        if (!org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_STARS) && ApplicationLoader.isBetaBuild() || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_STARS) && (ApplicationLoader.isStandaloneBuild() || ApplicationLoader.isHuaweiStoreBuild()) || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_STARS) && (StarsController.getInstance(currentAccount, true).balanceAvailable() && (StarsController.getInstance(currentAccount, true).hasTransactions() || StarsController.getInstance(currentAccount, true).getBalance().positive()))) {
             final StarsController c = StarsController.getTonInstance(currentAccount);
             final long balance = c.getBalance().amount;
             items.add(SettingCell.Factory.of(13, 0xFF1BA4ED, 0xFF1488E1, R.drawable.filled_gram_earnings, getString(R.string.GramEarnings), null, c.balanceAvailable() && balance > 0 ? StarsIntroActivity.formatStarsAmount(c.getBalance(), 0.85f, ' ') : ""));
         }
 
-        if (!getMessagesController().premiumFeaturesBlocked()) {
+        if (!getMessagesController().premiumFeaturesBlocked() && !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_BUSINESS)) {
             items.add(SettingCell.Factory.of(15, 0xFFF45255, 0xFFDF3955, R.drawable.settings_business, getString(R.string.TelegramBusiness)));
         }
-        if (!getMessagesController().premiumPurchaseBlocked()) {
+        if (!getMessagesController().premiumPurchaseBlocked() && !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_STARS)) {
             items.add(SettingCell.Factory.of(16, 0xFFF38B31, 0xFFE26314, R.drawable.settings_gift, getString(R.string.SendAGift)));
         }
         if (items.get(items.size() - 1).viewType != UniversalAdapter.VIEW_TYPE_SHADOW)
