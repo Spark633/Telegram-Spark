@@ -24,7 +24,10 @@ public class SparkChangelog {
             "Anzeige, wie oft eine Nachricht weitergeleitet wurde (⤳ 12×, bei Kanal-Beiträgen)",
             "Sparkgram-Einstellungen zeigen oben, für welches Konto sie gelten",
             "Notiz-Zeile im Profil: „Noch keine Notiz“ bzw. nur eine kurze Vorschau",
-            "Ortszeit in der Info-Zeile kurz: Uhrzeit und UTC-Zeitzone"
+            "Ortszeit in der Info-Zeile kurz: Uhrzeit und UTC-Zeitzone",
+            "Gruppen: „Admins anzeigen“ mit Titeln (auch als normales Mitglied)",
+            "Gruppen: „Aktive Mitglieder“ aus dem Verlauf mit Anzahl, zuletzt aktiv und ✅/❌ noch in der Gruppe",
+            "Kanäle: „Bekannte Autoren“ aus signierten Beiträgen"
         ),
         new Release("0.9", "07.11.2026",
             "Notiz direkt im Profil als eigene Zeile – zeigt die Notiz oder „Notiz hinzufügen“",

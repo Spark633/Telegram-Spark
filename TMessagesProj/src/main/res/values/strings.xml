@@ -11760,5 +11760,9 @@
     <string name="SparkTimezone">Zeitzone festlegen</string>
     <string name="SparkForwardNoSenderToggle">Weiterleiten standardmäßig ohne Absender</string>
     <string name="SparkForwardCountToggle">Anzeige, wie oft weitergeleitet</string>
+    <string name="SparkAdminsList">Admins anzeigen</string>
+    <string name="SparkActiveMembers">Aktive Mitglieder</string>
+    <string name="SparkKnownAuthors">Bekannte Autoren</string>
+    <string name="SparkKnownAuthorsToggle">Bekannte Autoren (Kanäle)</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

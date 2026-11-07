@@ -125,6 +125,20 @@ public class SparkMembership {
         }
     }
 
+    /** Pruefung einer bestimmten Person in einer Gruppe anstossen (z. B. aus der Liste "Aktive Mitglieder"). */
+    public static void requestCheck(int account, long chatId, long userId, long lastActive) {
+        if (!enabled() || userId <= 0 || userId == UserConfig.getInstance(account).getClientUserId()) {
+            return;
+        }
+        Info i = info(account, chatId, userId);
+        if (lastActive > i.lastActive) {
+            i.lastActive = lastActive;
+        }
+        if (System.currentTimeMillis() - i.checkedAt > NORMAL_TTL) {
+            enqueue(account, userId);
+        }
+    }
+
     private static void setState(int account, long chatId, long userId, int state, long eventTime) {
         if (userId <= 0) {
             return;

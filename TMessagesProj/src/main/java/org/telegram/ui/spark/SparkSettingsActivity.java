@@ -72,6 +72,9 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_TIMEZONES = 52;
     private static final int ID_FORWARD_NO_SENDER = 53;
     private static final int ID_FORWARD_COUNT = 54;
+    private static final int ID_GROUP_ADMINS = 55;
+    private static final int ID_GROUP_ACTIVE = 56;
+    private static final int ID_CHANNEL_AUTHORS = 57;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -144,6 +147,9 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asShadow(getString(R.string.SparkConfirmInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderGroups)));
+        items.add(check(ID_GROUP_ADMINS, R.string.SparkAdminsList, SparkConfig.GROUP_ADMINS));
+        items.add(check(ID_GROUP_ACTIVE, R.string.SparkActiveMembers, SparkConfig.GROUP_ACTIVE));
+        items.add(check(ID_CHANNEL_AUTHORS, R.string.SparkKnownAuthorsToggle, SparkConfig.CHANNEL_AUTHORS));
         items.add(check(ID_MEMBER_CHECK, R.string.SparkMemberCheckToggle, SparkConfig.MEMBER_CHECK));
         if (SparkConfig.getRaw(SparkConfig.MEMBER_CHECK)) {
             items.add(subCheck(ID_MEMBER_HINT, R.string.SparkMemberHintToggle, SparkConfig.MEMBER_CHECK_HINT));
@@ -266,6 +272,9 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_TIMEZONES: toggle(SparkConfig.TIMEZONES); break;
             case ID_FORWARD_NO_SENDER: toggle(SparkConfig.FORWARD_NO_SENDER); break;
             case ID_FORWARD_COUNT: toggle(SparkConfig.FORWARD_COUNT); break;
+            case ID_GROUP_ADMINS: toggle(SparkConfig.GROUP_ADMINS); break;
+            case ID_GROUP_ACTIVE: toggle(SparkConfig.GROUP_ACTIVE); break;
+            case ID_CHANNEL_AUTHORS: toggle(SparkConfig.CHANNEL_AUTHORS); break;
             case ID_NAME_HISTORY: toggle(SparkConfig.NAME_HISTORY); break;
             case ID_HIDE_STARS: toggle(SparkConfig.HIDE_STARS); break;
             case ID_HIDE_BUSINESS: toggle(SparkConfig.HIDE_BUSINESS); break;

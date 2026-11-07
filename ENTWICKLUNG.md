@@ -76,13 +76,13 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   Bibliothek-Favoriten, frühere Namen auf Anfrage, Premium-Optionen ausblendbar (+Automatik pro Konto),
   lokale Namen, Ortszeit, Weiterleiten ohne Absender, Einstellungen pro Konto.
 - 0.10 (in Arbeit): Sprachnachricht-Rückfrage auch im V2-Aufnahmeweg (MediaController.completeAudioRecordingV2),
-  Weiterleitungszähler, Kontoname als Untertitel, kurze Notiz-Vorschau, kurze Ortszeit.
+  Weiterleitungszähler, Kontoname als Untertitel, kurze Notiz-Vorschau, kurze Ortszeit,
+  Etappe 2 teilweise: Admins anzeigen, Aktive Mitglieder (✅/❌), Bekannte Autoren (`SparkGroupListActivity`).
 
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Weiterleiten ohne Limit, schneller markieren / Auswahl-Limit, Bild-Link kopieren.
-- **Etappe 2 (Gruppen & Admin):** Admin-Liste, „bekannte Autoren“ bei Kanälen, „Aktive Mitglieder“ mit ✅/❌,
-  Admin-Funktion (mit Spark633 abstimmen).
+- **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
 - **Etappe 4:** Übersetzen (einzeln, ganzer Chat, automatisch, eigene vor dem Senden; Google + DeepL),
   Senden über eigenen Bot.
 - **Etappe 5:** Online-Protokoll (echte Zeiten; „kürzlich“ getrennt markiert, fließt nicht in

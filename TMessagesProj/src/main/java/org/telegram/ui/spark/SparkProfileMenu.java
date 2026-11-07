@@ -36,9 +36,12 @@ public class SparkProfileMenu {
     public static final int ID_NAME_HISTORY = 908;
     public static final int ID_LOCAL_NAME = 909;
     public static final int ID_TIMEZONE = 910;
+    public static final int ID_ADMINS = 911;
+    public static final int ID_ACTIVE = 912;
+    public static final int ID_AUTHORS = 913;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_TIMEZONE;
+        return id >= ID_COPY_ID && id <= ID_AUTHORS;
     }
 
     public interface Adder {
@@ -106,6 +109,22 @@ public class SparkProfileMenu {
         }
         if (self && SparkConfig.get(SparkConfig.PHOTO_MANAGER)) {
             list.add(new Entry(ID_PHOTOS, R.drawable.msg_photos, label(getString(R.string.SparkPhotoManager), marked)));
+        }
+        // Gruppen- und Kanal-Listen
+        if (chatId != 0) {
+            TLRPC.Chat chat = MessagesController.getInstance(account).getChat(chatId);
+            boolean broadcast = ChatObject.isChannel(chat) && !chat.megagroup;
+            if (chat != null && !broadcast) {
+                if (SparkConfig.get(SparkConfig.GROUP_ADMINS)) {
+                    list.add(new Entry(ID_ADMINS, R.drawable.msg_admins, label(getString(R.string.SparkAdminsList), marked)));
+                }
+                if (SparkConfig.get(SparkConfig.GROUP_ACTIVE)) {
+                    list.add(new Entry(ID_ACTIVE, R.drawable.msg_groups, label(getString(R.string.SparkActiveMembers), marked)));
+                }
+            }
+            if (chat != null && broadcast && SparkConfig.get(SparkConfig.CHANNEL_AUTHORS)) {
+                list.add(new Entry(ID_AUTHORS, R.drawable.msg_edit, label(getString(R.string.SparkKnownAuthors), marked)));
+            }
         }
         // nur im geoeffneten Chat
         if (fragment instanceof org.telegram.ui.ChatActivity) {
@@ -392,6 +411,15 @@ public class SparkProfileMenu {
         switch (id) {
             case ID_GROUP:
                 showGroup(fragment, userId, chatId);
+                break;
+            case ID_ADMINS:
+                fragment.presentFragment(new SparkGroupListActivity(chatId, SparkGroupListActivity.MODE_ADMINS));
+                break;
+            case ID_ACTIVE:
+                fragment.presentFragment(new SparkGroupListActivity(chatId, SparkGroupListActivity.MODE_ACTIVE));
+                break;
+            case ID_AUTHORS:
+                fragment.presentFragment(new SparkGroupListActivity(chatId, SparkGroupListActivity.MODE_AUTHORS));
                 break;
             case ID_LOCAL_NAME:
                 editLocalName(fragment, userId);
