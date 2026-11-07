@@ -23,7 +23,10 @@ public class SparkChangelog {
             "Gelöschte Nachrichten bleiben im Chat stehen – roter Balken und rot „🗑 gelöscht“",
             "Bearbeitungsverlauf: bearbeitete Nachrichten zeigen ✏️, lange drücken → alle Fassungen",
             "„Was ist neu?“ in den Sparkgram-Einstellungen, Hinweis nach Updates",
-            "Versionsnummern für Sparkgram"
+            "Versionsnummern für Sparkgram",
+            "Info-Zeile im Profil jetzt untereinander",
+            "Profilbilder in der Profil-Bibliothek in Farbe statt grau",
+            "Hauptschalter oben angeheftet, Konten-Hinweis nicht mehr ausgegraut"
         ),
         new Release("0.5", "07.11.2026",
             "Sammel-Knopf „Sparkgram ✦“ im Profil- und Chat-Menü (einstellbar)",
