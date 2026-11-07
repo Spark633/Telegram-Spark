@@ -11753,7 +11753,7 @@
     <string name="SparkNameHistoryToggle">Frühere Namen merken (im Menü abrufbar)</string>
     <string name="SparkNoteEmptyRow">Noch keine Notiz – tippen zum Hinzufügen</string>
     <string name="SparkNameHistory">Frühere Namen</string>
-    <string name="SparkHidePremiumAuto">automatisch aus, wenn du Premium hast</string>
+    <string name="SparkHidePremiumAuto">automatisch aus, wenn dieses Konto Premium hat</string>
     <string name="SparkLocalNamesToggle">Namen nur für mich ändern</string>
     <string name="SparkLocalName">Name nur für mich</string>
     <string name="SparkTimezonesToggle">Ortszeit von Kontakten</string>

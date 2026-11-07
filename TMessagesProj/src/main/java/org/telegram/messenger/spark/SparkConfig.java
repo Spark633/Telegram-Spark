@@ -7,7 +7,8 @@ import org.telegram.messenger.ApplicationLoader;
 
 /**
  * Zentrale Schalter fuer alle Sparkgram-Zusatzfunktionen.
- * Jede Funktion ist einzeln aktivierbar und wird in "sparkgram_config" gespeichert.
+ * Jede Funktion ist einzeln aktivierbar und wird PRO KONTO gespeichert ("sparkgram_config_<konto>").
+ * App-weite Werte (Updates, "Was ist neu", Pruefabstaende) liegen weiter in "sparkgram_config".
  */
 public class SparkConfig {
 
@@ -78,11 +79,46 @@ public class SparkConfig {
 
     private static SharedPreferences prefs;
 
+    /** App-weite Einstellungen (fuer alle Konten gleich). */
     public static SharedPreferences prefs() {
         if (prefs == null) {
             prefs = ApplicationLoader.applicationContext.getSharedPreferences("sparkgram_config", Context.MODE_PRIVATE);
         }
         return prefs;
+    }
+
+    private static final SharedPreferences[] accountPrefs = new SharedPreferences[org.telegram.messenger.UserConfig.MAX_ACCOUNT_COUNT];
+
+    /** Einstellungen des aktuell gewaehlten Kontos. Beim ersten Zugriff werden die bisherigen (gemeinsamen) Werte uebernommen. */
+    public static SharedPreferences accountPrefs() {
+        int account = org.telegram.messenger.UserConfig.selectedAccount;
+        if (account < 0 || account >= accountPrefs.length) {
+            account = 0;
+        }
+        SharedPreferences p = accountPrefs[account];
+        if (p == null) {
+            p = ApplicationLoader.applicationContext.getSharedPreferences("sparkgram_config_" + account, Context.MODE_PRIVATE);
+            if (!p.getBoolean("__migrated", false)) {
+                SharedPreferences.Editor e = p.edit();
+                for (java.util.Map.Entry<String, ?> en : prefs().getAll().entrySet()) {
+                    if (en.getValue() instanceof Boolean && !isGlobal(en.getKey())) {
+                        e.putBoolean(en.getKey(), (Boolean) en.getValue());
+                    }
+                }
+                e.putBoolean("__migrated", true).apply();
+            }
+            accountPrefs[account] = p;
+        }
+        return p;
+    }
+
+    /** Werte, die fuer die ganze App gelten statt pro Konto. */
+    private static boolean isGlobal(String key) {
+        return UPDATE_TEST_BUILDS.equals(key) || WHATS_NEW_HINT.equals(key);
+    }
+
+    private static SharedPreferences store(String key) {
+        return isGlobal(key) ? prefs() : accountPrefs();
     }
 
     /** Wert einer Funktion unter Beruecksichtigung des Hauptschalters. */
@@ -93,14 +129,14 @@ public class SparkConfig {
         return getRaw(key);
     }
 
-    /** Premium ausblenden – entfaellt automatisch, wenn ein Konto Premium hat (falls so eingestellt). */
+    /** Premium ausblenden – entfaellt automatisch, wenn DIESES Konto Premium hat (falls so eingestellt). */
     public static boolean hidePremium() {
         if (!get(HIDE_PREMIUM)) {
             return false;
         }
         if (get(HIDE_PREMIUM_AUTO)) {
             try {
-                if (org.telegram.messenger.UserConfig.hasPremiumOnAccounts()) {
+                if (org.telegram.messenger.UserConfig.getInstance(org.telegram.messenger.UserConfig.selectedAccount).isPremium()) {
                     return false;
                 }
             } catch (Throwable ignore) {
@@ -111,11 +147,11 @@ public class SparkConfig {
 
     /** Gespeicherter Wert ohne Hauptschalter (fuer die Anzeige in den Einstellungen). */
     public static boolean getRaw(String key) {
-        return prefs().getBoolean(key, defaultValue(key));
+        return store(key).getBoolean(key, defaultValue(key));
     }
 
     public static void set(String key, boolean value) {
-        prefs().edit().putBoolean(key, value).apply();
+        store(key).edit().putBoolean(key, value).apply();
     }
 
     public static boolean toggle(String key) {

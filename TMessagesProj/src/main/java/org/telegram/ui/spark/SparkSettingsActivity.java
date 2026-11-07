@@ -92,7 +92,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     protected void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
         final boolean on = SparkConfig.getRaw(SparkConfig.MASTER);
         // Hauptschalter ist oben fest angeheftet (siehe createView), hier nur der Hinweis
-        items.add(UItem.asShadow(getString(R.string.SparkMasterInfo)));
+        items.add(UItem.asShadow(getString(R.string.SparkMasterInfo) + "\n\nDiese Einstellungen gelten für das Konto: " + org.telegram.messenger.UserObject.getUserName(getUserConfig().getCurrentUser()) + "."));
 
         final int start = items.size();
 
