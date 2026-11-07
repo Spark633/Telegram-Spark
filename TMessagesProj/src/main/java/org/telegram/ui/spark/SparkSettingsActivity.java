@@ -124,15 +124,16 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_MARKER, R.string.SparkMarkerToggle, SparkConfig.SPARK_MARKER));
         items.add(UItem.asShadow(getString(R.string.SparkLookInfo)));
 
-        items.add(UItem.asHeader(getString(R.string.SparkHeaderAccounts)));
-        items.add(UItem.asShadow(getString(R.string.SparkAccountsInfo)));
-
         // Ohne Hauptschalter: alles bis hier ausgrauen
         if (!on) {
             for (int i = start; i < items.size(); i++) {
                 items.get(i).setEnabled(false);
             }
         }
+
+        // Konten: immer aktiv, nicht vom Hauptschalter betroffen
+        items.add(UItem.asHeader(getString(R.string.SparkHeaderAccounts)));
+        items.add(UItem.asShadow(getString(R.string.SparkAccountsInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderUpdates)));
         items.add(UItem.asButton(ID_VERSION, R.drawable.msg_info, getString(R.string.SparkVersion), SparkUpdater.buildLabel()));
