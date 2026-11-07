@@ -44,7 +44,9 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_REPO = 17;
     private static final int ID_CRASH = 18;
     private static final int ID_CHAT_MENU = 19;
-    private static final int ID_MENU_GROUPED = 20;
+    private static final int ID_PROFILE_MENU = 20;
+    private static final int ID_PROFILE_MENU_GROUPED = 21;
+    private static final int ID_CHAT_MENU_GROUPED = 22;
 
     @Override
     protected CharSequence getTitle() {
@@ -91,8 +93,14 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asShadow(getString(R.string.SparkNotesInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderLook)));
+        items.add(check(ID_PROFILE_MENU, R.string.SparkProfileMenuToggle, SparkConfig.PROFILE_MENU));
+        if (SparkConfig.getRaw(SparkConfig.PROFILE_MENU)) {
+            items.add(subCheck(ID_PROFILE_MENU_GROUPED, R.string.SparkMenuGroupedToggle, SparkConfig.PROFILE_MENU_GROUPED));
+        }
         items.add(check(ID_CHAT_MENU, R.string.SparkChatMenuToggle, SparkConfig.CHAT_MENU));
-        items.add(check(ID_MENU_GROUPED, R.string.SparkMenuGroupedToggle, SparkConfig.MENU_GROUPED));
+        if (SparkConfig.getRaw(SparkConfig.CHAT_MENU)) {
+            items.add(subCheck(ID_CHAT_MENU_GROUPED, R.string.SparkMenuGroupedToggle, SparkConfig.CHAT_MENU_GROUPED));
+        }
         items.add(check(ID_MARKER, R.string.SparkMarkerToggle, SparkConfig.SPARK_MARKER));
         items.add(UItem.asShadow(getString(R.string.SparkLookInfo)));
 
@@ -143,7 +151,9 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_NOTES: toggle(SparkConfig.NOTES); break;
             case ID_MARKER: toggle(SparkConfig.SPARK_MARKER); break;
             case ID_CHAT_MENU: toggle(SparkConfig.CHAT_MENU); break;
-            case ID_MENU_GROUPED: toggle(SparkConfig.MENU_GROUPED); break;
+            case ID_PROFILE_MENU: toggle(SparkConfig.PROFILE_MENU); break;
+            case ID_PROFILE_MENU_GROUPED: toggle(SparkConfig.PROFILE_MENU_GROUPED); break;
+            case ID_CHAT_MENU_GROUPED: toggle(SparkConfig.CHAT_MENU_GROUPED); break;
             case ID_UPDATE_TEST: toggle(SparkConfig.UPDATE_TEST_BUILDS); break;
             case ID_PROFILE_LIBRARY: presentFragment(new SparkProfileLibraryActivity()); break;
             case ID_PHOTO_MANAGER_OPEN: presentFragment(new SparkPhotoManagerActivity()); break;

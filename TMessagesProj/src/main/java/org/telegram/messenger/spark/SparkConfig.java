@@ -24,8 +24,11 @@ public class SparkConfig {
     public static final String PHOTO_MANAGER = "photoManager";
     // Sparkgram-Funktionen auch im Drei-Punkte-Menue eines Chats
     public static final String CHAT_MENU = "chatMenu";
-    // Sparkgram-Eintraege im Menue unter einem Knopf "Sparkgram" sammeln statt einzeln
-    public static final String MENU_GROUPED = "menuGrouped";
+    // Sparkgram-Funktionen im Drei-Punkte-Menue des Profils
+    public static final String PROFILE_MENU = "profileMenu";
+    // Eintraege unter einem Knopf "Sparkgram" sammeln statt einzeln (je Menue)
+    public static final String PROFILE_MENU_GROUPED = "profileMenuGrouped";
+    public static final String CHAT_MENU_GROUPED = "chatMenuGrouped";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
@@ -77,6 +80,7 @@ public class SparkConfig {
             case PHOTO_MANAGER:
             case SPARK_MARKER:
             case CHAT_MENU:
+            case PROFILE_MENU:
             case CLONE_NAME:
             case CLONE_BIO:
             case CLONE_PHOTO:

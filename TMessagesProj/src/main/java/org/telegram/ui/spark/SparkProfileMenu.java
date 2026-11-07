@@ -42,10 +42,10 @@ public class SparkProfileMenu {
 
     /** Drei-Punkte-Menue im Profil. */
     public static void addItems(BaseFragment fragment, ActionBarMenuItem menu, long userId, long chatId) {
-        if (menu == null) {
+        if (menu == null || !SparkConfig.get(SparkConfig.PROFILE_MENU)) {
             return;
         }
-        addItems(fragment, (id, icon, text) -> menu.addSubItem(id, icon, text), userId, chatId);
+        addItems(fragment, (id, icon, text) -> menu.addSubItem(id, icon, text), userId, chatId, SparkConfig.get(SparkConfig.PROFILE_MENU_GROUPED));
     }
 
     /** Drei-Punkte-Menue im Chat (falls in den Einstellungen aktiviert). */
@@ -53,7 +53,7 @@ public class SparkProfileMenu {
         if (menu == null || !SparkConfig.get(SparkConfig.CHAT_MENU)) {
             return;
         }
-        addItems(fragment, (id, icon, text) -> menu.lazilyAddSubItem(id, icon, text), userId, chatId);
+        addItems(fragment, (id, icon, text) -> menu.lazilyAddSubItem(id, icon, text), userId, chatId, SparkConfig.get(SparkConfig.CHAT_MENU_GROUPED));
     }
 
     private static class Entry {
@@ -100,8 +100,8 @@ public class SparkProfileMenu {
         return marked ? SparkUi.mark(text) : text;
     }
 
-    public static void addItems(BaseFragment fragment, Adder menu, long userId, long chatId) {
-        if (SparkConfig.get(SparkConfig.MENU_GROUPED)) {
+    public static void addItems(BaseFragment fragment, Adder menu, long userId, long chatId, boolean grouped) {
+        if (grouped) {
             if (!entries(fragment, userId, chatId, false).isEmpty()) {
                 menu.add(ID_GROUP, R.drawable.settings_features, SparkUi.mark("Sparkgram"));
             }
