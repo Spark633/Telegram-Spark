@@ -26,7 +26,9 @@ public class SparkChangelog {
             "Mitglieder & Aktivität: „Weiter durchsuchen“ steht jetzt oben",
             "Suche nach Name/ID wieder entfernt",
             "Ghost-Modus (Privatsphäre): keine Lesebestätigung, kein „schreibt …“, nicht online – einzeln wählbar; im Chat-Menü „Jetzt als gelesen melden“",
-            "Chat exportieren als PDF oder HTML (Chat-Menü): 1.000 / 5.000 / 20.000 Nachrichten oder ganzer Chat → Downloads"
+            "Chat exportieren als PDF oder HTML (Chat-Menü): 1.000 / 5.000 / 20.000 Nachrichten oder ganzer Chat → Downloads",
+            "PDF im Chat-Look: eigene Nachrichten rechts in Grün, andere links, Fotos/Sticker/Vorschaubilder eingebettet",
+            "Sicherung & Konten übertragen: Konten-Liste und Sparkgram-Daten exportieren; auf dem neuen Gerät ist die Nummer beim Anmelden schon eingetragen"
         ),
         new Release("0.12", "07.11.2026",
             "Einstellungen: Punkte mit Unterpunkten lassen sich auf- und zuklappen (Zeile antippen; Schalter = an/aus)",

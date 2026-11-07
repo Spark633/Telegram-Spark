@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.DialogObject;
+import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.MediaController;
 import org.telegram.messenger.MessageObject;
@@ -13,6 +14,7 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.spark.SparkRateLimit;
 import org.telegram.tgnet.ConnectionsManager;
+import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
@@ -74,10 +76,6 @@ public class SparkExport {
             fragment.showDialog(b.create());
         });
         fragment.showDialog(f.create());
-    }
-
-    private interface TextDrawer {
-        void accept(CharSequence text, android.text.TextPaint paint);
     }
 
     private static class Job {
@@ -146,10 +144,18 @@ public class SparkExport {
         void finish(String note) {
             final String title = SparkNotesActivity.dialogName(account, dialogId);
             final ArrayList<TLRPC.Message> list = new ArrayList<>(messages);
+            if (pdf) {
+                int n = 0;
+                for (TLRPC.Message m : list) {
+                    if (n++ > 600) break; // nicht unbegrenzt viele Bilder laden
+                    try { prepareImage(m); } catch (Throwable e) { FileLog.e(e); }
+                }
+            }
             org.telegram.messenger.Utilities.globalQueue.postRunnable(() -> {
                 String error = null;
                 File out = null;
                 try {
+                    if (pdf) waitForImages();
                     Collections.reverse(list);
                     out = new File(ApplicationLoader.applicationContext.getCacheDir(), pdf ? "sparkgram_export.pdf" : "sparkgram_export.html");
                     if (pdf) {
@@ -215,91 +221,289 @@ public class SparkExport {
             return "[Medium]";
         }
 
-        /** PDF (A4) mit Android-Bordmitteln: Tagesueberschriften, Absender, Uhrzeit, Text. */
+        // ---------------------------------------------------------------- Bilder fuer das PDF
+
+        private final java.util.HashMap<Integer, File> imageFiles = new java.util.HashMap<>();
+
+        /** Bildquelle einer Nachricht (Foto, statischer Sticker, sonst Vorschaubild) – startet ggf. den Download. */
+        private void prepareImage(TLRPC.Message m) {
+            if (m.media == null) return;
+            FileLoader fl = FileLoader.getInstance(account);
+            org.telegram.messenger.ImageLocation loc = null;
+            TLObject attach = null;
+            String ext = "jpg";
+            if (m.media instanceof TLRPC.TL_messageMediaPhoto && m.media.photo != null) {
+                TLRPC.PhotoSize size = FileLoader.getClosestPhotoSizeWithSize(m.media.photo.sizes, 800);
+                if (size != null) {
+                    attach = size;
+                    loc = org.telegram.messenger.ImageLocation.getForPhoto(size, m.media.photo);
+                }
+            } else if (m.media.document != null) {
+                TLRPC.Document d = m.media.document;
+                boolean staticSticker = "image/webp".equals(d.mime_type);
+                if (staticSticker) {
+                    attach = d;
+                    ext = "webp";
+                    loc = org.telegram.messenger.ImageLocation.getForDocument(d);
+                } else {
+                    TLRPC.PhotoSize thumb = FileLoader.getClosestPhotoSizeWithSize(d.thumbs, 320);
+                    if (thumb != null && !(thumb instanceof TLRPC.TL_photoStrippedSize) && !(thumb instanceof TLRPC.TL_photoPathSize)) {
+                        attach = thumb;
+                        loc = org.telegram.messenger.ImageLocation.getForDocument(thumb, d);
+                    }
+                }
+            }
+            if (attach == null || loc == null) return;
+            File f = fl.getPathToAttach(attach, true);
+            if (f == null) return;
+            imageFiles.put(m.id, f);
+            if (!f.exists()) {
+                fl.loadFile(loc, new MessageObject(account, m, false, false), ext, FileLoader.PRIORITY_NORMAL, 1);
+            }
+        }
+
+        /** Wartet (begrenzt), bis die Bilder geladen sind. Hintergrund-Thread! */
+        private void waitForImages() {
+            long deadline = System.currentTimeMillis() + Math.min(120_000, 10_000 + imageFiles.size() * 1500L);
+            while (System.currentTimeMillis() < deadline) {
+                boolean all = true;
+                for (File f : imageFiles.values()) {
+                    if (!f.exists()) { all = false; break; }
+                }
+                if (all) return;
+                try { Thread.sleep(300); } catch (InterruptedException ignore) { return; }
+            }
+        }
+
+        // ---------------------------------------------------------------- PDF im Chat-Look
+
+        private static final int PAGE_W = 595, PAGE_H = 842, MARGIN = 28, FOOTER = 26;
+
+        private android.graphics.pdf.PdfDocument pdfDoc;
+        private android.graphics.pdf.PdfDocument.Page pdfPage;
+        private int pageNo;
+        private float py;
+        private String pdfTitle;
+        private android.text.TextPaint pBody, pName, pSmall, pTitle, pCenter;
+        private android.graphics.Paint pBubbleIn, pBubbleOut, pBg;
+
+        private void newPage() {
+            if (pdfPage != null) pdfDoc.finishPage(pdfPage);
+            pageNo++;
+            pdfPage = pdfDoc.startPage(new android.graphics.pdf.PdfDocument.PageInfo.Builder(PAGE_W, PAGE_H, pageNo).create());
+            android.graphics.Canvas c = pdfPage.getCanvas();
+            c.drawRect(0, 0, PAGE_W, PAGE_H, pBg);
+            String foot = pdfTitle + " · Seite " + pageNo;
+            c.drawText(foot, (PAGE_W - pSmall.measureText(foot)) / 2f, PAGE_H - 12, pSmall);
+            py = MARGIN;
+        }
+
+        private float spaceLeft() {
+            return PAGE_H - FOOTER - py;
+        }
+
+        private android.text.StaticLayout layout(CharSequence text, android.text.TextPaint paint, int width) {
+            return new android.text.StaticLayout(text, paint, Math.max(10, width), android.text.Layout.Alignment.ALIGN_NORMAL, 1.15f, 0, false);
+        }
+
+        private static float maxLineWidth(android.text.StaticLayout l) {
+            float w = 0;
+            for (int i = 0; i < l.getLineCount(); i++) w = Math.max(w, l.getLineWidth(i));
+            return w;
+        }
+
+        /** Zentrierte Zeile (Datum, Service-Nachricht) als kleine Pille. */
+        private void drawCenter(String text) {
+            float h = 18;
+            if (spaceLeft() < h + 6) newPage();
+            android.graphics.Canvas c = pdfPage.getCanvas();
+            float w = pCenter.measureText(text) + 16;
+            float x = (PAGE_W - w) / 2f;
+            android.graphics.Paint pill = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            pill.setColor(0x55000000);
+            c.drawRoundRect(new android.graphics.RectF(x, py, x + w, py + h), 9, 9, pill);
+            c.drawText(text, x + 8, py + 12.5f, pCenter);
+            py += h + 8;
+        }
+
+        private void drawBubble(TLRPC.Message m, boolean group, SimpleDateFormat time) {
+            final int maxW = (int) ((PAGE_W - 2 * MARGIN) * 0.75f);
+            final int pad = 8;
+            final int inner = maxW - 2 * pad;
+            final boolean out = m.out;
+
+            String name = group && !out ? sender(m) : null;
+            String fwd = m.fwd_from != null ? "↪ Weitergeleitet" + (m.fwd_from.from_name != null ? " von " + m.fwd_from.from_name : "") : null;
+            String med = media(m);
+            File imgFile = imageFiles.get(m.id);
+            android.graphics.Bitmap bmp = null;
+            if (imgFile != null && imgFile.exists()) {
+                try {
+                    bmp = org.telegram.messenger.ImageLoader.loadBitmap(imgFile.getAbsolutePath(), null, 800, 800, false);
+                } catch (Throwable ignore) {}
+            }
+            boolean sticker = med != null && med.startsWith("[Sticker");
+            String timeText = time.format(new Date(m.date * 1000L)) + (m.edit_date != 0 ? " · bearbeitet" : "");
+
+            android.text.StaticLayout nameL = name != null ? layout(name, pName, inner) : null;
+            android.text.StaticLayout fwdL = fwd != null ? layout(fwd, pSmall, inner) : null;
+            // Platzhalter nur, wenn kein Bild da ist (oder bei Sprachnachricht/Datei)
+            String medText = med != null && (bmp == null || med.startsWith("[Sprach") || med.startsWith("[Datei") || med.startsWith("[Audio")) ? med : null;
+            if (med != null && bmp != null && (med.startsWith("[Video") || med.startsWith("[GIF"))) medText = med;
+            android.text.StaticLayout medL = medText != null ? layout(medText, pSmall, inner) : null;
+            android.text.StaticLayout textL = !TextUtils.isEmpty(m.message) ? layout(m.message, pBody, inner) : null;
+
+            float imgW = 0, imgH = 0;
+            if (bmp != null) {
+                float maxImgW = sticker ? 120 : inner;
+                float maxImgH = sticker ? 120 : 260;
+                float scale = Math.min(maxImgW / bmp.getWidth(), maxImgH / bmp.getHeight());
+                imgW = bmp.getWidth() * scale;
+                imgH = bmp.getHeight() * scale;
+            }
+            float timeW = pSmall.measureText(timeText);
+
+            float contentW = timeW;
+            if (nameL != null) contentW = Math.max(contentW, maxLineWidth(nameL));
+            if (fwdL != null) contentW = Math.max(contentW, maxLineWidth(fwdL));
+            if (medL != null) contentW = Math.max(contentW, maxLineWidth(medL));
+            if (textL != null) contentW = Math.max(contentW, maxLineWidth(textL));
+            contentW = Math.max(contentW, imgW);
+            contentW = Math.min(contentW, inner);
+            float bubbleW = contentW + 2 * pad;
+
+            float headH = (nameL != null ? nameL.getHeight() + 2 : 0) + (fwdL != null ? fwdL.getHeight() + 2 : 0) + (imgH > 0 ? imgH + 4 : 0) + (medL != null ? medL.getHeight() + 2 : 0);
+            float timeH = 12;
+            float usable = PAGE_H - FOOTER - MARGIN - 2 * pad - 4;
+
+            // Text ggf. ueber mehrere Seiten aufteilen
+            int line = 0;
+            int lines = textL != null ? textL.getLineCount() : 0;
+            boolean first = true;
+            do {
+                float avail = spaceLeft() - 2 * pad - 4;
+                float needHead = first ? headH : 0;
+                // wie viele Textzeilen passen noch (mit Zeit-Zeile, falls es die letzten sind)?
+                int last = line;
+                if (textL != null) {
+                    while (last < lines && needHead + (textL.getLineBottom(last) - textL.getLineTop(line)) + timeH <= avail) last++;
+                }
+                boolean fitsAll = textL == null ? needHead + timeH <= avail : last == lines;
+                if (!fitsAll && (last == line || first && needHead + timeH > avail)) {
+                    if (py > MARGIN + 1) {
+                        newPage();
+                        continue;
+                    }
+                    // passt auf keine leere Seite: so viel wie moeglich
+                    if (textL != null && last == line) last = Math.min(lines, line + 1);
+                }
+                float textH = textL != null && last > line ? textL.getLineTop(last) - textL.getLineTop(line) : 0;
+                boolean isLast = textL == null || last >= lines;
+                float h = needHead + textH + (isLast ? timeH : 0) + 2 * pad;
+                float x = out ? PAGE_W - MARGIN - bubbleW : MARGIN;
+                android.graphics.Canvas c = pdfPage.getCanvas();
+                boolean noBubble = sticker && bmp != null && textL == null && name == null && fwd == null;
+                if (!noBubble) {
+                    c.drawRoundRect(new android.graphics.RectF(x, py, x + bubbleW, py + h), 10, 10, out ? pBubbleOut : pBubbleIn);
+                }
+                float cy = py + pad;
+                if (first) {
+                    if (nameL != null) { c.save(); c.translate(x + pad, cy); nameL.draw(c); c.restore(); cy += nameL.getHeight() + 2; }
+                    if (fwdL != null) { c.save(); c.translate(x + pad, cy); fwdL.draw(c); c.restore(); cy += fwdL.getHeight() + 2; }
+                    if (bmp != null) {
+                        float ix = out && sticker ? x + bubbleW - pad - imgW : x + pad;
+                        android.graphics.RectF dst = new android.graphics.RectF(ix, cy, ix + imgW, cy + imgH);
+                        c.save();
+                        if (!sticker) {
+                            android.graphics.Path clip = new android.graphics.Path();
+                            clip.addRoundRect(dst, 6, 6, android.graphics.Path.Direction.CW);
+                            c.clipPath(clip);
+                        }
+                        c.drawBitmap(bmp, null, dst, new android.graphics.Paint(android.graphics.Paint.FILTER_BITMAP_FLAG));
+                        c.restore();
+                        cy += imgH + 4;
+                    }
+                    if (medL != null) { c.save(); c.translate(x + pad, cy); medL.draw(c); c.restore(); cy += medL.getHeight() + 2; }
+                }
+                if (textL != null && last > line) {
+                    c.save();
+                    c.translate(x + pad, cy - textL.getLineTop(line));
+                    c.clipRect(0, textL.getLineTop(line), inner, textL.getLineTop(last));
+                    textL.draw(c);
+                    c.restore();
+                    cy += textH;
+                }
+                if (isLast) {
+                    c.drawText(timeText, x + bubbleW - pad - timeW, cy + 9, pSmall);
+                }
+                py += h + 5;
+                line = last;
+                first = false;
+                if (!isLast) newPage();
+                if (isLast) break;
+            } while (true);
+            if (bmp != null) bmp.recycle();
+        }
+
+        /** PDF (A4) im Chat-Look: eigene Nachrichten rechts, Bilder eingebettet. */
         private void writePdf(File out, String title, ArrayList<TLRPC.Message> list, String note) throws Exception {
-            final int pageW = 595, pageH = 842, margin = 40, width = pageW - 2 * margin;
-            android.graphics.pdf.PdfDocument doc = new android.graphics.pdf.PdfDocument();
-            android.text.TextPaint body = new android.text.TextPaint(android.graphics.Paint.ANTI_ALIAS_FLAG);
-            body.setTextSize(10f);
-            body.setColor(0xff111111);
-            android.text.TextPaint bold = new android.text.TextPaint(body);
-            bold.setFakeBoldText(true);
-            bold.setColor(0xff2a6fb0);
-            android.text.TextPaint gray = new android.text.TextPaint(body);
-            gray.setTextSize(8.5f);
-            gray.setColor(0xff777777);
-            android.text.TextPaint head = new android.text.TextPaint(body);
-            head.setTextSize(16f);
-            head.setFakeBoldText(true);
+            pdfDoc = new android.graphics.pdf.PdfDocument();
+            pdfTitle = title;
+            pBody = new android.text.TextPaint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            pBody.setTextSize(10.5f);
+            pBody.setColor(0xff111111);
+            pName = new android.text.TextPaint(pBody);
+            pName.setFakeBoldText(true);
+            pName.setTextSize(10f);
+            pName.setColor(0xff2a6fb0);
+            pSmall = new android.text.TextPaint(pBody);
+            pSmall.setTextSize(8f);
+            pSmall.setColor(0xff7a8691);
+            pTitle = new android.text.TextPaint(pBody);
+            pTitle.setTextSize(16f);
+            pTitle.setFakeBoldText(true);
+            pCenter = new android.text.TextPaint(pBody);
+            pCenter.setTextSize(8.5f);
+            pCenter.setColor(0xffffffff);
+            pBubbleIn = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            pBubbleIn.setColor(0xffffffff);
+            pBubbleOut = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            pBubbleOut.setColor(0xffdcf8c6);
+            pBg = new android.graphics.Paint();
+            pBg.setColor(0xffc9d8e4);
+
+            boolean group = !DialogObject.isUserDialog(dialogId);
             SimpleDateFormat day = new SimpleDateFormat("EEEE, dd. MMMM yyyy", Locale.GERMANY);
             SimpleDateFormat time = new SimpleDateFormat("HH:mm", Locale.GERMANY);
 
-            final int[] pageNo = {0};
-            final android.graphics.pdf.PdfDocument.Page[] page = {null};
-            final float[] y = {0};
-            Runnable newPage = () -> {
-                if (page[0] != null) doc.finishPage(page[0]);
-                pageNo[0]++;
-                page[0] = doc.startPage(new android.graphics.pdf.PdfDocument.PageInfo.Builder(pageW, pageH, pageNo[0]).create());
-                android.graphics.Canvas c = page[0].getCanvas();
-                c.drawText(title + " · Seite " + pageNo[0], margin, pageH - 20, gray);
-                y[0] = margin;
-            };
-            newPage.run();
+            newPage();
+            android.text.StaticLayout t = layout(title, pTitle, PAGE_W - 2 * MARGIN);
+            android.graphics.Canvas c = pdfPage.getCanvas();
+            c.save(); c.translate(MARGIN, py); t.draw(c); c.restore();
+            py += t.getHeight() + 2;
+            String sub = "Exportiert mit Sparkgram am " + new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMANY).format(new Date()) + " · " + list.size() + " Nachrichten" + (note != null ? " · " + note : "");
+            c.drawText(sub, MARGIN, py + 9, pSmall);
+            py += 20;
 
-            TextDrawer draw = (text, paint) -> {
-                android.text.StaticLayout l = new android.text.StaticLayout(text, paint, width, android.text.Layout.Alignment.ALIGN_NORMAL, 1.1f, 0, false);
-                int line = 0;
-                while (line < l.getLineCount()) {
-                    // so viele Zeilen wie auf die Seite passen
-                    int lastLine = line;
-                    while (lastLine < l.getLineCount() && y[0] + (l.getLineBottom(lastLine) - l.getLineTop(line)) <= pageH - margin) {
-                        lastLine++;
-                    }
-                    if (lastLine == line) {
-                        newPage.run();
-                        continue;
-                    }
-                    android.graphics.Canvas c = page[0].getCanvas();
-                    c.save();
-                    c.translate(margin, y[0] - l.getLineTop(line));
-                    c.clipRect(0, l.getLineTop(line), width, l.getLineTop(lastLine));
-                    l.draw(c);
-                    c.restore();
-                    y[0] += l.getLineTop(lastLine) - l.getLineTop(line);
-                    line = lastLine;
-                    if (line < l.getLineCount()) newPage.run();
-                }
-            };
-
-            draw.accept(title, head);
-            y[0] += 4;
-            draw.accept("Exportiert mit Sparkgram am " + new SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMANY).format(new Date()) + " · " + list.size() + " Nachrichten" + (note != null ? " · " + note : ""), gray);
-            y[0] += 10;
             String lastDay = null;
             for (TLRPC.Message m : list) {
+                if (cancelled) break;
                 String d = day.format(new Date(m.date * 1000L));
                 if (!d.equals(lastDay)) {
-                    y[0] += 8;
-                    draw.accept("— " + d + " —", gray);
-                    y[0] += 4;
+                    drawCenter(d);
                     lastDay = d;
                 }
                 if (m instanceof TLRPC.TL_messageService) {
-                    draw.accept(time.format(new Date(m.date * 1000L)) + "  Service-Nachricht", gray);
+                    drawCenter(time.format(new Date(m.date * 1000L)) + " · Service-Nachricht");
                     continue;
                 }
-                draw.accept(sender(m) + "  ·  " + time.format(new Date(m.date * 1000L)) + (m.edit_date != 0 ? "  ✏️" : "") + (m.fwd_from != null ? "  ↪ weitergeleitet" + (m.fwd_from.from_name != null ? " von " + m.fwd_from.from_name : "") : ""), bold);
-                String med = media(m);
-                if (med != null) draw.accept(med, gray);
-                if (!TextUtils.isEmpty(m.message)) draw.accept(m.message, body);
-                y[0] += 6;
+                drawBubble(m, group, time);
             }
-            doc.finishPage(page[0]);
+            pdfDoc.finishPage(pdfPage);
             try (FileOutputStream fos = new FileOutputStream(out)) {
-                doc.writeTo(fos);
+                pdfDoc.writeTo(fos);
             }
-            doc.close();
+            pdfDoc.close();
         }
 
         private void writeHtml(OutputStreamWriter w, String title, ArrayList<TLRPC.Message> list, String note) throws Exception {

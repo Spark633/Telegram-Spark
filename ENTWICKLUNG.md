@@ -131,7 +131,11 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   `SparkChatStickersActivity`, Weiter-Knopf oben in `SparkGroupListActivity`.
   Ghost-Modus: `SparkConfig.ghost(part)`; Eingriffe in MessagesController: Status-Timer (nie online),
   `sendTyping` (früh raus), `completeReadTask` (kein readHistory, außer geheime Chats);
-  `SparkExport.markReadNow` (Chat-Menü 922). Export: `SparkExport.exportChat` (Chat-Menü 923, PDF über `android.graphics.pdf.PdfDocument` + StaticLayout, oder HTML; in Downloads).
+  `SparkExport.markReadNow` (Chat-Menü 922).
+  PDF im Chat-Look (`SparkExport.drawBubble`, Bilder vorher per `FileLoader.loadFile` geladen, max. 600, Wartezeit
+  begrenzt). Sicherung: `SparkBackup` (JSON: Konten + Prefs; keine Sitzungen/Keys/Tokens), `SparkBackupActivity`,
+  Konto-Daten nach Nutzer-ID zugeordnet (`applyPending` in LaunchActivity.onResume), Nummer vorbelegt über
+  `LoginActivity.sparkPrefillPhone` (in `PhoneView.fillNumber`). Export: `SparkExport.exportChat` (Chat-Menü 923, PDF über `android.graphics.pdf.PdfDocument` + StaticLayout, oder HTML; in Downloads).
 
 ## Roadmap (offen)
 
@@ -141,7 +145,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - **Etappe 7 Rest:** Ordner „Gelöschte Chats“, Ungelesen pro Konto, mehr Anheften (lokal),
   In-App-Benachrichtigungen, Bookmarks mit Schlagwörtern,
   Duplikate in „Gespeichertes“, RP: Persona pro Chat, Zitieren mit Formatierung,
-  Nachrichtenverlauf einer Person, Auto-Ordner, Sortierung, Backup.
+  Nachrichtenverlauf einer Person, Auto-Ordner, Sortierung. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
 - **Etappe 8 Rest:** Menüs aufräumen, Doppeltipp-Aktion,
   App-Sperre, versteckte Konten, Zwischenablage-Schutz, Proxy-Verwaltung (+ Anleitung).
 - Nebenher: eigenes Firebase für Push, mehr Konten ohne Start-Nachteil, Übernahme nach `main`.

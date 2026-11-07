@@ -221,6 +221,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressLint("HardwareIds")
 public class LoginActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate {
+
+    // Sparkgram: Telefonnummer, die beim naechsten Login vorbelegt wird (Konten-Sicherung)
+    public static String sparkPrefillPhone;
     public final static boolean ENABLE_PASTED_TEXT_PROCESSING = false;
     private final static int SHOW_DELAY = SharedConfig.getDevicePerformanceClass() <= SharedConfig.PERFORMANCE_CLASS_AVERAGE ? 150 : 100;
 
@@ -3251,6 +3254,17 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         public void fillNumber() {
             if (numberFilled || activityMode != MODE_LOGIN) {
                 return;
+            }
+            // Sparkgram: Nummer aus der Konten-Sicherung vorbelegen
+            if (sparkPrefillPhone != null && codeField != null && phoneField != null) {
+                String digits = sparkPrefillPhone.replaceAll("[^0-9]", "");
+                sparkPrefillPhone = null;
+                if (!digits.isEmpty()) {
+                    phoneField.setText("");
+                    codeField.setText(digits);
+                    numberFilled = true;
+                    return;
+                }
             }
             try {
                 TelephonyManager tm = (TelephonyManager) ApplicationLoader.applicationContext.getSystemService(Context.TELEPHONY_SERVICE);

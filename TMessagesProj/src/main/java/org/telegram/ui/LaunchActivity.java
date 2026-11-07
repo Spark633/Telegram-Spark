@@ -7083,6 +7083,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     @Override
     protected void onResume() {
         super.onResume();
+        org.telegram.messenger.spark.SparkBackup.applyPending(); // Sparkgram: Konto-Daten aus Sicherung zuordnen
         isResumed = true;
         // Sparkgram: nach einem Update einmal "Was ist neu?" zeigen
         AndroidUtilities.runOnUIThread(() -> {

@@ -102,6 +102,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_GHOST_TYPING = 82;
     private static final int ID_GHOST_OFFLINE = 83;
     private static final int ID_EXPORT = 84;
+    private static final int ID_BACKUP = 85;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -223,6 +224,7 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader("Organisation"));
         items.add(UItem.asButton(ID_STATS, R.drawable.msg_stats, "Statistiken"));
+        items.add(UItem.asButton(ID_BACKUP, R.drawable.msg_download, "Sicherung & Konten übertragen"));
         items.add(expandable(ID_TEMPLATES, R.string.SparkTemplatesToggle, SparkConfig.TEMPLATES, 1));
         if (open(SparkConfig.TEMPLATES)) {
             items.add(UItem.asButton(ID_TEMPLATES_OPEN, R.drawable.msg_stories_caption, "Vorlagen verwalten"));
@@ -393,6 +395,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_TEMPLATES_OPEN: presentFragment(new SparkTemplatesActivity()); break;
             case ID_MUTE_PEOPLE: toggle(SparkConfig.MUTE_PEOPLE); break;
             case ID_EXPORT: toggle(SparkConfig.EXPORT); break;
+            case ID_BACKUP: presentFragment(new SparkBackupActivity()); break;
             case ID_GHOST: expand(SparkConfig.GHOST); break;
             case ID_GHOST_READ: toggle(SparkConfig.GHOST_READ); break;
             case ID_GHOST_TYPING: toggle(SparkConfig.GHOST_TYPING); break;
