@@ -55,7 +55,7 @@ public class SparkUpdater {
     public static String buildLabel() {
         String c = BuildConfig.SPARK_COMMIT;
         String date = new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.GERMANY).format(new java.util.Date(BuildConfig.SPARK_BUILD_TIME));
-        return BuildConfig.SPARK_CHANNEL + (c != null && c.length() >= 7 ? " · " + c.substring(0, 7) : "") + " · " + date;
+        return BuildConfig.SPARK_VERSION + " · " + BuildConfig.SPARK_CHANNEL + (c != null && c.length() >= 7 ? " · " + c.substring(0, 7) : "") + " · " + date;
     }
 
     private static String channel() {

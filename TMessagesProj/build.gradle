@@ -153,6 +153,7 @@ android {
         buildConfigField "String", "SPARK_COMMIT", "\"" + sparkCommit + "\""
         buildConfigField "String", "SPARK_CHANNEL", "\"" + sparkChannel + "\""
         buildConfigField "long", "SPARK_BUILD_TIME", System.currentTimeMillis() + "L"
+        buildConfigField "String", "SPARK_VERSION", "\"" + (project.findProperty("SPARK_VERSION_NAME") ?: "0") + "\""
 
         externalNativeBuild {
             cmake {

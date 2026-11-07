@@ -7084,6 +7084,26 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     protected void onResume() {
         super.onResume();
         isResumed = true;
+        // Sparkgram: nach einem Update einmal "Was ist neu?" zeigen
+        AndroidUtilities.runOnUIThread(() -> {
+            try {
+                if (org.telegram.messenger.UserConfig.getInstance(org.telegram.messenger.UserConfig.selectedAccount).isClientActivated()
+                        && org.telegram.messenger.spark.SparkChangelog.shouldShowWhatsNew()) {
+                    final BaseFragment f = getSafeLastFragment();
+                    org.telegram.messenger.spark.SparkChangelog.Release r = org.telegram.messenger.spark.SparkChangelog.current();
+                    if (f != null && r != null) {
+                        org.telegram.ui.ActionBar.AlertDialog.Builder b = new org.telegram.ui.ActionBar.AlertDialog.Builder(this);
+                        b.setTitle(org.telegram.ui.spark.SparkUi.mark("Neu in Sparkgram " + r.version));
+                        b.setMessage(org.telegram.ui.spark.SparkChangelogActivity.text(r));
+                        b.setPositiveButton(LocaleController.getString(R.string.OK), null);
+                        b.setNeutralButton("Alle Versionen", (d, w) -> f.presentFragment(new org.telegram.ui.spark.SparkChangelogActivity()));
+                        f.showDialog(b.create());
+                    }
+                }
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }, 1500);
         pipActivityHandler.onResume();
         if (onResumeStaticCallback != null) {
             onResumeStaticCallback.run();

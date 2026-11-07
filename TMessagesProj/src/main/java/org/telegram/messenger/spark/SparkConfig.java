@@ -39,6 +39,8 @@ public class SparkConfig {
     public static final String KEEP_DELETED = "keepDeleted";
     // Bearbeitungsverlauf speichern
     public static final String EDIT_HISTORY = "editHistory";
+    // Nach einem Update einmal "Was ist neu?" anzeigen
+    public static final String WHATS_NEW_HINT = "whatsNewHint";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
@@ -92,6 +94,7 @@ public class SparkConfig {
             case PHOTO_MANAGER:
             case SPARK_MARKER:
             case CHAT_MENU:
+            case WHATS_NEW_HINT:
             case KEEP_DELETED:
             case EDIT_HISTORY:
             case MEMBER_CHECK:

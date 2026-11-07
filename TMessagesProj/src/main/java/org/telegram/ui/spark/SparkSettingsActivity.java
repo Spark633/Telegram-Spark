@@ -53,6 +53,8 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_PHOTO_DATE = 27;
     private static final int ID_KEEP_DELETED = 28;
     private static final int ID_EDIT_HISTORY = 29;
+    private static final int ID_CHANGELOG = 30;
+    private static final int ID_WHATS_NEW_HINT = 31;
 
     @Override
     protected CharSequence getTitle() {
@@ -134,6 +136,8 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderUpdates)));
         items.add(UItem.asButton(ID_VERSION, R.drawable.msg_info, getString(R.string.SparkVersion), SparkUpdater.buildLabel()));
+        items.add(UItem.asButton(ID_CHANGELOG, R.drawable.msg_stories_caption, "Was ist neu?"));
+        items.add(UItem.asCheck(ID_WHATS_NEW_HINT, "Nach Updates „Was ist neu?“ zeigen").setChecked(SparkConfig.getRaw(SparkConfig.WHATS_NEW_HINT)));
         items.add(UItem.asButton(ID_UPDATE_CHECK, R.drawable.msg_retry, getString(R.string.SparkUpdateCheck)));
         items.add(UItem.asCheck(ID_UPDATE_TEST, getString(R.string.SparkUpdateTestBuilds)).setChecked(SparkConfig.getRaw(SparkConfig.UPDATE_TEST_BUILDS)));
         items.add(UItem.asButton(ID_REPO, R.drawable.msg_link2, getString(R.string.SparkRepo)));
@@ -164,6 +168,8 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_INFO_ROW: toggle(SparkConfig.PROFILE_INFO_ROW); break;
             case ID_PHOTO_DATE: toggle(SparkConfig.PHOTO_DATE); break;
             case ID_KEEP_DELETED: toggle(SparkConfig.KEEP_DELETED); break;
+            case ID_CHANGELOG: presentFragment(new SparkChangelogActivity()); break;
+            case ID_WHATS_NEW_HINT: toggle(SparkConfig.WHATS_NEW_HINT); break;
             case ID_EDIT_HISTORY: toggle(SparkConfig.EDIT_HISTORY); break;
             case ID_CLONE: toggle(SparkConfig.PROFILE_CLONE); break;
             case ID_CLONE_NAME: toggle(SparkConfig.CLONE_NAME); break;
