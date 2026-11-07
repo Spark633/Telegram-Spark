@@ -14434,7 +14434,9 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 return VIEW_TYPE_HEADER;
             } else if (position == phoneRow || position == locationRow || position == numberRow || position == birthdayRow) {
                 return VIEW_TYPE_TEXT_DETAIL;
-            } else if (position == usernameRow || position == setUsernameRow || position == sparkInfoRow) {
+            } else if (position == sparkInfoRow) {
+                return VIEW_TYPE_TEXT_DETAIL_MULTILINE_2; // Sparkgram: Inhalt mehrzeilig
+            } else if (position == usernameRow || position == setUsernameRow) {
                 return VIEW_TYPE_TEXT_DETAIL_MULTILINE;
             } else if (position == noteRow) {
                 return VIEW_TYPE_TEXT_DETAIL_MULTILINE_2;
