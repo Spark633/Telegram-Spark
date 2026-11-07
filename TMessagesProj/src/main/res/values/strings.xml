@@ -11659,7 +11659,7 @@
     <string name="SparkCloneDone">Profil von %1$s übernommen</string>
     <string name="SparkError">Fehler: %1$s</string>
     <string name="SparkHeaderAccounts">Konten</string>
-    <string name="SparkAccountsInfo">Sparkgram erlaubt bis zu 16 Konten gleichzeitig, auch ohne Premium. Das gilt immer, auch wenn die Zusatzfunktionen ausgeschaltet sind.</string>
+    <string name="SparkAccountsInfo">Sparkgram erlaubt bis zu 16 Konten gleichzeitig, auch ohne Premium.</string>
     <string name="SparkMaster">Zusatzfunktionen aktiv</string>
     <string name="SparkMasterInfo">Schaltet alle Sparkgram-Funktionen auf einmal aus oder an. Deine Einstellungen darunter bleiben dabei erhalten.</string>
     <string name="SparkHeaderUpdates">Updates</string>
