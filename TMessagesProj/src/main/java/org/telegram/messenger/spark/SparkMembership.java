@@ -31,7 +31,9 @@ public class SparkMembership {
 
     private static final long NORMAL_TTL = 6 * 60 * 60 * 1000L;   // normale Pruefung: alle 6 Stunden
     private static final long ACTIVE_WINDOW = 10 * 60 * 1000L;    // "aktiv" = in den letzten 10 Minuten geschrieben
-    private static final long REQUEST_GAP = 1500;                 // Pause zwischen Anfragen
+    private static final long REQUEST_GAP = 2500;                 // Pause zwischen Anfragen
+    private static final String FEATURE = "memberCheck";
+    private static final int PER_HOUR = 120;                      // Stundenbudget fuer Pruefungen
 
     public interface Listener {
         void onLeft(long chatId, long userId);
@@ -157,6 +159,14 @@ public class SparkMembership {
     }
 
     private static void processNext() {
+        long wait = SparkRateLimit.waitTime(FEATURE, PER_HOUR);
+        if (wait > 0) {
+            // Bremse aktiv (FLOOD_WAIT oder Stundenbudget): Warteschlange leeren, spaeter neu befuellen
+            queue.clear();
+            queued.clear();
+            running = false;
+            return;
+        }
         long[] next = queue.poll();
         if (next == null) {
             running = false;
@@ -170,11 +180,13 @@ public class SparkMembership {
             AndroidUtilities.runOnUIThread(SparkMembership::processNext, 50);
             return;
         }
+        SparkRateLimit.use(FEATURE);
         TLRPC.TL_messages_getCommonChats req = new TLRPC.TL_messages_getCommonChats();
         req.user_id = MessagesController.getInstance(account).getInputUser(user);
         req.max_id = 0;
         req.limit = 100;
         ConnectionsManager.getInstance(account).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
+            SparkRateLimit.onError(FEATURE, error);
             if (response instanceof TLRPC.messages_Chats) {
                 HashSet<Long> common = new HashSet<>();
                 for (TLRPC.Chat c : ((TLRPC.messages_Chats) response).chats) {
@@ -225,11 +237,19 @@ public class SparkMembership {
             }
             return;
         }
+        if (SparkRateLimit.waitTime(FEATURE, PER_HOUR) > 0) {
+            return;
+        }
+        SparkRateLimit.use(FEATURE);
         TLRPC.TL_channels_getParticipant req = new TLRPC.TL_channels_getParticipant();
         req.channel = MessagesController.getInputChannel(chat);
         req.participant = MessagesController.getInstance(account).getInputPeer(userId);
         ConnectionsManager.getInstance(account).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
+            SparkRateLimit.onError(FEATURE, error);
             long now = System.currentTimeMillis();
+            if (error != null && error.text != null && error.text.startsWith("FLOOD")) {
+                return; // gebremst: keine Aussage moeglich
+            }
             if (response != null) {
                 // Person ist doch Mitglied (gemeinsame Gruppen unvollstaendig)
                 setState(account, chatId, userId, IN, now);
@@ -289,7 +309,7 @@ public class SparkMembership {
         }
     }
 
-    public static int[] INTERVALS = {30, 60, 120};
+    public static int[] INTERVALS = {60, 120, 30};
 
     public static long intervalMs() {
         int index = SparkConfig.prefs().getInt("memberCheckInterval", 0);
