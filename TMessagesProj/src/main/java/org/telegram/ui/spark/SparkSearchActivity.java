@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.EditText;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.MessagesController;
@@ -15,7 +14,6 @@ import org.telegram.messenger.spark.SparkNameHistory;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
-import org.telegram.ui.ActionBar.ActionBarMenuItem;
 import org.telegram.ui.Components.UItem;
 import org.telegram.ui.Components.UniversalAdapter;
 import org.telegram.ui.Components.UniversalFragment;
@@ -40,7 +38,7 @@ public class SparkSearchActivity extends UniversalFragment {
     private final LinkedHashMap<Long, String> results = new LinkedHashMap<>(); // dialogId -> Hinweis
     private String remoteState;
     private boolean searched;
-    private ActionBarMenuItem searchItem;
+    private org.telegram.ui.Components.EditTextBoldCursor searchField;
     private final Runnable searchRunnable = this::runLocalSearch;
 
     @Override
@@ -51,34 +49,53 @@ public class SparkSearchActivity extends UniversalFragment {
     @Override
     public View createView(Context context) {
         View v = super.createView(context);
-        searchItem = actionBar.createMenu().addItem(0, R.drawable.outline_header_search).setIsSearchField(true)
-            .setActionBarMenuItemSearchListener(new ActionBarMenuItem.ActionBarMenuItemSearchListener() {
-                @Override
-                public void onTextChanged(EditText editText) {
-                    query = editText.getText().toString().trim();
-                    remoteState = null;
-                    AndroidUtilities.cancelRunOnUIThread(searchRunnable);
-                    AndroidUtilities.runOnUIThread(searchRunnable, 250);
-                }
-
-                @Override
-                public void onSearchPressed(EditText editText) {
-                    query = editText.getText().toString().trim();
-                    runLocalSearch();
-                    lookupOnline();
-                }
-
-                @Override
-                public boolean canCollapseSearch() {
-                    finishFragment();
-                    return false;
-                }
-            });
-        searchItem.setSearchFieldHint("Name, @Benutzername oder ID");
-        AndroidUtilities.runOnUIThread(() -> {
-            if (searchItem != null) searchItem.openSearch(true);
-        }, 200);
+        // Suchfeld oben fest angeheftet
+        android.widget.FrameLayout box = new android.widget.FrameLayout(context);
+        box.setBackgroundColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhite));
+        box.setElevation(AndroidUtilities.dp(2));
+        searchField = new org.telegram.ui.Components.EditTextBoldCursor(context);
+        searchField.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 17);
+        searchField.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlackText));
+        searchField.setHintTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteHintText));
+        searchField.setCursorColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlackText));
+        searchField.setHint("Name, @Benutzername oder ID");
+        searchField.setBackground(null);
+        searchField.setSingleLine(true);
+        searchField.setImeOptions(android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH);
+        searchField.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        searchField.addTextChangedListener(new android.text.TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence c, int a, int b, int d) {}
+            @Override public void onTextChanged(CharSequence c, int a, int b, int d) {}
+            @Override public void afterTextChanged(android.text.Editable e) {
+                query = e.toString().trim();
+                remoteState = null;
+                AndroidUtilities.cancelRunOnUIThread(searchRunnable);
+                AndroidUtilities.runOnUIThread(searchRunnable, 250);
+            }
+        });
+        searchField.setOnEditorActionListener((tv, actionId, ev) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH) {
+                query = searchField.getText().toString().trim();
+                runLocalSearch();
+                lookupOnline();
+                return true;
+            }
+            return false;
+        });
+        box.addView(searchField, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, android.view.Gravity.CENTER_VERTICAL, 20, 0, 20, 0));
+        ((android.widget.FrameLayout) v).addView(box, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, 52, android.view.Gravity.TOP));
+        listView.setPadding(0, AndroidUtilities.dp(52), 0, 0);
+        listView.setClipToPadding(false);
         return v;
+    }
+
+    @Override
+    public void onTransitionAnimationEnd(boolean isOpen, boolean backward) {
+        super.onTransitionAnimationEnd(isOpen, backward);
+        if (isOpen && searchField != null) {
+            searchField.requestFocus();
+            AndroidUtilities.showKeyboard(searchField);
+        }
     }
 
     private static String norm(String s) {

@@ -97,6 +97,32 @@ public class SparkSettingsActivity extends UniversalFragment {
         return UItem.asCheck(id, SparkUi.mark(getString(text))).setChecked(SparkConfig.getRaw(key));
     }
 
+    // Oberpunkte mit Unterpunkten: Zeile antippen = auf-/zuklappen, Schalter = an/aus
+    private final java.util.HashSet<String> expanded = new java.util.HashSet<>();
+
+    private UItem expandable(int id, int text, String key, int subCount) {
+        return UItem.asExpandableSwitch(id, SparkUi.mark(getString(text)), String.valueOf(subCount))
+            .setChecked(SparkConfig.getRaw(key))
+            .setCollapsed(!expanded.contains(key))
+            .setClickCallback(v -> {
+                if (!SparkConfig.getRaw(key)) expanded.add(key);
+                toggle(key);
+            });
+    }
+
+    private boolean open(String key) {
+        return expanded.contains(key) && SparkConfig.getRaw(key);
+    }
+
+    private void expand(String key) {
+        if (!expanded.remove(key)) {
+            expanded.add(key);
+        }
+        if (listView != null && listView.adapter != null) {
+            listView.adapter.update(true);
+        }
+    }
+
     private static UItem subCheck(int id, int text, String key) {
         return UItem.asCheck(id, "      " + getString(text)).setChecked(SparkConfig.getRaw(key));
     }
@@ -117,22 +143,22 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_NAME_HISTORY, R.string.SparkNameHistoryToggle, SparkConfig.NAME_HISTORY));
         items.add(check(ID_LOCAL_NAMES, R.string.SparkLocalNamesToggle, SparkConfig.LOCAL_NAMES));
         items.add(check(ID_TIMEZONES, R.string.SparkTimezonesToggle, SparkConfig.TIMEZONES));
-        items.add(check(ID_CLONE, R.string.SparkCloneToggle, SparkConfig.PROFILE_CLONE));
-        if (SparkConfig.getRaw(SparkConfig.PROFILE_CLONE)) {
+        items.add(expandable(ID_CLONE, R.string.SparkCloneToggle, SparkConfig.PROFILE_CLONE, 4));
+        if (open(SparkConfig.PROFILE_CLONE)) {
             items.add(subCheck(ID_CLONE_NAME, R.string.SparkCloneName, SparkConfig.CLONE_NAME));
             items.add(subCheck(ID_CLONE_BIO, R.string.SparkCloneBio, SparkConfig.CLONE_BIO));
             items.add(subCheck(ID_CLONE_PHOTO, R.string.SparkClonePhoto, SparkConfig.CLONE_PHOTO));
             items.add(UItem.asButton(ID_PROFILE_LIBRARY, R.drawable.msg_contacts, getString(R.string.SparkProfileLibrary)));
         }
-        items.add(check(ID_PHOTO_MANAGER, R.string.SparkPhotoManagerToggle, SparkConfig.PHOTO_MANAGER));
-        if (SparkConfig.getRaw(SparkConfig.PHOTO_MANAGER)) {
+        items.add(expandable(ID_PHOTO_MANAGER, R.string.SparkPhotoManagerToggle, SparkConfig.PHOTO_MANAGER, 1));
+        if (open(SparkConfig.PHOTO_MANAGER)) {
             items.add(UItem.asButton(ID_PHOTO_MANAGER_OPEN, R.drawable.msg_photos, getString(R.string.SparkPhotoManager)));
         }
         items.add(UItem.asShadow(getString(R.string.SparkProfileToolsInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderMessages)));
-        items.add(check(ID_KEEP_DELETED, R.string.SparkKeepDeletedToggle, SparkConfig.KEEP_DELETED));
-        if (SparkConfig.getRaw(SparkConfig.KEEP_DELETED)) {
+        items.add(expandable(ID_KEEP_DELETED, R.string.SparkKeepDeletedToggle, SparkConfig.KEEP_DELETED, 1));
+        if (open(SparkConfig.KEEP_DELETED)) {
             items.add(subCheck(ID_KEEP_OWN_DELETED, R.string.SparkKeepOwnDeletedToggle, SparkConfig.KEEP_OWN_DELETED));
         }
         items.add(check(ID_EDIT_HISTORY, R.string.SparkEditHistoryToggle, SparkConfig.EDIT_HISTORY));
@@ -155,9 +181,9 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asShadow(getString(R.string.SparkOnlineLogInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderTranslate)));
-        items.add(check(ID_TRANSLATE_FREE, R.string.SparkTranslateFreeToggle, SparkConfig.TRANSLATE_FREE));
+        items.add(expandable(ID_TRANSLATE_FREE, R.string.SparkTranslateFreeToggle, SparkConfig.TRANSLATE_FREE, 2));
         items.add(check(ID_TRANSLATE_OWN, R.string.SparkTranslateOwnToggle, SparkConfig.TRANSLATE_OWN));
-        if (SparkConfig.getRaw(SparkConfig.TRANSLATE_FREE)) {
+        if (open(SparkConfig.TRANSLATE_FREE)) {
             items.add(UItem.asButton(ID_TRANSLATE_PROVIDER, "      " + getString(R.string.SparkTranslateProvider),
                 org.telegram.messenger.spark.SparkTranslate.provider() == org.telegram.messenger.spark.SparkTranslate.PROVIDER_DEEPL ? "DeepL" : "Google"));
             if (org.telegram.messenger.spark.SparkTranslate.provider() == org.telegram.messenger.spark.SparkTranslate.PROVIDER_DEEPL) {
@@ -168,8 +194,8 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asShadow(getString(R.string.SparkTranslateInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkKeywords)));
-        items.add(check(ID_KEYWORDS, R.string.SparkKeywordsToggle, SparkConfig.KEYWORDS));
-        if (SparkConfig.getRaw(SparkConfig.KEYWORDS)) {
+        items.add(expandable(ID_KEYWORDS, R.string.SparkKeywordsToggle, SparkConfig.KEYWORDS, 1));
+        if (open(SparkConfig.KEYWORDS)) {
             items.add(UItem.asButton(ID_KEYWORDS_OPEN, R.drawable.msg_mention, getString(R.string.SparkKeywordsOpen)));
         }
         items.add(UItem.asShadow(getString(R.string.SparkKeywordsInfo)));
@@ -185,23 +211,23 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_GROUP_ADMINS, R.string.SparkAdminsList, SparkConfig.GROUP_ADMINS));
         items.add(check(ID_GROUP_ACTIVE, R.string.SparkActiveMembers, SparkConfig.GROUP_ACTIVE));
         items.add(check(ID_CHANNEL_AUTHORS, R.string.SparkKnownAuthorsToggle, SparkConfig.CHANNEL_AUTHORS));
-        items.add(check(ID_MEMBER_CHECK, R.string.SparkMemberCheckToggle, SparkConfig.MEMBER_CHECK));
-        if (SparkConfig.getRaw(SparkConfig.MEMBER_CHECK)) {
+        items.add(expandable(ID_MEMBER_CHECK, R.string.SparkMemberCheckToggle, SparkConfig.MEMBER_CHECK, 2));
+        if (open(SparkConfig.MEMBER_CHECK)) {
             items.add(subCheck(ID_MEMBER_HINT, R.string.SparkMemberHintToggle, SparkConfig.MEMBER_CHECK_HINT));
             items.add(UItem.asButton(ID_MEMBER_INTERVAL, "      " + getString(R.string.SparkMemberInterval), (org.telegram.messenger.spark.SparkMembership.intervalMs() / 1000) + " s"));
         }
         items.add(UItem.asShadow(getString(R.string.SparkMemberInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkNotes)));
-        items.add(check(ID_NOTES, R.string.SparkNotesToggle, SparkConfig.NOTES));
-        if (SparkConfig.getRaw(SparkConfig.NOTES)) {
+        items.add(expandable(ID_NOTES, R.string.SparkNotesToggle, SparkConfig.NOTES, 1));
+        if (open(SparkConfig.NOTES)) {
             items.add(UItem.asButton(ID_NOTES_LIST, R.drawable.msg_stories_caption, getString(R.string.SparkNotesAll)));
         }
         items.add(UItem.asShadow(getString(R.string.SparkNotesInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderHide)));
-        items.add(check(ID_HIDE_PREMIUM, R.string.SparkHidePremium, SparkConfig.HIDE_PREMIUM));
-        if (SparkConfig.getRaw(SparkConfig.HIDE_PREMIUM)) {
+        items.add(expandable(ID_HIDE_PREMIUM, R.string.SparkHidePremium, SparkConfig.HIDE_PREMIUM, 1));
+        if (open(SparkConfig.HIDE_PREMIUM)) {
             items.add(subCheck(ID_HIDE_PREMIUM_AUTO, R.string.SparkHidePremiumAuto, SparkConfig.HIDE_PREMIUM_AUTO));
         }
         items.add(check(ID_HIDE_STARS, R.string.SparkHideStars, SparkConfig.HIDE_STARS));
@@ -211,8 +237,8 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderLook)));
         items.add(check(ID_PROFILE_MENU_GROUPED, R.string.SparkProfileMenuGroupedToggle, SparkConfig.PROFILE_MENU_GROUPED));
-        items.add(check(ID_CHAT_MENU, R.string.SparkChatMenuToggle, SparkConfig.CHAT_MENU));
-        if (SparkConfig.getRaw(SparkConfig.CHAT_MENU)) {
+        items.add(expandable(ID_CHAT_MENU, R.string.SparkChatMenuToggle, SparkConfig.CHAT_MENU, 1));
+        if (open(SparkConfig.CHAT_MENU)) {
             items.add(subCheck(ID_CHAT_MENU_GROUPED, R.string.SparkMenuGroupedToggle, SparkConfig.CHAT_MENU_GROUPED));
         }
         items.add(check(ID_MARKER, R.string.SparkMarkerToggle, SparkConfig.SPARK_MARKER));
@@ -290,9 +316,9 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_INFO: toggle(SparkConfig.PROFILE_INFO); break;
             case ID_INFO_ROW: toggle(SparkConfig.PROFILE_INFO_ROW); break;
             case ID_PHOTO_DATE: toggle(SparkConfig.PHOTO_DATE); break;
-            case ID_KEEP_DELETED: toggle(SparkConfig.KEEP_DELETED); break;
+            case ID_KEEP_DELETED: expand(SparkConfig.KEEP_DELETED); break;
             case ID_KEEP_OWN_DELETED: toggle(SparkConfig.KEEP_OWN_DELETED); break;
-            case ID_HIDE_PREMIUM: toggle(SparkConfig.HIDE_PREMIUM); break;
+            case ID_HIDE_PREMIUM: expand(SparkConfig.HIDE_PREMIUM); break;
             case ID_MSG_DETAILS: toggle(SparkConfig.MSG_DETAILS); break;
             case ID_MSG_REPEAT: toggle(SparkConfig.MSG_REPEAT); break;
             case ID_FORWARD_TIME: toggle(SparkConfig.FORWARD_TIME); break;
@@ -310,8 +336,8 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_GROUP_ADMINS: toggle(SparkConfig.GROUP_ADMINS); break;
             case ID_GROUP_ACTIVE: toggle(SparkConfig.GROUP_ACTIVE); break;
             case ID_CHANNEL_AUTHORS: toggle(SparkConfig.CHANNEL_AUTHORS); break;
-            case ID_KEYWORDS: toggle(SparkConfig.KEYWORDS); break;
-            case ID_TRANSLATE_FREE: toggle(SparkConfig.TRANSLATE_FREE); break;
+            case ID_KEYWORDS: expand(SparkConfig.KEYWORDS); break;
+            case ID_TRANSLATE_FREE: expand(SparkConfig.TRANSLATE_FREE); break;
             case ID_TRANSLATE_OWN: toggle(SparkConfig.TRANSLATE_OWN); break;
             case ID_ONLINE_LOG: toggle(SparkConfig.ONLINE_LOG); break;
             case ID_DELETED_NAMES: toggle(SparkConfig.DELETED_NAMES); break;
@@ -355,17 +381,17 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_CHANGELOG: presentFragment(new SparkChangelogActivity()); break;
             case ID_WHATS_NEW_HINT: toggle(SparkConfig.WHATS_NEW_HINT); break;
             case ID_EDIT_HISTORY: toggle(SparkConfig.EDIT_HISTORY); break;
-            case ID_CLONE: toggle(SparkConfig.PROFILE_CLONE); break;
+            case ID_CLONE: expand(SparkConfig.PROFILE_CLONE); break;
             case ID_CLONE_NAME: toggle(SparkConfig.CLONE_NAME); break;
             case ID_CLONE_BIO: toggle(SparkConfig.CLONE_BIO); break;
             case ID_CLONE_PHOTO: toggle(SparkConfig.CLONE_PHOTO); break;
-            case ID_PHOTO_MANAGER: toggle(SparkConfig.PHOTO_MANAGER); break;
-            case ID_NOTES: toggle(SparkConfig.NOTES); break;
+            case ID_PHOTO_MANAGER: expand(SparkConfig.PHOTO_MANAGER); break;
+            case ID_NOTES: expand(SparkConfig.NOTES); break;
             case ID_MARKER: toggle(SparkConfig.SPARK_MARKER); break;
-            case ID_CHAT_MENU: toggle(SparkConfig.CHAT_MENU); break;
+            case ID_CHAT_MENU: expand(SparkConfig.CHAT_MENU); break;
             case ID_PROFILE_MENU_GROUPED: toggle(SparkConfig.PROFILE_MENU_GROUPED); break;
             case ID_CHAT_MENU_GROUPED: toggle(SparkConfig.CHAT_MENU_GROUPED); break;
-            case ID_MEMBER_CHECK: toggle(SparkConfig.MEMBER_CHECK); break;
+            case ID_MEMBER_CHECK: expand(SparkConfig.MEMBER_CHECK); break;
             case ID_MEMBER_HINT: toggle(SparkConfig.MEMBER_CHECK_HINT); break;
             case ID_MEMBER_INTERVAL: {
                 int index = SparkConfig.prefs().getInt("memberCheckInterval", 0);

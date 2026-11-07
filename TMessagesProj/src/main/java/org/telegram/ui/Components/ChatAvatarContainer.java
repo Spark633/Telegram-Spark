@@ -684,6 +684,9 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         if (starFgItem != null) {
             starFgItem.measure(MeasureSpec.makeMeasureSpec(dp(20), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(dp(20), MeasureSpec.EXACTLY));
         }
+        if (sparkLineView != null) {
+            sparkLineView.measure(MeasureSpec.makeMeasureSpec(availableWidth, MeasureSpec.AT_MOST), MeasureSpec.makeMeasureSpec(dp(16), MeasureSpec.AT_MOST));
+        }
         setMeasuredDimension(width, MeasureSpec.getSize(heightMeasureSpec));
         if (lastWidth != -1 && lastWidth != width && lastWidth > width) {
             fadeOutToLessWidth(lastWidth);
@@ -753,6 +756,36 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         setClipChildren(false);
     }
 
+    // Sparkgram: dritte Zeile unter dem Status ("zuletzt aktiv …")
+    private SimpleTextView sparkLineView;
+
+    private void sparkSetLine(String text) {
+        if (text == null) {
+            if (sparkLineView != null && sparkLineView.getVisibility() != GONE) {
+                sparkLineView.setVisibility(GONE);
+                requestLayout();
+            }
+            return;
+        }
+        if (sparkLineView == null) {
+            sparkLineView = new SimpleTextView(getContext());
+            sparkLineView.setTextSizePx(dp(11.5f));
+            sparkLineView.setGravity(Gravity.LEFT);
+            sparkLineView.setEllipsizeByGradient(true);
+            addView(sparkLineView);
+        }
+        sparkLineView.setTextColor(getThemedColor(Theme.key_actionBarDefaultSubtitle));
+        sparkLineView.setText(text);
+        if (sparkLineView.getVisibility() != VISIBLE) {
+            sparkLineView.setVisibility(VISIBLE);
+        }
+        requestLayout();
+    }
+
+    private boolean sparkLineShown() {
+        return sparkLineView != null && sparkLineView.getVisibility() == VISIBLE && getSubtitleTextView().getVisibility() != GONE;
+    }
+
     private boolean glassMode;
     public void setGlassMode() {
         if (titleTextView != null) {
@@ -767,10 +800,13 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         final int actionBarHeight = ActionBar.getCurrentActionBarHeight();
-        final int viewTop = (actionBarHeight - avatarImageView.getMeasuredHeight() - 2) / 2 + (occupyStatusBar ? AndroidUtilities.statusBarHeight : 0);
-        final int subtitleTop = viewTop + dp(glassMode ? 23.66f : 24);
+        final int avatarTop = (actionBarHeight - avatarImageView.getMeasuredHeight() - 2) / 2 + (occupyStatusBar ? AndroidUtilities.statusBarHeight : 0);
+        // Sparkgram: mit dritter Zeile rutschen Titel und Status etwas nach oben
+        final boolean sparkLine = sparkLineShown();
+        final int viewTop = sparkLine ? avatarTop - dp(5) : avatarTop;
+        final int subtitleTop = viewTop + dp(sparkLine ? 21 : (glassMode ? 23.66f : 24));
 
-        avatarImageView.layout(1 + leftPadding, 1 + viewTop, 1 + leftPadding + avatarImageView.getMeasuredWidth(), 1 + viewTop + avatarImageView.getMeasuredHeight());
+        avatarImageView.layout(1 + leftPadding, 1 + avatarTop, 1 + leftPadding + avatarImageView.getMeasuredWidth(), 1 + avatarTop + avatarImageView.getMeasuredHeight());
         int l = leftPadding + (avatarImageView.getVisibility() == VISIBLE ? dp(glassMode ? 49.66f : 55) : dp(glassMode ? 13 : 1)) + rightAvatarPadding;
         SimpleTextView titleTextLargerCopyView = this.titleTextLargerCopyView.get();
         if (getSubtitleTextView().getVisibility() != GONE) {
@@ -787,23 +823,23 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         if (communityItem != null) {
             communityItem.layout(
                 leftPadding + dp(29f),
-                viewTop + dp(27.33f),
+                avatarTop + dp(27.33f),
                 leftPadding + dp(29f) + communityItem.getMeasuredWidth(),
-                viewTop + dp(27.33f) + communityItem.getMeasuredHeight());
+                avatarTop + dp(27.33f) + communityItem.getMeasuredHeight());
         }
         if (timeItem != null) {
             timeItem.layout(
                 leftPadding + dp(19.333f),
-                viewTop - dp(8),
+                avatarTop - dp(8),
                 leftPadding + dp(19.333f) + timeItem.getMeasuredWidth(),
-                viewTop - dp(8) + timeItem.getMeasuredHeight()
+                avatarTop - dp(8) + timeItem.getMeasuredHeight()
             );
         }
         if (starBgItem != null) {
-            starBgItem.layout(leftPadding + dp(28), viewTop + dp(24), leftPadding + dp(28) + starBgItem.getMeasuredWidth(), viewTop + dp(24) + starBgItem.getMeasuredHeight());
+            starBgItem.layout(leftPadding + dp(28), avatarTop + dp(24), leftPadding + dp(28) + starBgItem.getMeasuredWidth(), avatarTop + dp(24) + starBgItem.getMeasuredHeight());
         }
         if (starFgItem != null) {
-            starFgItem.layout(leftPadding + dp(28), viewTop + dp(24), leftPadding + dp(28) + starFgItem.getMeasuredWidth(), viewTop + dp(24) + starFgItem.getMeasuredHeight());
+            starFgItem.layout(leftPadding + dp(28), avatarTop + dp(24), leftPadding + dp(28) + starFgItem.getMeasuredWidth(), avatarTop + dp(24) + starFgItem.getMeasuredHeight());
         }
         if (subtitleTextView != null) {
             subtitleTextView.layout(l, subtitleTop, l + subtitleTextView.getMeasuredWidth(), subtitleTop + subtitleTextView.getTextHeight());
@@ -813,6 +849,14 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         SimpleTextView subtitleTextLargerCopyView = this.subtitleTextLargerCopyView.get();
         if (subtitleTextLargerCopyView != null) {
             subtitleTextLargerCopyView.layout(l, subtitleTop, l + subtitleTextLargerCopyView.getMeasuredWidth(), subtitleTop + subtitleTextLargerCopyView.getTextHeight());
+        }
+        if (sparkLineView != null) {
+            if (sparkLine) {
+                int t = subtitleTop + dp(15.5f);
+                sparkLineView.layout(l, t, l + sparkLineView.getMeasuredWidth(), t + sparkLineView.getTextHeight());
+            } else {
+                sparkLineView.layout(0, 0, 0, 0);
+            }
         }
     }
 
@@ -1241,13 +1285,8 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
                     isOnline[0] = false;
                     newStatus = LocaleController.formatUserStatus(currentAccount, user, isOnline, allowShorterStatus ? statusMadeShorter : null);
                     useOnlineColor = isOnline[0];
-                    // Sparkgram: zuletzt online gesehen / aktiv (Online-Protokoll)
-                    if (!isOnline[0]) {
-                        String sparkSeen = org.telegram.messenger.spark.SparkOnlineLog.seenLine(currentAccount, user, true);
-                        if (sparkSeen != null) {
-                            newStatus = newStatus + " · " + sparkSeen;
-                        }
-                    }
+                    // Sparkgram: zuletzt online gesehen / aktiv (Online-Protokoll) als eigene Zeile darunter
+                    sparkSetLine(isOnline[0] ? null : org.telegram.messenger.spark.SparkOnlineLog.seenLine(currentAccount, user, false));
                 }
                 newSubtitle = newStatus;
             } else {

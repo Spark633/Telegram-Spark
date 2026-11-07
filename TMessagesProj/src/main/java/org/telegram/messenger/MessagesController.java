@@ -763,9 +763,12 @@ public class MessagesController extends BaseController implements NotificationCe
     public boolean giftTextFieldIcon;
 
     public boolean isTranslationsManualEnabled() {
+        // Sparkgram: Telegram schaltet Uebersetzungen fuer eigene Apps per Server ab -> mit eigenem Weg trotzdem an
+        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE)) return true;
         return !"disabled".equals(translationsManualEnabled);
     }
     public boolean isTranslationsAutoEnabled() {
+        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE)) return true;
         return !"disabled".equals(translationsAutoEnabled);
     }
 

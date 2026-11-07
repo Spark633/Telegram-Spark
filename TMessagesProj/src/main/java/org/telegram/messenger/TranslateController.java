@@ -129,7 +129,9 @@ public class TranslateController extends BaseController {
             return false;
         }
         if (contextTranslateEnabled == null) {
-            contextTranslateEnabled = messagesController.getMainSettings().getBoolean("translate_button", MessagesController.getGlobalMainSettings().getBoolean("translate_button", false));
+            // Sparkgram: mit "Uebersetzen ohne Premium" ist der Uebersetzen-Knopf standardmaessig an
+            contextTranslateEnabled = messagesController.getMainSettings().getBoolean("translate_button", MessagesController.getGlobalMainSettings().getBoolean("translate_button",
+                org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE)));
         }
         return contextTranslateEnabled;
     }
@@ -1109,7 +1111,7 @@ public class TranslateController extends BaseController {
                 }
 
                 final String method = getMessagesController().translationsAutoEnabled;
-                if ("alternative".equals(method) || "system".equals(method)) {
+                if ("alternative".equals(method) || "system".equals(method) || "disabled".equals(method) && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE)) {
                     final String toLanguage = pendingTranslation1.language;
                     for (int i = 0; i < pendingTranslation1.messageIds.size(); ++i) {
                         final int id = pendingTranslation1.messageIds.get(i);
@@ -1175,7 +1177,7 @@ public class TranslateController extends BaseController {
                         for (int i = 0; i < count; ++i) {
                             callbacks.get(i).run(isTranscription, ids.get(i), TranslateAlert2.preprocess(texts.get(i), translated.get(i)), toLanguage);
                         }
-                    } else if (sparkUseAlternative() || err != null && "TRANSLATIONS_DISABLED_ALT".equalsIgnoreCase(err.text)) {
+                    } else if (sparkUseAlternative() || err != null && ("TRANSLATIONS_DISABLED_ALT".equalsIgnoreCase(err.text) || org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE))) {
                         for (int i = 0; i < ids.size(); ++i) {
                             final int id = ids.get(i);
                             final Utilities.Callback4<Boolean, Integer, TLRPC.TL_textWithEntities, String> _callback = callbacks.get(i);

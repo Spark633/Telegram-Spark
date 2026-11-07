@@ -148,7 +148,12 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
     private void update() {
         updateHeader();
         if (listView != null && listView.adapter != null) {
-            listView.adapter.update(true);
+            // war die Liste oben, bleibt sie oben (sonst springt sie beim Neusortieren in die Mitte)
+            boolean atTop = !listView.canScrollVertically(-1);
+            listView.adapter.update(!atTop);
+            if (atTop) {
+                listView.scrollToPosition(0);
+            }
         }
     }
 
@@ -272,8 +277,8 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
             offsetId = last;
             Collections.sort(rows, (a, b) -> b.count - a.count);
             update();
-            // Sparkgram: bei "Mitglieder & Aktivitaet" automatisch bis zum Anfang weiter (gebremst)
-            AndroidUtilities.runOnUIThread(() -> scanStep(mode == MODE_ACTIVE ? PAGES_PER_STEP : pages - 1), 700);
+            // nach PAGES_PER_STEP Seiten Pause -> "Weiter durchsuchen"
+            AndroidUtilities.runOnUIThread(() -> scanStep(pages - 1), 700);
         }));
     }
 
@@ -428,7 +433,7 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
             items.add(UItem.asButton(ID_BASE + i, title, value));
         }
         if (!endReached && !loading) {
-            items.add(UItem.asButton(ID_MORE, R.drawable.msg_retry, mode == MODE_ACTIVE ? "Weiter durchsuchen" : "Weiter zurück durchsuchen (+1000)").accent());
+            items.add(UItem.asButton(ID_MORE, R.drawable.msg_retry, mode == MODE_ACTIVE ? "Weiter durchsuchen (+1000 Nachrichten)" : "Weiter zurück durchsuchen (+1000)").accent());
         }
         if (mode == MODE_ACTIVE && membersHidden) {
             items.add(UItem.asShadow("Die Mitgliederliste dieser Gruppe ist verborgen – die Liste stammt deshalb nur aus dem Verlauf, stille Mitleser fehlen."));

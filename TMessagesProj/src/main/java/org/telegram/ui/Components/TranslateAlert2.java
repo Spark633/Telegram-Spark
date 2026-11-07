@@ -314,7 +314,7 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
         }
 
         final String method = MessagesController.getInstance(currentAccount).translationsManualEnabled;
-        if ("alternative".equalsIgnoreCase(method)) {
+        if ("alternative".equalsIgnoreCase(method) || "disabled".equalsIgnoreCase(method) && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE)) {
             translateAlt();
             return;
         }/* else if ("system".equalsIgnoreCase(method)) {
@@ -375,7 +375,7 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
             req.to_lang = normalizeLanguage(lang);
             reqId = ConnectionsManager.getInstance(currentAccount).sendRequestTyped(req, AndroidUtilities::runOnUIThread, (res, err) -> {
                 reqId = null;
-                if (err != null && "TRANSLATIONS_DISABLED_ALT".equalsIgnoreCase(err.text)) {
+                if (err != null && ("TRANSLATIONS_DISABLED_ALT".equalsIgnoreCase(err.text) || org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE))) {
                     translateAlt();
                 } else if (res != null) {
                     firstTranslation = false;
@@ -419,7 +419,7 @@ public class TranslateAlert2 extends BottomSheet implements NotificationCenter.N
         reqId = ConnectionsManager.getInstance(currentAccount).sendRequest(req, (res, err) -> {
             AndroidUtilities.runOnUIThread(() -> {
                 reqId = null;
-                if (err != null && "TRANSLATIONS_DISABLED_ALT".equalsIgnoreCase(err.text)) {
+                if (err != null && ("TRANSLATIONS_DISABLED_ALT".equalsIgnoreCase(err.text) || org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE))) {
                     translateAlt();
                 } else if (res instanceof TLRPC.TL_messages_translateResult &&
                     !((TLRPC.TL_messages_translateResult) res).result.isEmpty() &&

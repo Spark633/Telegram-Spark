@@ -366,7 +366,12 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private void sparkUpdateSeenView() {
         if (sparkSeenView == null || onlineTextView[1] == null) return;
         if (sparkSeenView.getVisibility() != View.VISIBLE) return;
-        float off = (onlineTextView[1].getMeasuredWidth() - sparkSeenView.getMeasuredWidth()) / 2f;
+        // Textmitte an der Mitte des Status-Textes ausrichten (Breiten aus dem Text, nicht aus der View)
+        CharSequence ot = onlineTextView[1].getText();
+        CharSequence st = sparkSeenView.getText();
+        float ow = ot == null ? 0 : onlineTextView[1].getPaint().measureText(ot.toString());
+        float sw = st == null ? 0 : sparkSeenView.getPaint().measureText(st.toString());
+        float off = (ow - sw) / 2f;
         sparkSeenView.setTranslationX(onlineTextView[1].getTranslationX() + off);
         sparkSeenView.setTranslationY(onlineTextView[1].getTranslationY());
         float f = Utilities.clamp01((calculateHeaderExtraDiff() - 0.6f) / 0.4f);

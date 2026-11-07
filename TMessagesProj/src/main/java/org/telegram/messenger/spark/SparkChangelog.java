@@ -19,6 +19,15 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.12", "07.11.2026",
+            "Einstellungen: Punkte mit Unterpunkten lassen sich auf- und zuklappen (Zeile antippen; Schalter = an/aus)",
+            "Übersetzen: Nachrichten und ganze Chats lassen sich wieder übersetzen (Telegram hatte die Funktion für Sparkgram abgeschaltet)",
+            "Suche nach Name / ID mit festem Suchfeld oben",
+            "Chat: „zuletzt aktiv / online gesehen“ steht jetzt als eigene Zeile unter dem Status",
+            "Profil: die Zeile unter dem Status ist jetzt sauber mittig",
+            "Mitglieder & Aktivität: Pause nach je 1000 Nachrichten ist zurück, die Liste bleibt oben",
+            "Sprachnachrichten: keine extra Rückfrage mehr beim Senden aus der Freihand-Vorschau"
+        ),
         new Release("0.11", "07.11.2026",
             "Online-Protokoll: im Profil-Menü sehen, wann jemand online war (Zeiträume mit Dauer); „kürzlich“ & Co. getrennt mit ⚠ markiert",
             "Suche nach Name, @Benutzername oder ID – auch nach lokalen und früheren Namen (Sparkgram-Einstellungen → Personen)",

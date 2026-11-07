@@ -109,6 +109,13 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   `ChatAvatarContainer` (kompakt). Gelöschte Konten: `UserObject.getUserName` → `SparkNameHistory.lastKnown`
   (Schalter `DELETED_NAMES`; gelöschte Konten werden nicht mehr in den Verlauf geschrieben).
 
+- 0.12 (in Arbeit): einklappbare Oberpunkte (`UItem.asExpandableSwitch`, `expanded`-Set in
+  `SparkSettingsActivity`), Server-Abschaltung der Übersetzung (`translations*Enabled = "disabled"`) wird bei
+  `TRANSLATE_FREE` übergangen (MessagesController, TranslateController, TranslateAlert2 → Google/DeepL),
+  Suche mit angeheftetem `EditTextBoldCursor`, Chat-Kopf: `sparkLineView` als 3. Zeile in `ChatAvatarContainer`
+  (Titel/Status rücken 5 dp hoch), Profil-Zeile zentriert per `measureText`, Mitgliederliste: Pause zurück,
+  `update()` hält die Liste oben. Freihand-Rückfrage entfernt (Telegrams Vorschau reicht).
+
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Weiterleiten ohne Limit, schneller markieren / Auswahl-Limit, Bild-Link kopieren.
