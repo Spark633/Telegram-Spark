@@ -27,27 +27,34 @@ public class SparkProfileMenu {
     public static final int ID_INFO = 901;
     public static final int ID_CLONE = 902;
     public static final int ID_NOTE = 903;
+    public static final int ID_PHOTOS = 904;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_NOTE;
+        return id >= ID_COPY_ID && id <= ID_PHOTOS;
     }
 
     public static void addItems(BaseFragment fragment, ActionBarMenuItem menu, long userId, long chatId) {
         if (menu == null || (userId == 0 && chatId == 0)) {
             return;
         }
+        final int account = fragment.getCurrentAccount();
+        final boolean self = userId != 0 && userId == UserConfig.getInstance(account).getClientUserId();
         if (SparkConfig.get(SparkConfig.NOTES)) {
             long did = userId != 0 ? userId : -chatId;
-            boolean has = SparkNotes.has(fragment.getCurrentAccount(), did);
-            menu.addSubItem(ID_NOTE, R.drawable.msg_stories_caption, getString(has ? R.string.SparkNoteEdit : R.string.SparkNoteAdd));
+            boolean has = SparkNotes.has(account, did);
+            menu.addSubItem(ID_NOTE, R.drawable.msg_stories_caption, SparkUi.mark(getString(has ? R.string.SparkNoteEdit : R.string.SparkNoteAdd)));
         }
-        if (!SparkConfig.get(SparkConfig.PROFILE_TOOLS)) {
-            return;
+        if (SparkConfig.get(SparkConfig.PROFILE_COPY_ID)) {
+            menu.addSubItem(ID_COPY_ID, R.drawable.msg_copy, SparkUi.mark(getString(R.string.SparkCopyId)));
         }
-        menu.addSubItem(ID_COPY_ID, R.drawable.msg_copy, getString(R.string.SparkCopyId));
-        menu.addSubItem(ID_INFO, R.drawable.msg_info, getString(R.string.SparkUserInfo));
-        if (userId != 0 && userId != UserConfig.getInstance(fragment.getCurrentAccount()).getClientUserId()) {
-            menu.addSubItem(ID_CLONE, R.drawable.msg_customize, getString(R.string.SparkCloneProfile));
+        if (SparkConfig.get(SparkConfig.PROFILE_INFO)) {
+            menu.addSubItem(ID_INFO, R.drawable.msg_info, SparkUi.mark(getString(R.string.SparkUserInfo)));
+        }
+        if (userId != 0 && !self && SparkConfig.get(SparkConfig.PROFILE_CLONE)) {
+            menu.addSubItem(ID_CLONE, R.drawable.msg_customize, SparkUi.mark(getString(R.string.SparkCloneProfile)));
+        }
+        if (self && SparkConfig.get(SparkConfig.PHOTO_MANAGER)) {
+            menu.addSubItem(ID_PHOTOS, R.drawable.msg_photos, SparkUi.mark(getString(R.string.SparkPhotoManager)));
         }
     }
 
@@ -73,6 +80,9 @@ public class SparkProfileMenu {
                 break;
             case ID_CLONE:
                 confirmClone(fragment, userId);
+                break;
+            case ID_PHOTOS:
+                fragment.presentFragment(new SparkPhotoManagerActivity());
                 break;
             case ID_NOTE:
                 SparkNotesActivity.edit(fragment, userId != 0 ? userId : -chatId, () ->

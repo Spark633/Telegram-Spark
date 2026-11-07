@@ -11635,7 +11635,7 @@
     <string name="SparkSettingsInfo">Zusatzfunktionen ein- und ausschalten</string>
     <string name="SparkHeaderProfile">Profil-Werkzeuge</string>
     <string name="SparkProfileTools">ID, Infos und Klonen im Profilmenü</string>
-    <string name="SparkProfileToolsInfo">Fügt im Drei-Punkte-Menü von Profilen, Gruppen und Kanälen „ID kopieren“, „Infos“ und „Profil klonen“ hinzu.</string>
+    <string name="SparkProfileToolsInfo">Die Funktionen erscheinen im Drei-Punkte-Menü von Profilen, Gruppen und Kanälen. Vor dem ersten Klonen wird dein Original-Profil gesichert; alle Profile findest du in der Profil-Bibliothek.</string>
     <string name="SparkHeaderClone">Beim Klonen übernehmen</string>
     <string name="SparkCloneName">Name</string>
     <string name="SparkCloneBio">Bio</string>
@@ -11683,5 +11683,22 @@
     <string name="SparkNotesEmpty">Noch keine Notizen. Öffne ein Profil und wähle im Menü „Notiz hinzufügen“.</string>
     <string name="SparkNotesHint">Tippen zum Bearbeiten, lange drücken öffnet den Chat.</string>
     <string name="SparkCrashLog">Letzter Absturzbericht</string>
+    <string name="SparkMasterOffInfo">Alle Zusatzfunktionen sind ausgeschaltet. Deine Einstellungen bleiben gespeichert und gelten wieder, sobald du den Hauptschalter einschaltest.</string>
+    <string name="SparkCopyIdToggle">ID kopieren</string>
+    <string name="SparkInfoToggle">Infos anzeigen</string>
+    <string name="SparkCloneToggle">Profil klonen</string>
+    <string name="SparkPhotoManagerToggle">Mehrere Profilbilder löschen</string>
+    <string name="SparkPhotoManager">Profilbilder verwalten</string>
+    <string name="SparkPhotoManagerLoading">Profilbilder werden geladen …</string>
+    <string name="SparkPhotoManagerEmpty">Du hast keine Profilbilder.</string>
+    <string name="SparkPhotoCurrent">Aktuell</string>
+    <string name="SparkPhotoSelected">%1$d von %2$d ausgewählt</string>
+    <string name="SparkPhotoNoneSelected">Tippe Bilder an, um sie auszuwählen</string>
+    <string name="SparkPhotoDeleteConfirm">%1$d Profilbild(er) endgültig löschen? Das kann nicht rückgängig gemacht werden.</string>
+    <string name="SparkPhotoDeleted">%1$d Profilbild(er) gelöscht</string>
+    <string name="SparkHeaderLook">Darstellung</string>
+    <string name="SparkMarkerToggle">Sparkgram-Funktionen markieren</string>
+    <string name="SparkMarkerInfo">Zeigt ein ✦ neben allen Menüpunkten und Optionen, die von Sparkgram kommen.</string>
+    <string name="SparkProfileTapPhoto">Bild antippen für Vollbild</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

@@ -6,64 +6,101 @@ import android.view.View;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.R;
 import org.telegram.messenger.browser.Browser;
+import org.telegram.messenger.spark.SparkConfig;
+import org.telegram.messenger.spark.SparkCrashLog;
 import org.telegram.messenger.spark.SparkUpdater;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.Components.BulletinFactory;
-
-import org.telegram.messenger.R;
-import org.telegram.messenger.spark.SparkConfig;
 import org.telegram.ui.Components.UItem;
 import org.telegram.ui.Components.UniversalAdapter;
 import org.telegram.ui.Components.UniversalFragment;
 
 import java.util.ArrayList;
 
-/** Einstellungsseite "Sparkgram-Funktionen": jede Zusatzfunktion einzeln schaltbar. */
+/**
+ * Einstellungsseite "Sparkgram-Funktionen": jede Zusatzfunktion hat einen eigenen Schalter.
+ * Ist der Hauptschalter aus, wird alles darunter ausgegraut und ist nicht aenderbar.
+ */
 public class SparkSettingsActivity extends UniversalFragment {
 
-    private static final int ID_PROFILE_TOOLS = 1;
-    private static final int ID_CLONE_NAME = 2;
-    private static final int ID_CLONE_BIO = 3;
-    private static final int ID_CLONE_PHOTO = 4;
-    private static final int ID_PROFILE_LIBRARY = 5;
-    private static final int ID_MASTER = 6;
-    private static final int ID_UPDATE_CHECK = 7;
-    private static final int ID_UPDATE_TEST = 8;
-    private static final int ID_REPO = 9;
-    private static final int ID_NOTES = 10;
-    private static final int ID_NOTES_LIST = 11;
-    private static final int ID_CRASH = 12;
-    private static final int ID_VERSION = 13;
+    private static final int ID_MASTER = 1;
+    private static final int ID_COPY_ID = 2;
+    private static final int ID_INFO = 3;
+    private static final int ID_CLONE = 4;
+    private static final int ID_CLONE_NAME = 5;
+    private static final int ID_CLONE_BIO = 6;
+    private static final int ID_CLONE_PHOTO = 7;
+    private static final int ID_PROFILE_LIBRARY = 8;
+    private static final int ID_PHOTO_MANAGER = 9;
+    private static final int ID_PHOTO_MANAGER_OPEN = 10;
+    private static final int ID_NOTES = 11;
+    private static final int ID_NOTES_LIST = 12;
+    private static final int ID_MARKER = 13;
+    private static final int ID_VERSION = 14;
+    private static final int ID_UPDATE_CHECK = 15;
+    private static final int ID_UPDATE_TEST = 16;
+    private static final int ID_REPO = 17;
+    private static final int ID_CRASH = 18;
 
     @Override
     protected CharSequence getTitle() {
         return getString(R.string.SparkSettings);
     }
 
+    private static UItem check(int id, int text, String key) {
+        return UItem.asCheck(id, SparkUi.mark(getString(text))).setChecked(SparkConfig.getRaw(key));
+    }
+
+    private static UItem subCheck(int id, int text, String key) {
+        return UItem.asCheck(id, "      " + getString(text)).setChecked(SparkConfig.getRaw(key));
+    }
+
     @Override
     protected void fillItems(ArrayList<UItem> items, UniversalAdapter adapter) {
-        items.add(UItem.asRippleCheck(ID_MASTER, getString(R.string.SparkMaster)).setChecked(SparkConfig.getRaw(SparkConfig.MASTER)));
-        items.add(UItem.asShadow(getString(R.string.SparkMasterInfo)));
+        final boolean on = SparkConfig.getRaw(SparkConfig.MASTER);
+        items.add(UItem.asRippleCheck(ID_MASTER, getString(R.string.SparkMaster)).setChecked(on));
+        items.add(UItem.asShadow(getString(on ? R.string.SparkMasterInfo : R.string.SparkMasterOffInfo)));
+
+        final int start = items.size();
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderProfile)));
-        items.add(UItem.asCheck(ID_PROFILE_TOOLS, getString(R.string.SparkProfileTools)).setChecked(SparkConfig.getRaw(SparkConfig.PROFILE_TOOLS)));
-        items.add(UItem.asButton(ID_PROFILE_LIBRARY, R.drawable.msg_contacts, getString(R.string.SparkProfileLibrary)));
+        items.add(check(ID_COPY_ID, R.string.SparkCopyIdToggle, SparkConfig.PROFILE_COPY_ID));
+        items.add(check(ID_INFO, R.string.SparkInfoToggle, SparkConfig.PROFILE_INFO));
+        items.add(check(ID_CLONE, R.string.SparkCloneToggle, SparkConfig.PROFILE_CLONE));
+        if (SparkConfig.getRaw(SparkConfig.PROFILE_CLONE)) {
+            items.add(subCheck(ID_CLONE_NAME, R.string.SparkCloneName, SparkConfig.CLONE_NAME));
+            items.add(subCheck(ID_CLONE_BIO, R.string.SparkCloneBio, SparkConfig.CLONE_BIO));
+            items.add(subCheck(ID_CLONE_PHOTO, R.string.SparkClonePhoto, SparkConfig.CLONE_PHOTO));
+            items.add(UItem.asButton(ID_PROFILE_LIBRARY, R.drawable.msg_contacts, getString(R.string.SparkProfileLibrary)));
+        }
+        items.add(check(ID_PHOTO_MANAGER, R.string.SparkPhotoManagerToggle, SparkConfig.PHOTO_MANAGER));
+        if (SparkConfig.getRaw(SparkConfig.PHOTO_MANAGER)) {
+            items.add(UItem.asButton(ID_PHOTO_MANAGER_OPEN, R.drawable.msg_photos, getString(R.string.SparkPhotoManager)));
+        }
         items.add(UItem.asShadow(getString(R.string.SparkProfileToolsInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkNotes)));
-        items.add(UItem.asCheck(ID_NOTES, getString(R.string.SparkNotesToggle)).setChecked(SparkConfig.getRaw(SparkConfig.NOTES)));
-        items.add(UItem.asButton(ID_NOTES_LIST, R.drawable.msg_stories_caption, getString(R.string.SparkNotesAll)));
+        items.add(check(ID_NOTES, R.string.SparkNotesToggle, SparkConfig.NOTES));
+        if (SparkConfig.getRaw(SparkConfig.NOTES)) {
+            items.add(UItem.asButton(ID_NOTES_LIST, R.drawable.msg_stories_caption, getString(R.string.SparkNotesAll)));
+        }
         items.add(UItem.asShadow(getString(R.string.SparkNotesInfo)));
 
-        items.add(UItem.asHeader(getString(R.string.SparkHeaderClone)));
-        items.add(UItem.asCheck(ID_CLONE_NAME, getString(R.string.SparkCloneName)).setChecked(SparkConfig.getRaw(SparkConfig.CLONE_NAME)));
-        items.add(UItem.asCheck(ID_CLONE_BIO, getString(R.string.SparkCloneBio)).setChecked(SparkConfig.getRaw(SparkConfig.CLONE_BIO)));
-        items.add(UItem.asCheck(ID_CLONE_PHOTO, getString(R.string.SparkClonePhoto)).setChecked(SparkConfig.getRaw(SparkConfig.CLONE_PHOTO)));
-        items.add(UItem.asShadow(getString(R.string.SparkCloneInfo)));
+        items.add(UItem.asHeader(getString(R.string.SparkHeaderLook)));
+        items.add(check(ID_MARKER, R.string.SparkMarkerToggle, SparkConfig.SPARK_MARKER));
+        items.add(UItem.asShadow(getString(R.string.SparkMarkerInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderAccounts)));
         items.add(UItem.asShadow(getString(R.string.SparkAccountsInfo)));
+
+        // Ohne Hauptschalter: alles bis hier ausgrauen
+        if (!on) {
+            for (int i = start; i < items.size(); i++) {
+                items.get(i).setEnabled(false);
+            }
+        }
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderUpdates)));
         items.add(UItem.asButton(ID_VERSION, R.drawable.msg_info, getString(R.string.SparkVersion), SparkUpdater.buildLabel()));
@@ -72,31 +109,49 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asButton(ID_REPO, R.drawable.msg_link2, getString(R.string.SparkRepo)));
         items.add(UItem.asShadow(getString(R.string.SparkUpdateInfo)));
 
-        if (org.telegram.messenger.spark.SparkCrashLog.read(getContext()) != null) {
+        if (SparkCrashLog.read(getContext()) != null) {
             items.add(UItem.asButton(ID_CRASH, R.drawable.msg_report, getString(R.string.SparkCrashLog)).red());
             items.add(UItem.asShadow(null));
         }
+    }
 
-        items.add(UItem.asShadow(getString(R.string.SparkComingSoon)));
+    private void toggle(String key) {
+        SparkConfig.toggle(key);
+        if (listView != null && listView.adapter != null) {
+            listView.adapter.update(true);
+        }
     }
 
     @Override
     protected void onClick(UItem item, View view, int position, float x, float y) {
+        if (!item.enabled) {
+            return;
+        }
         switch (item.id) {
-            case ID_PROFILE_TOOLS:
-                SparkConfig.toggle(SparkConfig.PROFILE_TOOLS);
+            case ID_MASTER: toggle(SparkConfig.MASTER); break;
+            case ID_COPY_ID: toggle(SparkConfig.PROFILE_COPY_ID); break;
+            case ID_INFO: toggle(SparkConfig.PROFILE_INFO); break;
+            case ID_CLONE: toggle(SparkConfig.PROFILE_CLONE); break;
+            case ID_CLONE_NAME: toggle(SparkConfig.CLONE_NAME); break;
+            case ID_CLONE_BIO: toggle(SparkConfig.CLONE_BIO); break;
+            case ID_CLONE_PHOTO: toggle(SparkConfig.CLONE_PHOTO); break;
+            case ID_PHOTO_MANAGER: toggle(SparkConfig.PHOTO_MANAGER); break;
+            case ID_NOTES: toggle(SparkConfig.NOTES); break;
+            case ID_MARKER: toggle(SparkConfig.SPARK_MARKER); break;
+            case ID_UPDATE_TEST: toggle(SparkConfig.UPDATE_TEST_BUILDS); break;
+            case ID_PROFILE_LIBRARY: presentFragment(new SparkProfileLibraryActivity()); break;
+            case ID_PHOTO_MANAGER_OPEN: presentFragment(new SparkPhotoManagerActivity()); break;
+            case ID_NOTES_LIST: presentFragment(new SparkNotesActivity()); break;
+            case ID_UPDATE_CHECK: checkForUpdate(); break;
+            case ID_REPO: Browser.openUrl(getParentActivity(), SparkUpdater.REPO_URL); break;
+            case ID_VERSION: {
+                String text = "Sparkgram " + SparkUpdater.buildLabel() + "\nTelegram-Basis " + org.telegram.messenger.BuildConfig.BUILD_VERSION_STRING + "\nCommit " + org.telegram.messenger.BuildConfig.SPARK_COMMIT;
+                AndroidUtilities.addToClipboard(text);
+                BulletinFactory.of(this).createCopyBulletin(getString(R.string.TextCopied)).show();
                 break;
-            case ID_CLONE_NAME:
-                SparkConfig.toggle(SparkConfig.CLONE_NAME);
-                break;
-            case ID_CLONE_BIO:
-                SparkConfig.toggle(SparkConfig.CLONE_BIO);
-                break;
-            case ID_CLONE_PHOTO:
-                SparkConfig.toggle(SparkConfig.CLONE_PHOTO);
-                break;
+            }
             case ID_CRASH: {
-                final String log = org.telegram.messenger.spark.SparkCrashLog.read(getContext());
+                final String log = SparkCrashLog.read(getContext());
                 AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
                 builder.setTitle(getString(R.string.SparkCrashLog));
                 builder.setMessage(log == null ? "" : (log.length() > 3000 ? log.substring(0, 3000) + "…" : log));
@@ -105,45 +160,13 @@ public class SparkSettingsActivity extends UniversalFragment {
                     BulletinFactory.of(this).createCopyBulletin(getString(R.string.TextCopied)).show();
                 });
                 builder.setNeutralButton(getString(R.string.Delete), (d, w) -> {
-                    org.telegram.messenger.spark.SparkCrashLog.clear(getContext());
+                    SparkCrashLog.clear(getContext());
                     listView.adapter.update(true);
                 });
                 builder.setNegativeButton(getString(R.string.Close), null);
                 showDialog(builder.create());
-                return;
+                break;
             }
-            case ID_VERSION: {
-                String text = "Sparkgram " + SparkUpdater.buildLabel() + "\nTelegram-Basis " + org.telegram.messenger.BuildConfig.BUILD_VERSION_STRING + "\nCommit " + org.telegram.messenger.BuildConfig.SPARK_COMMIT;
-                AndroidUtilities.addToClipboard(text);
-                BulletinFactory.of(this).createCopyBulletin(getString(R.string.TextCopied)).show();
-                return;
-            }
-            case ID_NOTES:
-                SparkConfig.toggle(SparkConfig.NOTES);
-                break;
-            case ID_NOTES_LIST:
-                presentFragment(new SparkNotesActivity());
-                return;
-            case ID_MASTER:
-                SparkConfig.toggle(SparkConfig.MASTER);
-                break;
-            case ID_UPDATE_TEST:
-                SparkConfig.toggle(SparkConfig.UPDATE_TEST_BUILDS);
-                break;
-            case ID_UPDATE_CHECK:
-                checkForUpdate();
-                return;
-            case ID_REPO:
-                Browser.openUrl(getParentActivity(), SparkUpdater.REPO_URL);
-                return;
-            case ID_PROFILE_LIBRARY:
-                presentFragment(new SparkProfileLibraryActivity());
-                return;
-            default:
-                return;
-        }
-        if (listView != null && listView.adapter != null) {
-            listView.adapter.update(true);
         }
     }
 

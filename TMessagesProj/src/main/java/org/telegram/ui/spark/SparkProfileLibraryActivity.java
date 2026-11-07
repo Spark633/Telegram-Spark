@@ -64,7 +64,12 @@ public class SparkProfileLibraryActivity extends UniversalFragment {
                 title = e.label + " · " + title;
             }
             String value = LocaleController.formatDateChat(e.created / 1000);
-            items.add(UItem.asButton(ID_ENTRY_BASE + i, e.original ? R.drawable.msg_openprofile : R.drawable.msg_contacts, title, value));
+            android.graphics.drawable.Drawable thumb = e.hasPhoto() ? SparkUi.roundThumb(e.photoPath, 30) : null;
+            if (thumb != null) {
+                items.add(UItem.asButton(ID_ENTRY_BASE + i, thumb, title));
+            } else {
+                items.add(UItem.asButton(ID_ENTRY_BASE + i, e.original ? R.drawable.msg_openprofile : R.drawable.msg_contacts, title, value));
+            }
         }
         items.add(UItem.asShadow(null));
     }
@@ -85,25 +90,13 @@ public class SparkProfileLibraryActivity extends UniversalFragment {
         if (index < 0 || index >= entries.size()) {
             return;
         }
-        final SparkProfiles.Entry entry = entries.get(index);
-        CharSequence[] actions = new CharSequence[]{
-            getString(R.string.SparkProfileApply),
-            getString(R.string.SparkProfileRename),
-            getString(R.string.SparkProfileDelete)
-        };
-        AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
-        builder.setTitle(entry.displayName());
-        builder.setItems(actions, (dialog, which) -> {
-            if (which == 0) {
-                applyEntry(entry);
-            } else if (which == 1) {
-                renameEntry(entry);
-            } else if (which == 2) {
-                SparkProfiles.remove(currentAccount, entry);
-                reload();
-            }
-        });
-        showDialog(builder.create());
+        presentFragment(new SparkProfilePreviewActivity(entries.get(index)));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        reload();
     }
 
     private void applyEntry(SparkProfiles.Entry entry) {

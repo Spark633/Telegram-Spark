@@ -16,8 +16,14 @@ public class SparkConfig {
     // Updates: auch Testversionen (Branch entwicklung) anbieten
     public static final String UPDATE_TEST_BUILDS = "updateTestBuilds";
 
-    // Profil-Werkzeuge (ID kopieren, Nutzer-Infos, Profil klonen) im Profilmenue
-    public static final String PROFILE_TOOLS = "profileTools";
+    // Profil-Werkzeuge im Profilmenue, jeweils einzeln schaltbar
+    public static final String PROFILE_COPY_ID = "profileCopyId";
+    public static final String PROFILE_INFO = "profileInfo";
+    public static final String PROFILE_CLONE = "profileClone";
+    // Mehrere eigene Profilbilder auf einmal loeschen
+    public static final String PHOTO_MANAGER = "photoManager";
+    // Kleine Markierung an allen Sparkgram-Funktionen
+    public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
     public static final String NOTES = "notes";
     // Beim Klonen uebernehmen
@@ -61,7 +67,11 @@ public class SparkConfig {
         switch (key) {
             case MASTER:
             case NOTES:
-            case PROFILE_TOOLS:
+            case PROFILE_COPY_ID:
+            case PROFILE_INFO:
+            case PROFILE_CLONE:
+            case PHOTO_MANAGER:
+            case SPARK_MARKER:
             case CLONE_NAME:
             case CLONE_BIO:
             case CLONE_PHOTO:
