@@ -11718,7 +11718,7 @@
     <string name="SparkHeaderMessages">Nachrichten</string>
     <string name="SparkKeepDeletedToggle">Gelöschte Nachrichten behalten</string>
     <string name="SparkEditHistoryToggle">Bearbeitungsverlauf speichern</string>
-    <string name="SparkMessagesInfo">Gelöschte Nachrichten bleiben im Chat stehen und sind an „🗑“ neben der Uhrzeit erkennbar. Bearbeitete Nachrichten mit gespeichertem Verlauf zeigen „✏️“; lange drücken → „Bearbeitungsverlauf“. Funktioniert für alles, was Sparkgram vor dem Löschen bzw. Bearbeiten empfangen hat. Gespeichert wird nur auf diesem Gerät.</string>
+    <string name="SparkMessagesInfo">Gelöschte Nachrichten bleiben im Chat stehen: roter Balken an der Blase und rot „🗑 gelöscht“ bei der Uhrzeit. Bearbeitete Nachrichten mit gespeichertem Verlauf zeigen „✏️“; lange drücken → „Bearbeitungsverlauf“. Funktioniert für alles, was Sparkgram vor dem Löschen bzw. Bearbeiten empfangen hat. Gespeichert wird nur auf diesem Gerät.</string>
     <string name="SparkEditHistory">Bearbeitungsverlauf</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

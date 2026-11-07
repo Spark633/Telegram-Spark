@@ -6228,6 +6228,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
 
     private int sparkMemberState;
     private boolean sparkDeletedState;
+    private static final int SPARK_DELETED_COLOR = 0xFFE53935;
+    private Paint sparkDeletedPaint;
     private boolean sparkHistoryState;
 
     private boolean isUserDataChanged() {
@@ -18538,7 +18540,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         sparkDeletedState = org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).isDeleted(currentMessageObject.getDialogId(), currentMessageObject.getId());
         sparkHistoryState = org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).hasHistory(currentMessageObject.getDialogId(), currentMessageObject.getId());
         if (sparkDeletedState) {
-            timeString = "🗑 " + timeString;
+            timeString = "🗑 gelöscht · " + timeString;
         } else if (sparkHistoryState) {
             timeString = "✏️ " + timeString;
         }
@@ -18552,6 +18554,16 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             }
         } else {
             currentTimeString = timeString;
+        }
+        // Sparkgram: "geloescht" rot einfaerben
+        if (sparkDeletedState) {
+            CharSequence cs = currentTimeString;
+            int start = cs.toString().indexOf("🗑 gelöscht");
+            if (start >= 0) {
+                SpannableStringBuilder sb = new SpannableStringBuilder(cs);
+                sb.setSpan(new android.text.style.ForegroundColorSpan(SPARK_DELETED_COLOR), start, start + "🗑 gelöscht".length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                currentTimeString = sb;
+            }
         }
         if (currentMessageObject.isStakedDice()) {
             currentTimeString = TextUtils.concat("💎", StarsIntroActivity.formatTON(currentMessageObject.getStakedDiceAmount()), "  ", currentTimeString);
@@ -20856,6 +20868,18 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     currentBackgroundShadowDrawable.draw(canvas);
                 }
 
+                // Sparkgram: roter Balken an geloeschten Nachrichten
+                if (sparkDeletedState && currentBackgroundDrawable != null) {
+                    Rect r = currentBackgroundDrawable.getBounds();
+                    if (sparkDeletedPaint == null) {
+                        sparkDeletedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                    }
+                    sparkDeletedPaint.setColor(SPARK_DELETED_COLOR);
+                    sparkDeletedPaint.setAlpha((int) (255 * alphaInternal));
+                    float left = currentMessageObject.isOutOwner() ? r.left + dp(2) : r.left + dp(8);
+                    AndroidUtilities.rectTmp.set(left, r.top + dp(8), left + dp(3), r.bottom - dp(8));
+                    canvas.drawRoundRect(AndroidUtilities.rectTmp, dp(1.5f), dp(1.5f), sparkDeletedPaint);
+                }
                 if (transitionParams.changePinnedBottomProgress != 1f && currentPosition == null) {
                     if (currentMessageObject.isOutOwner()) {
                         MessageDrawable drawable = (MessageDrawable) getThemedDrawable(Theme.key_drawable_msgOut);
