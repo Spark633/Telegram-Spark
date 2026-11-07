@@ -221,6 +221,7 @@ public class SparkProfileMenu {
             });
             job[0].start();
         });
+        builder.setNeutralButton(getString(R.string.SparkDeleteOwnList), (d, w) -> fragment.presentFragment(new SparkOwnMessagesActivity(dialogId)));
         builder.setNegativeButton(getString(R.string.Cancel), null);
         AlertDialog dialog = builder.create();
         fragment.showDialog(dialog);
@@ -376,6 +377,26 @@ public class SparkProfileMenu {
             }
             if (user.scam || user.fake) {
                 line(sb, "Warnung", user.scam ? "als Betrug markiert" : "als Fake markiert");
+            }
+            // Sparkgram: fruehere Benutzernamen / Namen
+            if (SparkConfig.get(SparkConfig.NAME_HISTORY)) {
+                java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("dd.MM.yy", java.util.Locale.GERMANY);
+                String cur = UserObject.getPublicUsername(user);
+                StringBuilder old = new StringBuilder();
+                for (org.telegram.messenger.spark.SparkNameHistory.Item it : org.telegram.messenger.spark.SparkNameHistory.get(account).history(user.id, org.telegram.messenger.spark.SparkNameHistory.KIND_USERNAME)) {
+                    if (cur != null && cur.equalsIgnoreCase(it.value)) continue;
+                    if (old.length() > 0) old.append(", ");
+                    old.append("@").append(it.value).append(" (bis ").append(df.format(new java.util.Date(it.lastSeen))).append(")");
+                }
+                line(sb, "Frühere Benutzernamen", old.length() > 0 ? old.toString() : null);
+                String curName = UserObject.getUserName(user);
+                StringBuilder oldNames = new StringBuilder();
+                for (org.telegram.messenger.spark.SparkNameHistory.Item it : org.telegram.messenger.spark.SparkNameHistory.get(account).history(user.id, org.telegram.messenger.spark.SparkNameHistory.KIND_NAME)) {
+                    if (it.value.equals(curName)) continue;
+                    if (oldNames.length() > 0) oldNames.append(", ");
+                    oldNames.append(it.value).append(" (bis ").append(df.format(new java.util.Date(it.lastSeen))).append(")");
+                }
+                line(sb, "Frühere Namen", oldNames.length() > 0 ? oldNames.toString() : null);
             }
             if (full != null) {
                 line(sb, "Gemeinsame Gruppen", full.common_chats_count);

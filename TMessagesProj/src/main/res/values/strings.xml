@@ -11733,6 +11733,7 @@
     <string name="SparkRepeat">Wiederholen (+1)</string>
     <string name="SparkMessageDetails">Details</string>
     <string name="SparkJumpFirst">Zur ersten Nachricht</string>
+    <string name="SparkDeleteOwnList">Erst auflisten</string>
     <string name="SparkDeleteOwnAll">Alle eigenen Nachrichten löschen</string>
     <string name="SparkDeleteOwnConfirm">Alle Nachrichten, die du in diesem Chat geschrieben hast, werden für alle gelöscht. Das läuft gebremst im Hintergrund und kann bei vielen Nachrichten einige Minuten dauern. Abbrechen ist jederzeit möglich.</string>
     <string name="SparkHeaderMsgTools">Nachrichten-Werkzeuge</string>
@@ -11742,5 +11743,11 @@
     <string name="SparkJumpFirstToggle">Zur ersten Nachricht springen</string>
     <string name="SparkDeleteOwnToggle">Alle eigenen Nachrichten löschen</string>
     <string name="SparkMsgToolsInfo">Details und Wiederholen findest du, wenn du eine Nachricht antippst. „Zur ersten Nachricht“ und „Alle eigenen Nachrichten löschen“ sind im Drei-Punkte-Menü des Chats. Weitergeleitete Nachrichten zeigen ↪ mit der ursprünglichen Zeit.</string>
+    <string name="SparkHeaderConfirm">Vor dem Senden fragen</string>
+    <string name="SparkConfirmSticker">Sticker</string>
+    <string name="SparkConfirmGif">GIFs</string>
+    <string name="SparkConfirmVoice">Sprachnachrichten (erst anhören)</string>
+    <string name="SparkConfirmInfo">Gegen versehentliches Senden. Bei Sprachnachrichten erscheint nach dem Loslassen die Vorschau zum Anhören, gesendet wird erst mit dem Senden-Knopf.</string>
+    <string name="SparkNameHistoryToggle">Frühere Benutzernamen und Namen merken</string>
     <string name="SparkComingSoon">Weitere Funktionen folgen in den nächsten Versionen.</string>
 </resources>

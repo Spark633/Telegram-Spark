@@ -6847,6 +6847,7 @@ public class MessagesController extends BaseController implements NotificationCe
         if (user == null) {
             return false;
         }
+        org.telegram.messenger.spark.SparkNameHistory.get(currentAccount).onUser(user); // Sparkgram: Namensverlauf
         fromCache = fromCache && user.id / 1000 != 333 && user.id != 777000;
         TLRPC.User oldUser = users.get(user.id);
         if (oldUser == user && !force) {

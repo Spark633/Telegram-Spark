@@ -22,19 +22,38 @@ public class SparkBulkDelete {
     public interface Listener {
         void onProgress(int found, int deleted, boolean searching);
         void onDone(int deleted, String error);
+
+        /** Nur im Auflisten-Modus: alle gefundenen eigenen Nachrichten. */
+        default void onCollected(ArrayList<TLRPC.Message> messages) {
+        }
     }
 
     private final int account;
     private final long dialogId;
     private final Listener listener;
     private final ArrayList<Integer> ids = new ArrayList<>();
+    private final ArrayList<TLRPC.Message> found = new ArrayList<>();
     private boolean cancelled;
+    private boolean collectOnly;
     private int deleted;
 
     public SparkBulkDelete(int account, long dialogId, Listener listener) {
         this.account = account;
         this.dialogId = dialogId;
         this.listener = listener;
+    }
+
+    /** Nur suchen und auflisten, nicht loeschen. */
+    public SparkBulkDelete collectOnly() {
+        collectOnly = true;
+        return this;
+    }
+
+    /** Bestimmte Nachrichten loeschen (z. B. Auswahl aus der Liste). */
+    public void deleteIds(ArrayList<Integer> selected) {
+        ids.clear();
+        ids.addAll(selected);
+        deleteNext();
     }
 
     public void cancel() {
@@ -90,12 +109,15 @@ public class SparkBulkDelete {
             for (TLRPC.Message m : res.messages) {
                 if (m.id > 0 && !(m instanceof TLRPC.TL_messageService)) {
                     ids.add(m.id);
+                    found.add(m);
                 }
                 last = m.id;
             }
             listener.onProgress(ids.size(), deleted, true);
             if (res.messages.size() >= 100 && last > 0) {
                 AndroidUtilities.runOnUIThread(() -> search(last), GAP);
+            } else if (collectOnly) {
+                listener.onCollected(found);
             } else {
                 deleteNext();
             }

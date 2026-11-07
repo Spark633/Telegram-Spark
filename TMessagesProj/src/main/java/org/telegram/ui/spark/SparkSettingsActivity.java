@@ -62,6 +62,10 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_FORWARD_TIME = 42;
     private static final int ID_JUMP_FIRST = 43;
     private static final int ID_DELETE_OWN_ALL = 44;
+    private static final int ID_CONFIRM_STICKER = 45;
+    private static final int ID_CONFIRM_GIF = 46;
+    private static final int ID_CONFIRM_VOICE = 47;
+    private static final int ID_NAME_HISTORY = 48;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -92,6 +96,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_INFO, R.string.SparkInfoToggle, SparkConfig.PROFILE_INFO));
         items.add(check(ID_INFO_ROW, R.string.SparkInfoRowToggle, SparkConfig.PROFILE_INFO_ROW));
         items.add(check(ID_PHOTO_DATE, R.string.SparkPhotoDateToggle, SparkConfig.PHOTO_DATE));
+        items.add(check(ID_NAME_HISTORY, R.string.SparkNameHistoryToggle, SparkConfig.NAME_HISTORY));
         items.add(check(ID_CLONE, R.string.SparkCloneToggle, SparkConfig.PROFILE_CLONE));
         if (SparkConfig.getRaw(SparkConfig.PROFILE_CLONE)) {
             items.add(subCheck(ID_CLONE_NAME, R.string.SparkCloneName, SparkConfig.CLONE_NAME));
@@ -120,6 +125,12 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_JUMP_FIRST, R.string.SparkJumpFirstToggle, SparkConfig.JUMP_FIRST));
         items.add(check(ID_DELETE_OWN_ALL, R.string.SparkDeleteOwnToggle, SparkConfig.DELETE_OWN_ALL));
         items.add(UItem.asShadow(getString(R.string.SparkMsgToolsInfo)));
+
+        items.add(UItem.asHeader(getString(R.string.SparkHeaderConfirm)));
+        items.add(check(ID_CONFIRM_STICKER, R.string.SparkConfirmSticker, SparkConfig.CONFIRM_STICKER));
+        items.add(check(ID_CONFIRM_GIF, R.string.SparkConfirmGif, SparkConfig.CONFIRM_GIF));
+        items.add(check(ID_CONFIRM_VOICE, R.string.SparkConfirmVoice, SparkConfig.CONFIRM_VOICE));
+        items.add(UItem.asShadow(getString(R.string.SparkConfirmInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderGroups)));
         items.add(check(ID_MEMBER_CHECK, R.string.SparkMemberCheckToggle, SparkConfig.MEMBER_CHECK));
@@ -227,6 +238,10 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_FORWARD_TIME: toggle(SparkConfig.FORWARD_TIME); break;
             case ID_JUMP_FIRST: toggle(SparkConfig.JUMP_FIRST); break;
             case ID_DELETE_OWN_ALL: toggle(SparkConfig.DELETE_OWN_ALL); break;
+            case ID_CONFIRM_STICKER: toggle(SparkConfig.CONFIRM_STICKER); break;
+            case ID_CONFIRM_GIF: toggle(SparkConfig.CONFIRM_GIF); break;
+            case ID_CONFIRM_VOICE: toggle(SparkConfig.CONFIRM_VOICE); break;
+            case ID_NAME_HISTORY: toggle(SparkConfig.NAME_HISTORY); break;
             case ID_HIDE_STARS: toggle(SparkConfig.HIDE_STARS); break;
             case ID_HIDE_BUSINESS: toggle(SparkConfig.HIDE_BUSINESS); break;
             case ID_HIDE_WALLET: toggle(SparkConfig.HIDE_WALLET); break;

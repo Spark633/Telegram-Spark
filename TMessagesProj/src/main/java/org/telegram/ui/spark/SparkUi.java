@@ -75,6 +75,24 @@ public class SparkUi {
         fragment.showDialog(builder.create());
     }
 
+    /** Rueckfrage vor dem Senden eines Stickers/GIFs, mit kleiner Vorschau. */
+    public static void confirmSend(android.app.Activity activity, String title, org.telegram.tgnet.TLRPC.Document doc, Runnable onConfirm) {
+        org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(activity);
+        builder.setTitle(mark(title));
+        if (doc != null) {
+            org.telegram.ui.Components.BackupImageView image = new org.telegram.ui.Components.BackupImageView(activity);
+            org.telegram.tgnet.TLRPC.PhotoSize thumb = org.telegram.messenger.FileLoader.getClosestPhotoSizeWithSize(doc.thumbs, 320);
+            boolean isSticker = org.telegram.messenger.MessageObject.isStickerDocument(doc) || org.telegram.messenger.MessageObject.isAnimatedStickerDocument(doc, true);
+            image.setImage(isSticker ? org.telegram.messenger.ImageLocation.getForDocument(doc) : org.telegram.messenger.ImageLocation.getForDocument(thumb, doc), "160_160", org.telegram.messenger.ImageLocation.getForDocument(thumb, doc), "160_160", 0, doc);
+            android.widget.FrameLayout box = new android.widget.FrameLayout(activity);
+            box.addView(image, org.telegram.ui.Components.LayoutHelper.createFrame(140, 140, android.view.Gravity.CENTER, 0, 8, 0, 0));
+            builder.setView(box);
+        }
+        builder.setPositiveButton(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.Send), (d, w) -> onConfirm.run());
+        builder.setNegativeButton(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.Cancel), null);
+        builder.show();
+    }
+
     /** Nachrichten-Details: IDs, genaue Zeiten, Weiterleitungsherkunft, Datei-Infos. */
     public static void showMessageDetails(org.telegram.ui.ActionBar.BaseFragment fragment, org.telegram.messenger.MessageObject mo) {
         if (fragment == null || mo == null || mo.messageOwner == null || fragment.getParentActivity() == null) {

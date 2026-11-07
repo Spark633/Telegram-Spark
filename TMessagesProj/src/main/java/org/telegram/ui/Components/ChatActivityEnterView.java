@@ -237,6 +237,9 @@ public class ChatActivityEnterView extends FrameLayout implements
     FactorAnimator.Target, Theme.Colorable
 {
 
+    private boolean sparkConfirmBypass; // Sparkgram: Rueckfrage bereits bestaetigt
+
+
     private int commonInputType;
     private boolean stickersEnabled;
     private ActionBarMenuSubItem sendWhenOnlineButton;
@@ -3035,7 +3038,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                                     });
                                     return true;
                                 }
-                                MediaController.getInstance().stopRecording(isInScheduleMode() ? 3 : 1, true, 0, voiceOnce, 0);
+                                MediaController.getInstance().stopRecording(isInScheduleMode() ? 3 : (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_VOICE) ? 2 : 1), true, 0, voiceOnce, 0); // Sparkgram: 2 = erst anhoeren
                                 delegate.needStartRecordAudio(0);
                             }
                             recordingAudioVideo = false;
@@ -3154,7 +3157,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                                     AlertsCreator.createScheduleDatePickerDialog(parentActivity, parentFragment.getDialogId(), (notify, scheduleDate, scheduleRepeatPeriod) -> MediaController.getInstance().stopRecording(1, notify, scheduleDate, false, 0), () -> MediaController.getInstance().stopRecording(0, false, 0, false, 0), resourcesProvider);
                                 }
                                 delegate.needStartRecordAudio(0);
-                                MediaController.getInstance().stopRecording(isInScheduleMode() ? 3 : 1, true, 0, voiceOnce, 0);
+                                MediaController.getInstance().stopRecording(isInScheduleMode() ? 3 : (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_VOICE) ? 2 : 1), true, 0, voiceOnce, 0); // Sparkgram: 2 = erst anhoeren
                             }
                             recordingAudioVideo = false;
                             messageTransitionIsRunning = false;
@@ -11942,6 +11945,18 @@ public class ChatActivityEnterView extends FrameLayout implements
             @Override
             public void onStickerSelected(View view, TLRPC.Document sticker, String query, Object parent, MessageObject.SendAnimationData sendAnimationData, boolean notify, int scheduleDate, int scheduleRepeatPeriod) {
                 if (isLiveComment) return;
+                // Sparkgram: Rueckfrage vor dem Senden
+                if (!sparkConfirmBypass && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_STICKER) && parentActivity != null) {
+                    org.telegram.ui.spark.SparkUi.confirmSend(parentActivity, "Sticker senden?", sticker, () -> {
+                        sparkConfirmBypass = true;
+                        try {
+                            onStickerSelected(view, sticker, query, parent, sendAnimationData, notify, scheduleDate, scheduleRepeatPeriod);
+                        } finally {
+                            sparkConfirmBypass = false;
+                        }
+                    });
+                    return;
+                }
                 if (trendingStickersAlert != null) {
                     trendingStickersAlert.dismiss();
                     trendingStickersAlert = null;
@@ -12235,6 +12250,18 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
 
             public void onGifSelected(View view, Object gif, String query, Object parent, boolean notify, int scheduleDate, int scheduleRepeatPeriod, MediaController.PhotoEntry entry, boolean invertMedia) {
+                // Sparkgram: Rueckfrage vor dem Senden
+                if (!sparkConfirmBypass && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CONFIRM_GIF) && parentActivity != null) {
+                    org.telegram.ui.spark.SparkUi.confirmSend(parentActivity, "GIF senden?", gif instanceof TLRPC.Document ? (TLRPC.Document) gif : null, () -> {
+                        sparkConfirmBypass = true;
+                        try {
+                            onGifSelected(view, gif, query, parent, notify, scheduleDate, scheduleRepeatPeriod, entry, invertMedia);
+                        } finally {
+                            sparkConfirmBypass = false;
+                        }
+                    });
+                    return;
+                }
                 if (replyingQuote != null && parentFragment != null && replyingQuote.outdated) {
                     parentFragment.showQuoteMessageUpdate();
                     return;

@@ -27,7 +27,10 @@ public class SparkChangelog {
             "Nachrichten-Details: IDs, genaue Zeiten, Weiterleitungsherkunft, Datei-Infos",
             "Nachricht wiederholen (+1)",
             "Originalzeit bei weitergeleiteten Nachrichten (↪)",
-            "Chat-Menü: zur ersten Nachricht springen, alle eigenen Nachrichten löschen (gebremst)"
+            "Chat-Menü: zur ersten Nachricht springen, alle eigenen Nachrichten löschen (gebremst)",
+            "Eigene Nachrichten erst auflisten und gezielt auswählen, bevor gelöscht wird",
+            "Rückfrage vor dem Senden von Stickern und GIFs, Sprachnachrichten erst anhören",
+            "Frühere Benutzernamen und Namen von Personen in den Infos (ab jetzt gemerkt)"
         ),
         new Release("0.7", "07.11.2026",
             "Auch selbst gelöschte Nachrichten bleiben bei dir stehen – rot „🗑 von dir gelöscht“ (abschaltbar)",

@@ -54,6 +54,12 @@ public class SparkConfig {
     public static final String FORWARD_TIME = "forwardTime";
     public static final String JUMP_FIRST = "jumpFirst";
     public static final String DELETE_OWN_ALL = "deleteOwnAll";
+    // Rueckfrage vor dem Senden
+    public static final String CONFIRM_STICKER = "confirmSticker";
+    public static final String CONFIRM_GIF = "confirmGif";
+    public static final String CONFIRM_VOICE = "confirmVoice";
+    // Verlauf frueherer Benutzernamen/Namen
+    public static final String NAME_HISTORY = "nameHistory";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
@@ -107,6 +113,7 @@ public class SparkConfig {
             case PHOTO_MANAGER:
             case SPARK_MARKER:
             case CHAT_MENU:
+            case NAME_HISTORY:
             case MSG_DETAILS:
             case MSG_REPEAT:
             case FORWARD_TIME:
