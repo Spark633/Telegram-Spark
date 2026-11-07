@@ -130,6 +130,49 @@ public class SparkProfileMenu {
         fragment.showDialog(builder.create());
     }
 
+    public static String chatType(TLRPC.Chat chat) {
+        if (!ChatObject.isChannel(chat)) {
+            return "Gruppe";
+        }
+        if (chat.gigagroup) {
+            return "Broadcast-Gruppe";
+        }
+        if (chat.megagroup) {
+            return chat.forum ? "Forum (Themen)" : "Supergruppe";
+        }
+        return "Kanal";
+    }
+
+    public static String role(TLRPC.Chat chat) {
+        if (chat.creator) {
+            return "Eigentümer";
+        }
+        if (chat.left) {
+            return "kein Mitglied";
+        }
+        if (chat.admin_rights != null) {
+            ArrayList<String> r = new ArrayList<>();
+            TLRPC.TL_chatAdminRights a = chat.admin_rights;
+            if (a.change_info) r.add("Infos ändern");
+            if (a.delete_messages) r.add("Nachrichten löschen");
+            if (a.ban_users) r.add("Nutzer sperren");
+            if (a.invite_users) r.add("einladen");
+            if (a.pin_messages) r.add("anheften");
+            if (a.add_admins) r.add("Admins ernennen");
+            if (a.post_messages) r.add("posten");
+            if (a.edit_messages) r.add("bearbeiten");
+            if (a.manage_call) r.add("Videochats");
+            return r.isEmpty() ? "Admin" : "Admin (" + TextUtils.join(", ", r) + ")";
+        }
+        return "Mitglied";
+    }
+
+    private static String slowMode(int seconds) {
+        if (seconds < 60) return seconds + " s";
+        if (seconds < 3600) return (seconds / 60) + " min";
+        return (seconds / 3600) + " h";
+    }
+
     /** Info-Zeile direkt im Profil anzeigen? */
     public static boolean showInfoRow() {
         return SparkConfig.get(SparkConfig.PROFILE_INFO_ROW);
@@ -141,16 +184,10 @@ public class SparkProfileMenu {
         StringBuilder sb = new StringBuilder();
         sb.append("ID ").append(peerId(account, userId, chatId));
         if (userId != 0) {
-            TLRPC.User user = mc.getUser(userId);
             TLRPC.UserFull full = mc.getUserFull(userId);
-            if (user != null && user.photo != null && user.photo.dc_id != 0) {
-                sb.append(" · DC").append(user.photo.dc_id);
-            }
+            sb.append(" · erstellt ").append(org.telegram.messenger.spark.SparkRegDate.shortText(userId));
             if (full != null && full.profile_photo != null && full.profile_photo.date > 0) {
                 sb.append(" · Bild seit ").append(LocaleController.formatDateChat(full.profile_photo.date));
-            }
-            if (user != null && user.premium) {
-                sb.append(" · Premium");
             }
             if (full != null && full.common_chats_count > 0) {
                 sb.append(" · ").append(full.common_chats_count).append(" gem. Gruppen");
@@ -159,13 +196,17 @@ public class SparkProfileMenu {
             TLRPC.Chat chat = mc.getChat(chatId);
             TLRPC.ChatFull full = mc.getChatFull(chatId);
             if (chat != null) {
+                sb.append(" · ").append(chatType(chat));
                 sb.append(ChatObject.getPublicUsername(chat) != null ? " · öffentlich" : " · privat");
                 int members = full != null && full.participants_count > 0 ? full.participants_count : chat.participants_count;
                 if (members > 0) {
                     sb.append(" · ").append(members).append(" Mitgl.");
+                    if (full != null && full.online_count > 0) {
+                        sb.append(" (").append(full.online_count).append(" online)");
+                    }
                 }
-                if (chat.photo != null && chat.photo.dc_id != 0) {
-                    sb.append(" · DC").append(chat.photo.dc_id);
+                if (full != null && full.slowmode_seconds > 0) {
+                    sb.append(" · Slow Mode ").append(slowMode(full.slowmode_seconds));
                 }
             }
         }
@@ -243,8 +284,19 @@ public class SparkProfileMenu {
             TLRPC.UserFull full = mc.getUserFull(userId);
             title = UserObject.getUserName(user);
             line(sb, "ID", user.id);
+            line(sb, "Konto erstellt", org.telegram.messenger.spark.SparkRegDate.longText(user.id));
             String username = UserObject.getPublicUsername(user);
             line(sb, "Benutzername", username != null ? "@" + username : null);
+            if (user.usernames != null && user.usernames.size() > 1) {
+                StringBuilder more = new StringBuilder();
+                for (TLRPC.TL_username u : user.usernames) {
+                    if (u.active && u.username != null && !u.username.equals(username)) {
+                        if (more.length() > 0) more.append(", ");
+                        more.append("@").append(u.username);
+                    }
+                }
+                line(sb, "Weitere Benutzernamen", more.length() > 0 ? more.toString() : null);
+            }
             if (!TextUtils.isEmpty(user.phone)) {
                 line(sb, "Telefon", "+" + user.phone);
             }
@@ -277,7 +329,18 @@ public class SparkProfileMenu {
             line(sb, "ID", peerId(account, 0, chatId));
             String username = ChatObject.getPublicUsername(chat);
             line(sb, "Benutzername", username != null ? "@" + username : null);
-            line(sb, "Typ", ChatObject.isChannel(chat) ? (chat.megagroup ? "Supergruppe" : "Kanal") : "Gruppe");
+            line(sb, "Typ", chatType(chat));
+            line(sb, "Deine Rolle", role(chat));
+            if (chat.usernames != null && chat.usernames.size() > 1) {
+                StringBuilder more = new StringBuilder();
+                for (TLRPC.TL_username u : chat.usernames) {
+                    if (u.active && u.username != null && !u.username.equals(username)) {
+                        if (more.length() > 0) more.append(", ");
+                        more.append("@").append(u.username);
+                    }
+                }
+                line(sb, "Weitere Benutzernamen", more.length() > 0 ? more.toString() : null);
+            }
             if (chat.photo != null && chat.photo.dc_id != 0) {
                 line(sb, "Rechenzentrum", "DC" + chat.photo.dc_id);
             }
@@ -285,7 +348,31 @@ public class SparkProfileMenu {
             if (members > 0) {
                 line(sb, "Mitglieder", members);
             }
-            line(sb, "Erstellt/beigetreten", date(chat.date));
+            if (full != null && full.online_count > 0) {
+                line(sb, "Gerade online", full.online_count);
+            }
+            line(sb, "Beigetreten", date(chat.date));
+            if (full != null && full.slowmode_seconds > 0) {
+                line(sb, "Slow Mode", slowMode(full.slowmode_seconds));
+            }
+            line(sb, "Geschützte Inhalte", chat.noforwards ? "ja (Weiterleiten/Speichern verboten)" : "nein");
+            if (chat.join_request) {
+                line(sb, "Beitritt", "nur mit Anfrage");
+            }
+            if (full != null && full.participants_hidden) {
+                line(sb, "Mitgliederliste", "verborgen");
+            }
+            if (ChatObject.isChannel(chat) && !chat.megagroup && chat.signatures) {
+                line(sb, "Signaturen", "an");
+            }
+            if (full != null && full.linked_chat_id != 0) {
+                TLRPC.Chat linked = mc.getChat(full.linked_chat_id);
+                String linkedName = linked != null ? linked.title : String.valueOf(full.linked_chat_id);
+                line(sb, ChatObject.isChannel(chat) && !chat.megagroup ? "Diskussionsgruppe" : "Verknüpfter Kanal", linkedName + " (ID -100" + full.linked_chat_id + ")");
+            }
+            if (full != null && full.migrated_from_chat_id != 0) {
+                line(sb, "Hervorgegangen aus", "alter Gruppe (ID -" + full.migrated_from_chat_id + ")");
+            }
             if (username != null) {
                 line(sb, "Sichtbarkeit", "öffentlich");
                 link[0] = "https://t.me/" + username;
