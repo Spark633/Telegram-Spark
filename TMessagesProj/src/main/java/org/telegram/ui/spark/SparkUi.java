@@ -75,6 +75,77 @@ public class SparkUi {
         fragment.showDialog(builder.create());
     }
 
+    /** Nachrichten-Details: IDs, genaue Zeiten, Weiterleitungsherkunft, Datei-Infos. */
+    public static void showMessageDetails(org.telegram.ui.ActionBar.BaseFragment fragment, org.telegram.messenger.MessageObject mo) {
+        if (fragment == null || mo == null || mo.messageOwner == null || fragment.getParentActivity() == null) {
+            return;
+        }
+        final int account = fragment.getCurrentAccount();
+        org.telegram.messenger.MessagesController mc = org.telegram.messenger.MessagesController.getInstance(account);
+        org.telegram.tgnet.TLRPC.Message m = mo.messageOwner;
+        java.text.SimpleDateFormat f = new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm:ss", java.util.Locale.GERMANY);
+        StringBuilder sb = new StringBuilder();
+        sb.append("Nachrichten-ID: ").append(m.id);
+        sb.append("\nChat-ID: ").append(mo.getDialogId());
+        long sender = mo.getSenderId();
+        if (sender != 0) {
+            sb.append("\nAbsender: ").append(org.telegram.ui.spark.SparkNotesActivity.dialogName(account, sender)).append(" (ID ").append(sender).append(")");
+        }
+        sb.append("\nGesendet: ").append(f.format(new java.util.Date(m.date * 1000L)));
+        if (m.edit_date > 0) {
+            sb.append("\nBearbeitet: ").append(f.format(new java.util.Date(m.edit_date * 1000L)));
+        }
+        if (m.fwd_from != null) {
+            String from = m.fwd_from.from_name;
+            long fromId = m.fwd_from.from_id != null ? org.telegram.messenger.DialogObject.getPeerDialogId(m.fwd_from.from_id) : 0;
+            if (fromId != 0) {
+                from = org.telegram.ui.spark.SparkNotesActivity.dialogName(account, fromId) + " (ID " + fromId + ")";
+            }
+            sb.append("\nWeitergeleitet von: ").append(from == null ? "verborgen" : from);
+            if (m.fwd_from.date > 0) {
+                sb.append("\nUrsprünglich gesendet: ").append(f.format(new java.util.Date(m.fwd_from.date * 1000L)));
+            }
+            if (m.fwd_from.channel_post != 0) {
+                sb.append("\nOriginal-Beitrag: #").append(m.fwd_from.channel_post);
+            }
+        }
+        if (m.reply_to != null && m.reply_to.reply_to_msg_id != 0) {
+            sb.append("\nAntwort auf: #").append(m.reply_to.reply_to_msg_id);
+        }
+        if (m.views > 0) {
+            sb.append("\nAufrufe: ").append(m.views);
+        }
+        if (m.forwards > 0) {
+            sb.append("\nWeitergeleitet: ").append(m.forwards).append("×");
+        }
+        org.telegram.tgnet.TLRPC.Document doc = mo.getDocument();
+        if (doc != null) {
+            String name = org.telegram.messenger.FileLoader.getDocumentFileName(doc);
+            sb.append("\nDatei: ").append(android.text.TextUtils.isEmpty(name) ? "(ohne Name)" : name);
+            sb.append("\nGröße: ").append(AndroidUtilities.formatFileSize(doc.size));
+            if (!android.text.TextUtils.isEmpty(doc.mime_type)) {
+                sb.append("\nTyp: ").append(doc.mime_type);
+            }
+            sb.append("\nDatei-DC: DC").append(doc.dc_id);
+        } else if (m.media instanceof org.telegram.tgnet.TLRPC.TL_messageMediaPhoto && m.media.photo != null) {
+            org.telegram.tgnet.TLRPC.PhotoSize big = org.telegram.messenger.FileLoader.getClosestPhotoSizeWithSize(m.media.photo.sizes, 4096);
+            if (big != null) {
+                sb.append("\nBild: ").append(big.w).append("×").append(big.h).append(", ").append(AndroidUtilities.formatFileSize(big.size));
+            }
+            sb.append("\nDatei-DC: DC").append(m.media.photo.dc_id);
+        }
+        final String text = sb.toString();
+        org.telegram.ui.ActionBar.AlertDialog.Builder builder = new org.telegram.ui.ActionBar.AlertDialog.Builder(fragment.getParentActivity());
+        builder.setTitle(mark("Nachrichten-Details"));
+        builder.setMessage(text);
+        builder.setPositiveButton(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.OK), null);
+        builder.setNeutralButton(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.Copy), (d, w) -> {
+            AndroidUtilities.addToClipboard(text);
+            org.telegram.ui.Components.BulletinFactory.of(fragment).createCopyBulletin(org.telegram.messenger.LocaleController.getString(org.telegram.messenger.R.string.TextCopied)).show();
+        });
+        fragment.showDialog(builder.create());
+    }
+
     /** "Profilbild vom 07.11.2026, 14:32" */
     public static String photoDate(int unixTime) {
         return "Profilbild vom " + new java.text.SimpleDateFormat("dd.MM.yyyy, HH:mm", java.util.Locale.GERMANY).format(new java.util.Date(unixTime * 1000L));

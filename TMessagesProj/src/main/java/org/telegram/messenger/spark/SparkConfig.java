@@ -48,6 +48,12 @@ public class SparkConfig {
     public static final String HIDE_STARS = "hideStars";
     public static final String HIDE_BUSINESS = "hideBusiness";
     public static final String HIDE_WALLET = "hideWallet";
+    // Nachrichten-Werkzeuge
+    public static final String MSG_DETAILS = "msgDetails";
+    public static final String MSG_REPEAT = "msgRepeat";
+    public static final String FORWARD_TIME = "forwardTime";
+    public static final String JUMP_FIRST = "jumpFirst";
+    public static final String DELETE_OWN_ALL = "deleteOwnAll";
     // Kleine Markierung an allen Sparkgram-Funktionen
     public static final String SPARK_MARKER = "sparkMarker";
     // Private Notizen zu Personen, Gruppen und Kanaelen
@@ -101,6 +107,11 @@ public class SparkConfig {
             case PHOTO_MANAGER:
             case SPARK_MARKER:
             case CHAT_MENU:
+            case MSG_DETAILS:
+            case MSG_REPEAT:
+            case FORWARD_TIME:
+            case JUMP_FIRST:
+            case DELETE_OWN_ALL:
             case WHATS_NEW_HINT:
             case KEEP_DELETED:
             case KEEP_OWN_DELETED:

@@ -31,9 +31,11 @@ public class SparkProfileMenu {
     public static final int ID_NOTE = 903;
     public static final int ID_PHOTOS = 904;
     public static final int ID_GROUP = 905;
+    public static final int ID_JUMP_FIRST = 906;
+    public static final int ID_DELETE_OWN = 907;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_GROUP;
+        return id >= ID_COPY_ID && id <= ID_DELETE_OWN;
     }
 
     public interface Adder {
@@ -92,6 +94,15 @@ public class SparkProfileMenu {
         }
         if (self && SparkConfig.get(SparkConfig.PHOTO_MANAGER)) {
             list.add(new Entry(ID_PHOTOS, R.drawable.msg_photos, label(getString(R.string.SparkPhotoManager), marked)));
+        }
+        // nur im geoeffneten Chat
+        if (fragment instanceof org.telegram.ui.ChatActivity) {
+            if (SparkConfig.get(SparkConfig.JUMP_FIRST)) {
+                list.add(new Entry(ID_JUMP_FIRST, R.drawable.msg_go_up, label(getString(R.string.SparkJumpFirst), marked)));
+            }
+            if (SparkConfig.get(SparkConfig.DELETE_OWN_ALL)) {
+                list.add(new Entry(ID_DELETE_OWN, R.drawable.msg_delete, label(getString(R.string.SparkDeleteOwnAll), marked)));
+            }
         }
         return list;
     }
@@ -173,6 +184,52 @@ public class SparkProfileMenu {
         return (seconds / 3600) + " h";
     }
 
+    private static void confirmDeleteOwn(BaseFragment fragment, long dialogId) {
+        final int account = fragment.getCurrentAccount();
+        AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
+        builder.setTitle(getString(R.string.SparkDeleteOwnAll));
+        builder.setMessage(getString(R.string.SparkDeleteOwnConfirm));
+        builder.setPositiveButton(getString(R.string.Delete), (d, w) -> {
+            final AlertDialog progress = new AlertDialog(fragment.getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER);
+            final org.telegram.messenger.spark.SparkBulkDelete[] job = new org.telegram.messenger.spark.SparkBulkDelete[1];
+            progress.setCanCancel(true);
+            progress.setOnCancelListener(di -> {
+                if (job[0] != null) job[0].cancel();
+            });
+            progress.show();
+            job[0] = new org.telegram.messenger.spark.SparkBulkDelete(account, dialogId, new org.telegram.messenger.spark.SparkBulkDelete.Listener() {
+                @Override
+                public void onProgress(int found, int deleted, boolean searching) {
+                    try {
+                        progress.setMessage(searching ? "Suche … " + found + " gefunden" : "Lösche … " + deleted + " / " + found);
+                    } catch (Exception ignore) {
+                    }
+                }
+
+                @Override
+                public void onDone(int deleted, String error) {
+                    try {
+                        progress.dismiss();
+                    } catch (Exception ignore) {
+                    }
+                    if (error != null) {
+                        BulletinFactory.of(fragment).createErrorBulletin(LocaleController.formatString(R.string.SparkError, error)).show();
+                    } else {
+                        BulletinFactory.of(fragment).createSimpleBulletin(R.raw.contact_check, deleted + " eigene Nachrichten gelöscht").show();
+                    }
+                }
+            });
+            job[0].start();
+        });
+        builder.setNegativeButton(getString(R.string.Cancel), null);
+        AlertDialog dialog = builder.create();
+        fragment.showDialog(dialog);
+        android.widget.TextView button = (android.widget.TextView) dialog.getButton(android.content.DialogInterface.BUTTON_POSITIVE);
+        if (button != null) {
+            button.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_text_RedBold));
+        }
+    }
+
     /** Info-Zeile direkt im Profil anzeigen? */
     public static boolean showInfoRow() {
         return SparkConfig.get(SparkConfig.PROFILE_INFO_ROW);
@@ -225,6 +282,14 @@ public class SparkProfileMenu {
         switch (id) {
             case ID_GROUP:
                 showGroup(fragment, userId, chatId);
+                break;
+            case ID_JUMP_FIRST:
+                if (fragment instanceof org.telegram.ui.ChatActivity) {
+                    ((org.telegram.ui.ChatActivity) fragment).scrollToMessageId(1, 0, false, 0, true, 0);
+                }
+                break;
+            case ID_DELETE_OWN:
+                confirmDeleteOwn(fragment, userId != 0 ? userId : -chatId);
                 break;
             case ID_COPY_ID: {
                 String value = peerId(account, userId, chatId);

@@ -1266,6 +1266,8 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_SEND_MONEY = 117;
     public final static int OPTION_SPARK_HISTORY = 900; // Sparkgram
     public final static int OPTION_SPARK_REMOVE = 901; // Sparkgram
+    public final static int OPTION_SPARK_DETAILS = 902; // Sparkgram
+    public final static int OPTION_SPARK_REPEAT = 903; // Sparkgram
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -31307,6 +31309,19 @@ public class ChatActivity extends BaseFragment implements
                 icons.add(R.drawable.msg_calendar2);
             }
 
+            // Sparkgram: Nachricht wiederholen (+1) und Details
+            if (selectedObject != null && selectedObject.getId() > 0 && selectedObject.messageOwner != null && selectedObject.messageOwner.action == null) {
+                if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MSG_REPEAT) && chatMode == 0 && ChatObject.canSendMessages(currentChat) || org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MSG_REPEAT) && chatMode == 0 && currentChat == null) {
+                    items.add(org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkRepeat)));
+                    options.add(OPTION_SPARK_REPEAT);
+                    icons.add(R.drawable.msg_retry);
+                }
+                if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MSG_DETAILS)) {
+                    items.add(org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkMessageDetails)));
+                    options.add(OPTION_SPARK_DETAILS);
+                    icons.add(R.drawable.msg_info);
+                }
+            }
             // Sparkgram: als geloescht markierte Nachricht endgueltig entfernen
             if (selectedObject != null && org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).isDeleted(selectedObject.getDialogId(), selectedObject.getId())) {
                 items.add(org.telegram.ui.spark.SparkUi.mark(getString(R.string.SparkRemoveForever)));
@@ -33640,6 +33655,20 @@ public class ChatActivity extends BaseFragment implements
         switch (option) {
             case OPTION_SPARK_HISTORY: {
                 org.telegram.ui.spark.SparkUi.showEditHistory(this, selectedObject);
+                break;
+            }
+            case OPTION_SPARK_DETAILS: {
+                org.telegram.ui.spark.SparkUi.showMessageDetails(this, selectedObject);
+                break;
+            }
+            case OPTION_SPARK_REPEAT: {
+                final ArrayList<MessageObject> list = new ArrayList<>();
+                if (selectedObjectGroup != null) {
+                    list.addAll(selectedObjectGroup.messages);
+                } else {
+                    list.add(selectedObject);
+                }
+                getSendMessagesHelper().sendMessage(list, getDialogId(), true, false, true, 0, 0);
                 break;
             }
             case OPTION_SPARK_REMOVE: {

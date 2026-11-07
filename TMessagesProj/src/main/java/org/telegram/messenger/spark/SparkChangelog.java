@@ -21,7 +21,13 @@ public class SparkChangelog {
     public static final Release[] RELEASES = {
         new Release("0.8", "07.11.2026",
             "Eigenes Sparkgram-App-Symbol: hellblauer Flieger mit orangen Funken (auch für Themed Icons)",
-            "Updates-Bereich: „Nach Updates suchen“ und „Testversionen“ direkt unter der installierten Version"
+            "Updates-Bereich: „Nach Updates suchen“ und „Testversionen“ direkt unter der installierten Version",
+            "Rote Kante gelöschter Nachrichten folgt der Rundung der Blase und läuft spitz aus",
+            "Profil-Bibliothek: „Original-Profil öffnen“, findet die Person über ihre ID (auch nach Namensänderung)",
+            "Nachrichten-Details: IDs, genaue Zeiten, Weiterleitungsherkunft, Datei-Infos",
+            "Nachricht wiederholen (+1)",
+            "Originalzeit bei weitergeleiteten Nachrichten (↪)",
+            "Chat-Menü: zur ersten Nachricht springen, alle eigenen Nachrichten löschen (gebremst)"
         ),
         new Release("0.7", "07.11.2026",
             "Auch selbst gelöschte Nachrichten bleiben bei dir stehen – rot „🗑 von dir gelöscht“ (abschaltbar)",

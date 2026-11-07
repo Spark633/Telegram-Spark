@@ -18542,6 +18542,12 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         final int sparkDelState = org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).deletedState(currentMessageObject.getDialogId(), currentMessageObject.getId());
         sparkDeletedState = sparkDelState != 0;
         sparkHistoryState = org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).hasHistory(currentMessageObject.getDialogId(), currentMessageObject.getId());
+        // Sparkgram: Originalzeit weitergeleiteter Nachrichten
+        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.FORWARD_TIME)
+                && currentMessageObject.messageOwner.fwd_from != null && currentMessageObject.messageOwner.fwd_from.date > 0
+                && !currentMessageObject.isSaved) {
+            timeString = "↪ " + new java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.GERMANY).format(new java.util.Date(currentMessageObject.messageOwner.fwd_from.date * 1000L)) + " · " + timeString;
+        }
         if (sparkDeletedState) {
             timeString = (sparkDelState == org.telegram.messenger.spark.SparkMessageStore.DELETED_BY_SELF ? "🗑 von dir gelöscht · " : "🗑 gelöscht · ") + timeString;
         } else if (sparkHistoryState) {
