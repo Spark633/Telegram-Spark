@@ -42,6 +42,8 @@ public class SparkProfiles {
         public String about;
         public String photoPath;
         public long sourceUserId;
+        public long sourceAccessHash;
+        public String sourceUsername;
         public long created;
         public boolean original;
 
@@ -63,6 +65,8 @@ public class SparkProfiles {
             o.put("about", about);
             o.put("photo", photoPath);
             o.put("source", sourceUserId);
+            o.put("sourceHash", sourceAccessHash);
+            o.put("sourceUsername", sourceUsername);
             o.put("created", created);
             o.put("original", original);
             return o;
@@ -77,6 +81,8 @@ public class SparkProfiles {
             e.about = o.optString("about", "");
             e.photoPath = o.has("photo") && !o.isNull("photo") ? o.optString("photo") : null;
             e.sourceUserId = o.optLong("source");
+            e.sourceAccessHash = o.optLong("sourceHash");
+            e.sourceUsername = o.has("sourceUsername") && !o.isNull("sourceUsername") ? o.optString("sourceUsername") : null;
             e.created = o.optLong("created");
             e.original = o.optBoolean("original");
             return e;
@@ -194,6 +200,8 @@ public class SparkProfiles {
             e.lastName = n(user.last_name);
             e.about = full != null ? n(full.about) : "";
             e.sourceUserId = user.id;
+            e.sourceAccessHash = user.access_hash;
+            e.sourceUsername = org.telegram.messenger.UserObject.getPublicUsername(user);
             e.created = System.currentTimeMillis();
             e.original = original;
             TLRPC.Photo photo = null;

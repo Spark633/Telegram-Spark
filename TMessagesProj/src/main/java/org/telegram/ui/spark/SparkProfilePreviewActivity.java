@@ -86,6 +86,9 @@ public class SparkProfilePreviewActivity extends UniversalFragment {
         info.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
         info.setGravity(Gravity.CENTER);
         String sub = (entry.original ? getString(R.string.SparkProfileOriginal) + " · " : "") + LocaleController.formatDateTime(entry.created / 1000, false);
+        if (!entry.original && entry.sourceUserId != 0) {
+            sub += "\nGeklont von " + (TextUtils.isEmpty(entry.sourceUsername) ? "" : "@" + entry.sourceUsername + " · ") + "ID " + entry.sourceUserId;
+        }
         if (entry.hasPhoto()) {
             sub += "\n" + getString(R.string.SparkProfileTapPhoto);
         }
@@ -134,12 +137,7 @@ public class SparkProfilePreviewActivity extends UniversalFragment {
                 }
             });
         } else if (item.id == ID_OPEN_SOURCE) {
-            org.telegram.tgnet.TLRPC.User u = org.telegram.messenger.MessagesController.getInstance(currentAccount).getUser(entry.sourceUserId);
-            if (u == null) {
-                BulletinFactory.of(this).createErrorBulletin(getString(R.string.SparkProfileSourceUnknown)).show();
-            } else {
-                presentFragment(org.telegram.ui.ProfileActivity.of(entry.sourceUserId));
-            }
+            openSource();
         } else if (item.id == ID_RENAME) {
             final EditText input = new EditText(getParentActivity());
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
@@ -172,6 +170,40 @@ public class SparkProfilePreviewActivity extends UniversalFragment {
             AlertDialog dialog = builder.create();
             showDialog(dialog);
         }
+    }
+
+    /** Oeffnet das geklonte Original per ID; laedt die Person bei Bedarf ueber ID + Zugangsschluessel nach. */
+    private void openSource() {
+        final org.telegram.messenger.MessagesController mc = org.telegram.messenger.MessagesController.getInstance(currentAccount);
+        if (mc.getUser(entry.sourceUserId) != null) {
+            presentFragment(org.telegram.ui.ProfileActivity.of(entry.sourceUserId));
+            return;
+        }
+        if (entry.sourceAccessHash == 0) {
+            BulletinFactory.of(this).createErrorBulletin(getString(R.string.SparkProfileSourceUnknown)).show();
+            return;
+        }
+        org.telegram.tgnet.TLRPC.TL_inputUser input = new org.telegram.tgnet.TLRPC.TL_inputUser();
+        input.user_id = entry.sourceUserId;
+        input.access_hash = entry.sourceAccessHash;
+        org.telegram.tgnet.TLRPC.TL_users_getUsers req = new org.telegram.tgnet.TLRPC.TL_users_getUsers();
+        req.id.add(input);
+        org.telegram.tgnet.ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
+            boolean found = false;
+            if (response instanceof org.telegram.tgnet.Vector) {
+                for (Object o : ((org.telegram.tgnet.Vector<?>) response).objects) {
+                    if (o instanceof org.telegram.tgnet.TLRPC.User && !(o instanceof org.telegram.tgnet.TLRPC.TL_userEmpty)) {
+                        mc.putUser((org.telegram.tgnet.TLRPC.User) o, false);
+                        found = true;
+                    }
+                }
+            }
+            if (found) {
+                presentFragment(org.telegram.ui.ProfileActivity.of(entry.sourceUserId));
+            } else {
+                BulletinFactory.of(this).createErrorBulletin(getString(R.string.SparkProfileSourceUnknown)).show();
+            }
+        }));
     }
 
     @Override

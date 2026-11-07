@@ -11645,7 +11645,7 @@
     <string name="SparkProfileLibraryEmpty">Noch keine Profile gespeichert. Öffne ein Profil und wähle im Menü „Profil klonen“.</string>
     <string name="SparkProfileOriginal">Original</string>
     <string name="SparkProfileOpenSource">Original-Profil öffnen</string>
-    <string name="SparkProfileSourceUnknown">Dieses Profil ist auf dem Gerät gerade nicht bekannt. Öffne einmal einen Chat mit der Person.</string>
+    <string name="SparkProfileSourceUnknown">Profil konnte nicht geladen werden (Konto gelöscht oder älterer Eintrag ohne gespeicherte Zugangsdaten).</string>
     <string name="SparkProfileApply">Dieses Profil verwenden</string>
     <string name="SparkProfileRename">Umbenennen</string>
     <string name="SparkProfileDelete">Aus Bibliothek löschen</string>
