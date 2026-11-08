@@ -23,7 +23,7 @@ public class SparkChangelog {
             "Wirst du direkt nach neuen Nachrichten entfernt, werden diese trotzdem gespeichert (vorher konnten sie verloren gehen)",
             "Melden, wenn du aus einer Gruppe entfernt wirst: Einblendung in der App und/oder Android-Benachrichtigung (einzeln abschaltbar)",
             "Verlassene Gruppe wird nachträglich öffentlich: „Beitreten“ erscheint jetzt beim Öffnen (Telegram lieferte den neuen Benutzernamen bisher nicht mit)",
-            "Gesperrt in einer Gruppe: unten steht „Gesperrt (bis Datum) · Gruppe löschen“",
+            "Gesperrt in einer Gruppe: unten steht „Gesperrt (bis Datum) · Gruppe löschen“; wird die Sperre aufgehoben, erscheint beim Öffnen wieder „Beitreten“ (öffentliche Gruppen)",
             "Vor dem Verlassen einer Gruppe wird der Verlauf (bis 10.000 Nachrichten) heruntergeladen und gesichert, danach erst verlassen (abschaltbar)"
         ),
         new Release("0.20", "08.11.2026",

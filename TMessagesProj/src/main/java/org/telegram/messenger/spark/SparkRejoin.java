@@ -47,6 +47,18 @@ public class SparkRejoin {
                     // "min"-Antworten uebernimmt Telegram ohne Benutzernamen – hier selbst nachtragen
                     for (TLRPC.Chat fresh : chats) {
                         TLRPC.Chat cur = mc.getChat(fresh.id);
+                        if (cur instanceof TLRPC.TL_channelForbidden && !(fresh instanceof TLRPC.TL_channelForbidden)) {
+                            // Sperre aufgehoben: "gesperrt"-Eintrag durch die frische Gruppe ersetzen (nicht Mitglied)
+                            if (fresh.access_hash == 0) fresh.access_hash = cur.access_hash;
+                            fresh.min = false;
+                            fresh.left = true;
+                            fresh.kicked = false;
+                            mc.putChat(fresh, false);
+                            ArrayList<TLRPC.Chat> save = new ArrayList<>();
+                            save.add(fresh);
+                            org.telegram.messenger.MessagesStorage.getInstance(account).putUsersAndChats(null, save, true, true);
+                            continue;
+                        }
                         if (cur == null || cur == fresh || fresh instanceof TLRPC.TL_channelForbidden) continue;
                         cur.username = fresh.username;
                         cur.usernames = fresh.usernames;
