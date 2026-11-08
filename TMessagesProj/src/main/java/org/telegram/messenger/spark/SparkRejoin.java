@@ -40,6 +40,19 @@ public class SparkRejoin {
         TLRPC.TL_channels_getChannels req = new TLRPC.TL_channels_getChannels();
         req.id.add(MessagesController.getInputChannel(chat));
         ConnectionsManager.getInstance(account).sendRequest(req, (res, err) -> AndroidUtilities.runOnUIThread(() -> {
+            // Ergebnis zur Kontrolle merken (Sparkgram → Infos)
+            String result;
+            if (err != null) {
+                result = "Fehler " + err.text;
+            } else if (res instanceof TLRPC.messages_Chats && !((TLRPC.messages_Chats) res).chats.isEmpty()) {
+                TLRPC.Chat c = ((TLRPC.messages_Chats) res).chats.get(0);
+                String un = ChatObject.getPublicUsername(c);
+                result = c instanceof TLRPC.TL_channelForbidden ? "kein Zugriff (privat oder gesperrt)" : (un != null ? "öffentlich @" + un : "privat") + (c.min ? " (Kurzfassung)" : "");
+            } else {
+                result = "keine Antwort";
+            }
+            SparkConfig.prefs().edit().putString("rejoinResult_" + account + "_" + chat.id,
+                new java.text.SimpleDateFormat("dd.MM. HH:mm", java.util.Locale.GERMANY).format(new java.util.Date()) + ": " + result).apply();
             if (res instanceof TLRPC.messages_Chats) {
                 ArrayList<TLRPC.Chat> chats = ((TLRPC.messages_Chats) res).chats;
                 if (!chats.isEmpty()) {
@@ -75,6 +88,10 @@ public class SparkRejoin {
                 }
             }
         }));
+    }
+
+    public static String lastResult(int account, long chatId) {
+        return SparkConfig.prefs().getString("rejoinResult_" + account + "_" + chatId, "noch nicht geprüft");
     }
 
     private static long lastAll;

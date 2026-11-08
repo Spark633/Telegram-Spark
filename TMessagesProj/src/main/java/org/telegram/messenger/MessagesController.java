@@ -10162,7 +10162,7 @@ public class MessagesController extends BaseController implements NotificationCe
         }
         sortDialogs(null);
         getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
-        getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME);
+        getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME);
     }
 
     public void deleteDialog(final long did, int onlyHistory) {
@@ -22491,7 +22491,7 @@ public class MessagesController extends BaseController implements NotificationCe
             // Sparkgram: Chat bleibt sichtbar und wird waehrend des Countdowns schon rot angezeigt
             sparkPendingLeave.add(did);
             getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload, true);
-            getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME);
+            getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME);
             return;
         } else {
             deletingDialogs.put(did, dialog);
@@ -22507,7 +22507,7 @@ public class MessagesController extends BaseController implements NotificationCe
     public void removeDialogAction(long did, boolean clean, boolean apply) {
         if (!clean && sparkPendingLeave.remove(did)) {
             getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload, true);
-            getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME);
+            getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME);
         }
         TLRPC.Dialog dialog = dialogs_dict.get(did);
         if (dialog == null) {

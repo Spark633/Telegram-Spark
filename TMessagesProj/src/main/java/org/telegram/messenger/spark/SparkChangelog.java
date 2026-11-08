@@ -19,6 +19,11 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.22", "09.11.2026",
+            "Verlassen: Name in der Chatliste wird sofort rot (auch während „Rückgängig“), ohne erst den Ordner zu öffnen",
+            "Selbst verlassene private Gruppen zeigen nicht mehr fälschlich „Gesperrt“",
+            "Sparkgram → Infos zeigt bei verlassenen Gruppen das Ergebnis der Beitreten-Prüfung"
+        ),
         new Release("0.21", "09.11.2026",
             "Wirst du direkt nach neuen Nachrichten entfernt, werden diese trotzdem gespeichert (vorher konnten sie verloren gehen)",
             "Melden, wenn du aus einer Gruppe entfernt wirst: Einblendung in der App und/oder Android-Benachrichtigung (einzeln abschaltbar)",

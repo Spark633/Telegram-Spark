@@ -920,6 +920,9 @@ public class SparkProfileMenu {
             line(sb, "Benutzername", username != null ? "@" + username : null);
             line(sb, "Typ", chatType(chat));
             line(sb, "Deine Rolle", role(chat));
+            if (ChatObject.isNotInChat(chat)) {
+                line(sb, "Beitreten-Prüfung", org.telegram.messenger.spark.SparkRejoin.lastResult(account, chatId));
+            }
             if (chat.usernames != null && chat.usernames.size() > 1) {
                 StringBuilder more = new StringBuilder();
                 for (TLRPC.TL_username u : chat.usernames) {

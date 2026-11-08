@@ -28281,7 +28281,8 @@ public class ChatActivity extends BaseFragment implements
             if (sparkNoRejoin) {
                 // Sparkgram: verlassene private/gesperrte Gruppe – Beitreten geht nicht, daher "Gruppe löschen"
                 String sparkLabel = LocaleController.getString(R.string.DeleteThisGroup);
-                if (currentChat instanceof TLRPC.TL_channelForbidden || currentChat.kicked) {
+                if ((currentChat instanceof TLRPC.TL_channelForbidden || currentChat.kicked)
+                        && org.telegram.messenger.spark.SparkDeletedChats.kindOf(currentAccount, dialog_id) != org.telegram.messenger.spark.SparkDeletedChats.KIND_LEFT) {
                     int until = currentChat instanceof TLRPC.TL_channelForbidden ? ((TLRPC.TL_channelForbidden) currentChat).until_date : 0;
                     String bis = until > 0 && until < Integer.MAX_VALUE - 1 ? " bis " + new java.text.SimpleDateFormat("dd.MM.yy", java.util.Locale.GERMANY).format(new java.util.Date(until * 1000L)) : "";
                     sparkLabel = "Gesperrt" + bis + " · " + sparkLabel;
