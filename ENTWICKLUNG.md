@@ -186,7 +186,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - **Etappe 4:** erledigt (automatisch übersetzen auf Wunsch gestrichen).
 - **Etappe 7 Rest:**
   In-App-Benachrichtigungen,
-  Zitieren mit Formatierung (unklar, mit Spark633 klären). Persona pro Chat + Auto-Ordner: 0.17. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
+  Persona pro Chat + Auto-Ordner: 0.17. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
 - **Etappe 8 Rest:**
   Proxy-Verwaltung (+ Anleitung). (App-Sperre: hat Telegram schon – Code-Sperre.)
 - Nebenher: mehr Konten ohne Start-Nachteil, Übernahme nach `main`.
