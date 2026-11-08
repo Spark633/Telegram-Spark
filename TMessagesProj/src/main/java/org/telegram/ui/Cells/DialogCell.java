@@ -2401,6 +2401,8 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     sparkIcon = org.telegram.messenger.spark.SparkDeletedChats.icon(k);
                 } else if (chat == null && currentDialogId > 0 && org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, currentDialogId)) {
                     sparkIcon = "🗑";
+                } else if (MessagesController.getInstance(currentAccount).sparkPendingLeave.contains(currentDialogId)) {
+                    sparkIcon = currentDialogId < 0 ? "🚪" : "🗑"; // waehrend des Rueckgaengig-Countdowns
                 }
             }
             if (sparkIcon != null) {

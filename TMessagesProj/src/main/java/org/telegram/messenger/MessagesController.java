@@ -22431,7 +22431,11 @@ public class MessagesController extends BaseController implements NotificationCe
         if (clean) {
             clearingHistoryDialogs.put(did, dialog);
         } else if (sparkStaysAfterDelete(did)) {
-            return; // Sparkgram: Chat bleibt (verlassen/geloescht wird behalten) – auch waehrend des Countdowns sichtbar
+            // Sparkgram: Chat bleibt sichtbar und wird waehrend des Countdowns schon rot angezeigt
+            sparkPendingLeave.add(did);
+            getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload, true);
+            getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME);
+            return;
         } else {
             deletingDialogs.put(did, dialog);
             allDialogs.remove(dialog);
@@ -22440,7 +22444,14 @@ public class MessagesController extends BaseController implements NotificationCe
         getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload, true);
     }
 
+    /** Sparkgram: Chats im "Rueckgaengig"-Countdown des Verlassens/Loeschens. */
+    public final java.util.HashSet<Long> sparkPendingLeave = new java.util.HashSet<>();
+
     public void removeDialogAction(long did, boolean clean, boolean apply) {
+        if (!clean && sparkPendingLeave.remove(did)) {
+            getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload, true);
+            getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME);
+        }
         TLRPC.Dialog dialog = dialogs_dict.get(did);
         if (dialog == null) {
             return;

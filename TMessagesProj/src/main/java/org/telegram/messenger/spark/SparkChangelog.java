@@ -20,6 +20,8 @@ public class SparkChangelog {
 
     public static final Release[] RELEASES = {
         new Release("0.20", "08.11.2026",
+            "Verlassene private Gruppe: das Fenster „Privater Kanal“ (kam von der Boost-Abfrage) erscheint nicht mehr",
+            "Beim Verlassen/Löschen ist der Chat schon während des „Rückgängig“-Countdowns rot markiert",
             "Einstellungen: Liste der angemeldeten Konten einklappbar – auf die Überschrift „Konten“ mit dem Pfeil rechts tippen"
         ),
         new Release("0.19", "08.11.2026",

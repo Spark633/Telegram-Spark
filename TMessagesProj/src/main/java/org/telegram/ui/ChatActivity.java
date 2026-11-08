@@ -23037,7 +23037,8 @@ public class ChatActivity extends BaseFragment implements
                 long prevLinkedChatId = chatInfo != null ? chatInfo.linked_chat_id : 0;
                 chatInfo = chatFull;
                 gotChatInfo();
-                if (ChatObject.isBoostSupported(currentChat) && !ChatObject.isMonoForum(currentChat) /*chatMode != MODE_SUGGESTIONS*/) {
+                if (ChatObject.isBoostSupported(currentChat) && !ChatObject.isMonoForum(currentChat) /*chatMode != MODE_SUGGESTIONS*/
+                        && !(MessagesController.sparkKeepLeftOn() && ChatObject.isNotInChat(currentChat))) { // Sparkgram: nicht bei verlassenen
                     getMessagesController().getBoostsController().getBoostsStats(dialog_id, boostsStatus -> {
                         if (boostsStatus == null) {
                             return;

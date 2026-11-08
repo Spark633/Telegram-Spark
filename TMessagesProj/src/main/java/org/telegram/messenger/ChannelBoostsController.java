@@ -40,7 +40,10 @@ public class ChannelBoostsController {
                 consumer.run((TL_stories.TL_premium_boostsStatus) response);
             } else {
                 BaseFragment fragment = LaunchActivity.getLastFragment();
-                if (error != null && fragment != null && "CHANNEL_PRIVATE".equals(error.text)) {
+                TLRPC.Chat sparkChat = dialogId < 0 ? messagesController.getChat(-dialogId) : null;
+                if (error != null && "CHANNEL_PRIVATE".equals(error.text) && MessagesController.sparkKeepLeftOn() && sparkChat != null && ChatObject.isNotInChat(sparkChat)) {
+                    // Sparkgram: verlassene private Gruppe – kein "Privater Kanal"-Fenster
+                } else if (error != null && fragment != null && "CHANNEL_PRIVATE".equals(error.text)) {
                     if (!(LaunchActivity.instance != null && LaunchActivity.instance.isFinishing())) {
                         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getContext(), fragment.getResourceProvider());
                         builder.setTitle(LocaleController.getString(R.string.AppName));
