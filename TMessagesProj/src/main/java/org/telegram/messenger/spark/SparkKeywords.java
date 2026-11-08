@@ -166,7 +166,8 @@ public class SparkKeywords {
         h.text = m.message.length() > 300 ? m.message.substring(0, 300) : m.message;
         h.date = m.date;
         addHit(account, h);
-        notify(account, h);
+        // kurz warten, damit Name von Absender/Chat aus demselben Update schon bekannt ist
+        org.telegram.messenger.AndroidUtilities.runOnUIThread(() -> notify(account, h), 1000);
     }
 
     private static final java.util.HashSet<String> SEEN = new java.util.HashSet<>();
@@ -190,13 +191,19 @@ public class SparkKeywords {
                 intent.putExtra("chatId", -h.dialogId);
             }
             intent.putExtra("currentAccount", account);
+            intent.putExtra("message_id", h.messageId); // direkt zur Nachricht springen
             PendingIntent pi = PendingIntent.getActivity(ctx, (int) (System.currentTimeMillis() & 0xffff), intent,
                 PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
             String chatName = org.telegram.ui.spark.SparkNotesActivity.dialogName(account, h.dialogId);
-            String sender = h.senderId != h.dialogId ? org.telegram.ui.spark.SparkNotesActivity.dialogName(account, h.senderId) + ": " : "";
+            boolean dm = h.senderId == h.dialogId;
+            String senderName = org.telegram.ui.spark.SparkNotesActivity.dialogName(account, h.senderId);
+            String where = "✦ " + chatName + (dm ? " (privat)" : "");
+            String what = "Schlagwort „" + h.keyword + "“";
+            String sender = dm ? "" : senderName + ": ";
             NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL_ID)
                 .setSmallIcon(R.drawable.notification)
-                .setContentTitle("✦ Schlagwort: „" + h.keyword + "“ in " + chatName)
+                .setContentTitle(where)
+                .setSubText(what)
                 .setContentText(sender + h.text)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(sender + h.text))
                 .setAutoCancel(true)
@@ -208,13 +215,11 @@ public class SparkKeywords {
                 .setContentIntent(pi);
             // Unterhaltungs-Stil + Verknuepfung: Android zeigt die Meldung dann oben bei den Unterhaltungen
             try {
-                String title = "✦ Schlagwort: „" + h.keyword + "“";
-                String senderName = h.senderId != h.dialogId ? org.telegram.ui.spark.SparkNotesActivity.dialogName(account, h.senderId) : chatName;
                 androidx.core.app.Person me = new androidx.core.app.Person.Builder().setName("Ich").build();
                 androidx.core.app.Person from = new androidx.core.app.Person.Builder().setName(senderName).setKey("u" + h.senderId).build();
                 NotificationCompat.MessagingStyle style = new NotificationCompat.MessagingStyle(me);
-                style.setConversationTitle(title + " in " + chatName);
-                style.setGroupConversation(true);
+                style.setConversationTitle(where);
+                style.setGroupConversation(!dm);
                 style.addMessage(h.text, h.date * 1000L, from);
                 b.setStyle(style);
                 String shortcutId = "spark_kw_" + account + "_" + h.dialogId;
@@ -222,9 +227,10 @@ public class SparkKeywords {
                 sIntent.setAction(Intent.ACTION_VIEW);
                 if (h.dialogId > 0) sIntent.putExtra("userId", h.dialogId); else sIntent.putExtra("chatId", -h.dialogId);
                 sIntent.putExtra("currentAccount", account);
+                sIntent.putExtra("message_id", h.messageId);
                 androidx.core.content.pm.ShortcutInfoCompat sc = new androidx.core.content.pm.ShortcutInfoCompat.Builder(ctx, shortcutId)
                     .setShortLabel(chatName)
-                    .setLongLabel(title + " in " + chatName)
+                    .setLongLabel(what + " · " + chatName)
                     .setIntent(sIntent)
                     .setLongLived(true)
                     .setPerson(from)

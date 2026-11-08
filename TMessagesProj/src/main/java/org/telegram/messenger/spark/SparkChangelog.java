@@ -35,6 +35,7 @@ public class SparkChangelog {
             "Doppeltipp auf eine Nachricht wählbar: Reaktion, Antworten, Kopieren, Wiederholen oder Lesezeichen",
             "Lesezeichen mit Schlagwörtern: Nachricht antippen → „✦ Lesezeichen“, Liste mit Filter, antippen springt zur Nachricht",
             "„Alle Nachrichten dieser Person“ im Nachrichten-Menü in Gruppen",
+            "Schlagwort-Benachrichtigung: zeigt klar Chat und Absender, antippen springt direkt zur Nachricht",
             "Bot-Postfach: Nachrichten an deinen Bot ansehen und als Bot antworten",
             "Lokale Namen gelten jetzt pro Konto",
             "Einstellungen aufgeräumt: kürzere Texte, Unterpunkte auch bei ausgeschaltetem Punkt aufklappbar, Sicherung unter „Konten“"
