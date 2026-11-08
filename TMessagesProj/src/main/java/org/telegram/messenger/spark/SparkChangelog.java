@@ -24,7 +24,7 @@ public class SparkChangelog {
             "Gelöschte Privatchats bleiben lokal im Ordner „Verlassen“ (auf dem Server gelöscht); nochmal löschen = endgültig",
             "Symbole: 🚪 verlassen, 🔨 entfernt, 🗑 gelöscht – in der Chatliste und in der Liste",
             "Stummschalten pro Person: nur Benachrichtigungen aus oder zusätzlich Nachrichten einklappen",
-            "Chat- und Profil-Menü neu sortiert und gruppiert (mit Trennlinien); Sammlung, Chat-Sticker, Übersetzen, Löschen und Export auch im Profil",
+            "Chat- und Profil-Menü: Funktionen in Unterpunkten gesammelt (Infos …, Notiz & Medien …, Übersetzen …, Löschen & Export …); Sammlung, Chat-Sticker, Übersetzen, Löschen und Export auch im Profil",
             "Lokal anheften auch beim Markieren von Chats in der Chatübersicht",
             "Export: zusätzlich „In Gespeicherte“ ablegen",
             "Download-Knopf nur noch animiert, während wirklich etwas lädt"

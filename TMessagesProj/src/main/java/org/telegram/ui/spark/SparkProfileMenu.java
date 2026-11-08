@@ -53,7 +53,7 @@ public class SparkProfileMenu {
     public static final int ID_LOCAL_PIN = 924;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_LOCAL_PIN;
+        return id >= ID_COPY_ID && id <= ID_SUBGROUP_BASE + 3;
     }
 
     public interface Adder {
@@ -216,8 +216,31 @@ public class SparkProfileMenu {
         return rank(id) / 100;
     }
 
-    /** Pseudo-ID fuer eine Trennlinie im Menue. */
+    /** Pseudo-ID fuer eine Trennlinie im Menue (derzeit ungenutzt). */
     public static final int GAP = -12345;
+
+    // Unterpunkte: jede Gruppe als eigener Eintrag, der ihre Funktionen sammelt
+    public static final int ID_SUBGROUP_BASE = 930;
+    private static final String[] GROUP_NAMES = {"Infos", "Notiz & Medien", "Übersetzen", "Löschen & Export"};
+    private static final int[] GROUP_ICONS = {R.drawable.msg_info, R.drawable.msg_saved, R.drawable.msg_translate, R.drawable.msg_download};
+
+    private static void showSubGroup(BaseFragment fragment, long userId, long chatId, int group) {
+        final ArrayList<Entry> list = new ArrayList<>();
+        for (Entry e : entries(fragment, userId, chatId, false)) {
+            if (groupOf(e.id) == group) list.add(e);
+        }
+        if (list.isEmpty()) return;
+        CharSequence[] texts = new CharSequence[list.size()];
+        int[] icons = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            texts[i] = list.get(i).text;
+            icons[i] = list.get(i).icon;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
+        builder.setTitle(SparkUi.mark(GROUP_NAMES[group]));
+        builder.setItems(texts, icons, (dialog, which) -> handle(fragment, list.get(which).id, userId, chatId));
+        fragment.showDialog(builder.create());
+    }
 
     private static CharSequence label(String text, boolean marked) {
         return marked ? SparkUi.mark(text) : text;
@@ -230,14 +253,24 @@ public class SparkProfileMenu {
             }
             return;
         }
-        int lastGroup = -1;
-        for (Entry e : entries(fragment, userId, chatId, true)) {
+        // Gruppen mit mehreren Funktionen als je ein Unterpunkt, einzelne direkt
+        ArrayList<Entry> all = entries(fragment, userId, chatId, true);
+        int[] count = new int[GROUP_NAMES.length];
+        for (Entry e : all) {
             int g = groupOf(e.id);
-            if (lastGroup >= 0 && g != lastGroup) {
-                menu.add(GAP, 0, null);
+            if (g < GROUP_NAMES.length) count[g]++;
+        }
+        boolean[] added = new boolean[GROUP_NAMES.length];
+        for (Entry e : all) {
+            int g = groupOf(e.id);
+            if (g < GROUP_NAMES.length && count[g] > 1) {
+                if (!added[g]) {
+                    added[g] = true;
+                    menu.add(ID_SUBGROUP_BASE + g, GROUP_ICONS[g], SparkUi.mark(GROUP_NAMES[g] + " …"));
+                }
+            } else {
+                menu.add(e.id, e.icon, e.text);
             }
-            lastGroup = g;
-            menu.add(e.id, e.icon, e.text);
         }
     }
 
@@ -607,6 +640,10 @@ public class SparkProfileMenu {
 
     public static void handle(BaseFragment fragment, int id, long userId, long chatId) {
         final int account = fragment.getCurrentAccount();
+        if (id >= ID_SUBGROUP_BASE && id < ID_SUBGROUP_BASE + GROUP_NAMES.length) {
+            showSubGroup(fragment, userId, chatId, id - ID_SUBGROUP_BASE);
+            return;
+        }
         switch (id) {
             case ID_MUTE_PERSON: {
                 boolean m = !org.telegram.messenger.spark.SparkPeople.isMuted(account, userId);

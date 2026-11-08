@@ -174,7 +174,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - 0.16 (in Arbeit): `sparkKeepLeftOn()` an 14 Ladestellen in MessagesController (verlassene Chats wurden beim Laden
   übersprungen!), geloeschte Privatchats: `deleteDialog` → `sparkServerDeleteHistory` + `SparkDeletedChats.setKept`
   (zweites Löschen endgültig, onlyHistory 3 blockiert), `SparkDeletedChats.kindOf/icon`, `SparkPeople.isHidden`
-  (Einklappen pro Person), Menü-Reihenfolge `SparkProfileMenu.ORDER` + `GAP`, DialogsActivity `spark_local_pin`,
+  (Einklappen pro Person), Menü-Gruppen `SparkProfileMenu.ORDER` als Unterpunkte (IDs 930–933, `showSubGroup`), DialogsActivity `spark_local_pin`,
   `DownloadProgressIcon` Animation nur bei aktiven Downloads.
 
 ## Roadmap (offen)
