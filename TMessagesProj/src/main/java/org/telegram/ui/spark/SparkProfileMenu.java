@@ -263,14 +263,14 @@ public class SparkProfileMenu {
         // oben ein Zurueck-Pfeil zur Sparkgram-Uebersicht
         CharSequence[] texts = new CharSequence[list.size() + 1];
         int[] icons = new int[list.size() + 1];
-        texts[0] = "Zurück";
+        texts[0] = "";
         icons[0] = R.drawable.msg_arrow_back;
         for (int i = 0; i < list.size(); i++) {
             texts[i + 1] = list.get(i).text;
             icons[i + 1] = list.get(i).icon;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
-        builder.setTitle(SparkUi.mark("Sparkgram › " + GROUP_NAMES[group]));
+        builder.setTitle(SparkUi.mark(GROUP_NAMES[group]));
         builder.setItems(texts, icons, (dialog, which) -> {
             if (which == 0) showGroup(fragment, userId, chatId);
             else handle(fragment, list.get(which - 1).id, userId, chatId);
@@ -608,7 +608,7 @@ public class SparkProfileMenu {
         box.addView(input, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, 0, 24, 0, 24, 0));
         AlertDialog.Builder b = new AlertDialog.Builder(fragment.getParentActivity());
         b.setTitle(SparkUi.mark("Persona in diesem Chat"));
-        b.setMessage("Deine Nachrichten in diesem Chat beginnen dann mit dem Namen in Fett, z. B. „Luna: Hallo“. Nur in diesem Chat, nur auf diesem Gerät gespeichert.");
+        b.setMessage("Deine Nachrichten in diesem Chat beginnen dann mit dem Namen in Fett, z. B. „Luna: Hallo“. Mit [] oder {} wird die Nachricht zusätzlich eingeklammert: „Luna []“ → „Luna: [Hallo]“, nur „[]“ → „[Hallo]“. Nur in diesem Chat, nur auf diesem Gerät gespeichert.");
         b.setView(box);
         b.setPositiveButton("Speichern", (d, w) -> {
             org.telegram.messenger.spark.SparkPersona.set(account, dialogId, input.getText().toString());

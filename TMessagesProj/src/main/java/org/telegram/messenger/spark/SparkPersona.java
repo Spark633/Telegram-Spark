@@ -50,16 +50,32 @@ public class SparkPersona {
             if (suppress || p == null || p.message == null || p.retryMessageObject != null) return;
             if (p.photo != null || p.document != null || p.location != null || p.poll != null || p.game != null || p.invoice != null || p.user != null) return;
             if (TextUtils.isEmpty(p.message.trim()) || !isActive(account, p.peer)) return;
-            String n = name(account, p.peer);
-            if (p.message.startsWith(n + ":") || p.message.startsWith("/")) return; // schon mit Persona / Bot-Befehl
-            String prefix = n + ": ";
-            p.message = prefix + p.message;
+            String raw = name(account, p.peer);
+            // Klammer-Paar in der Persona ("[]", "{}", "()") = Nachricht damit umschliessen
+            String open = null, close = null;
+            String[][] pairs = {{"[", "]"}, {"{", "}"}, {"(", ")"}};
+            for (String[] pr : pairs) {
+                if (raw.contains(pr[0] + pr[1])) {
+                    open = pr[0];
+                    close = pr[1];
+                    raw = raw.replace(pr[0] + pr[1], "");
+                    break;
+                }
+            }
+            final String n = raw.trim();
+            if (p.message.startsWith("/")) return; // Bot-Befehl
+            if (!n.isEmpty() && p.message.startsWith(n + ":")) return; // schon mit Persona geschrieben
+            if (open != null && p.message.startsWith(open) && p.message.trim().endsWith(close)) open = null; // schon umschlossen
+            String prefix = (n.isEmpty() ? "" : n + ": ") + (open != null ? open : "");
+            p.message = prefix + p.message + (open != null ? close : "");
             ArrayList<TLRPC.MessageEntity> ents = p.entities != null ? new ArrayList<>(p.entities) : new ArrayList<>();
             for (TLRPC.MessageEntity e : ents) e.offset += prefix.length();
-            TLRPC.TL_messageEntityBold bold = new TLRPC.TL_messageEntityBold();
-            bold.offset = 0;
-            bold.length = n.length() + 1;
-            ents.add(0, bold);
+            if (!n.isEmpty()) {
+                TLRPC.TL_messageEntityBold bold = new TLRPC.TL_messageEntityBold();
+                bold.offset = 0;
+                bold.length = n.length() + 1;
+                ents.add(0, bold);
+            }
             p.entities = ents;
         } catch (Exception e) {
             org.telegram.messenger.FileLog.e(e);

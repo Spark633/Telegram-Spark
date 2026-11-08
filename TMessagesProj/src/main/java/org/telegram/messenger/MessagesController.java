@@ -10103,6 +10103,18 @@ public class MessagesController extends BaseController implements NotificationCe
         return true;
     }
 
+    /** Sparkgram: bleibt dieser Chat nach Verlassen/Loeschen in der Liste (erstes Mal)? */
+    public boolean sparkStaysAfterDelete(long did) {
+        if (!sparkKeepLeftOn() || did == getUserConfig().getClientUserId() || DialogObject.isEncryptedDialog(did)) {
+            return false;
+        }
+        if (did < 0) {
+            TLRPC.Chat chat = getChat(-did);
+            return chat != null && !ChatObject.isNotInChat(chat);
+        }
+        return !org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, did);
+    }
+
     /** Sparkgram: behaltenen Chat wieder in die Liste setzen (z. B. nach "Rueckgaengig"-Countdown). */
     public void sparkRestoreDialog(long did) {
         TLRPC.Dialog dialog = dialogs_dict.get(did);
@@ -22391,6 +22403,8 @@ public class MessagesController extends BaseController implements NotificationCe
         }
         if (clean) {
             clearingHistoryDialogs.put(did, dialog);
+        } else if (sparkStaysAfterDelete(did)) {
+            return; // Sparkgram: Chat bleibt (verlassen/geloescht wird behalten) – auch waehrend des Countdowns sichtbar
         } else {
             deletingDialogs.put(did, dialog);
             allDialogs.remove(dialog);
@@ -22409,7 +22423,7 @@ public class MessagesController extends BaseController implements NotificationCe
         } else {
             deletingDialogs.remove(did);
             if (!apply) {
-                allDialogs.add(dialog);
+                if (!allDialogs.contains(dialog)) allDialogs.add(dialog);
                 sortDialogs(null);
             } else if (sparkKeepLeftOn() && did != getUserConfig().getClientUserId()) {
                 // Sparkgram: verlassene/geloeschte Chats bleiben – nach dem Ausfuehren wieder einblenden
