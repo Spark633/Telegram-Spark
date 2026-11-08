@@ -111,6 +111,12 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_BOOKMARKS_OPEN = 91;
     private static final int ID_USER_MESSAGES = 92;
     private static final int ID_ALWAYS_DOWNLOADS = 93;
+    private static final int ID_LOCAL_PINS = 94;
+    private static final int ID_DELETED_CHATS = 95;
+    private static final int ID_DELETED_CHATS_OPEN = 96;
+    private static final int ID_CLIPBOARD = 97;
+    private static final int ID_CLIPBOARD_TIME = 98;
+    private static final int ID_MENU_EDIT = 99;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -224,6 +230,10 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(subCheck(ID_GHOST_TYPING, R.string.SparkGhostTyping, SparkConfig.GHOST_TYPING));
             items.add(subCheck(ID_GHOST_OFFLINE, R.string.SparkGhostOffline, SparkConfig.GHOST_OFFLINE));
         }
+        items.add(expandable(ID_CLIPBOARD, R.string.SparkClipboardToggle, SparkConfig.CLIPBOARD_CLEAR, 1));
+        if (open(SparkConfig.CLIPBOARD_CLEAR)) {
+            items.add(UItem.asButton(ID_CLIPBOARD_TIME, "      Löschen nach", org.telegram.messenger.spark.SparkClipboard.delaySeconds() + " s"));
+        }
         items.add(UItem.asShadow(getString(R.string.SparkGhostInfo)));
 
         items.add(UItem.asHeader("Organisation"));
@@ -242,6 +252,11 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(UItem.asButton(ID_MUTE_LIST, "      Stummgeschaltete (" + org.telegram.messenger.spark.SparkPeople.allMuted(currentAccount).size() + ")"));
         }
         items.add(check(ID_EXPORT, R.string.SparkExportToggle, SparkConfig.EXPORT));
+        items.add(check(ID_LOCAL_PINS, R.string.SparkLocalPinsToggle, SparkConfig.LOCAL_PINS));
+        items.add(expandable(ID_DELETED_CHATS, R.string.SparkDeletedChatsToggle, SparkConfig.DELETED_CHATS, 1));
+        if (open(SparkConfig.DELETED_CHATS)) {
+            items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Gelöschte Chats öffnen"));
+        }
         items.add(UItem.asShadow(getString(R.string.SparkOrgInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderPeople)));
@@ -312,6 +327,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         }
         items.add(check(ID_MARKER, R.string.SparkMarkerToggle, SparkConfig.SPARK_MARKER));
         items.add(check(ID_ALWAYS_DOWNLOADS, R.string.SparkAlwaysDownloadsToggle, SparkConfig.ALWAYS_DOWNLOADS));
+        items.add(UItem.asButton(ID_MENU_EDIT, R.drawable.msg_list, "Nachrichten-Menü anpassen"));
         items.add(UItem.asShadow(getString(R.string.SparkLookInfo)));
 
         // Ohne Hauptschalter: alles bis hier ausgrauen
@@ -406,6 +422,24 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_BOT_INBOX: presentFragment(new SparkBotInboxActivity()); break;
             case ID_USER_MESSAGES: toggle(SparkConfig.USER_MESSAGES); break;
             case ID_ALWAYS_DOWNLOADS: toggle(SparkConfig.ALWAYS_DOWNLOADS); break;
+            case ID_LOCAL_PINS: toggle(SparkConfig.LOCAL_PINS); break;
+            case ID_DELETED_CHATS: expand(SparkConfig.DELETED_CHATS); break;
+            case ID_DELETED_CHATS_OPEN: presentFragment(new SparkDeletedChatsActivity()); break;
+            case ID_CLIPBOARD: expand(SparkConfig.CLIPBOARD_CLEAR); break;
+            case ID_MENU_EDIT: presentFragment(new SparkMenuActivity()); break;
+            case ID_CLIPBOARD_TIME: {
+                int[] secs = org.telegram.messenger.spark.SparkClipboard.SECONDS;
+                CharSequence[] names = new CharSequence[secs.length];
+                for (int i = 0; i < secs.length; i++) names[i] = secs[i] < 60 ? secs[i] + " Sekunden" : (secs[i] / 60) + " Minute" + (secs[i] >= 120 ? "n" : "");
+                AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
+                b.setTitle(SparkUi.mark("Zwischenablage leeren nach"));
+                b.setItems(names, (d, w) -> {
+                    org.telegram.messenger.spark.SparkClipboard.setDelaySeconds(secs[w]);
+                    listView.adapter.update(true);
+                });
+                showDialog(b.create());
+                break;
+            }
             case ID_BOOKMARKS: expand(SparkConfig.BOOKMARKS); break;
             case ID_BOOKMARKS_OPEN: presentFragment(new SparkBookmarksActivity()); break;
             case ID_DOUBLE_TAP: {

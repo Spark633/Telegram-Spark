@@ -1460,6 +1460,14 @@ public class MessagesController extends BaseController implements NotificationCe
                 return 0;
             }
         }
+        // Sparkgram: lokal angeheftete Chats direkt unter den angehefteten
+        final int sparkRank1 = org.telegram.messenger.spark.SparkPins.rank(currentAccount, dialog1.id);
+        final int sparkRank2 = org.telegram.messenger.spark.SparkPins.rank(currentAccount, dialog2.id);
+        if (sparkRank1 >= 0 || sparkRank2 >= 0) {
+            if (sparkRank1 < 0) return 1;
+            if (sparkRank2 < 0) return -1;
+            return Integer.compare(sparkRank1, sparkRank2);
+        }
         MediaDataController mediaDataController = getMediaDataController();
         long date1 = DialogObject.getLastMessageOrDraftDate(dialog1, mediaDataController.getDraft(dialog1.id, 0));
         long date2 = DialogObject.getLastMessageOrDraftDate(dialog2, mediaDataController.getDraft(dialog2.id, 0));
@@ -10013,6 +10021,9 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void deleteDialog(final long did, int onlyHistory, boolean revoke) {
+        if (onlyHistory == 0 || onlyHistory == 3) {
+            org.telegram.messenger.spark.SparkDeletedChats.remember(currentAccount, did); // Sparkgram: Gelöschte Chats
+        }
         deleteDialog(did, 1, onlyHistory, 0, revoke, null, 0);
     }
 

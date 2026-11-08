@@ -50,9 +50,10 @@ public class SparkProfileMenu {
     public static final int ID_TRANSLATE_CHAT = 921;
     public static final int ID_MARK_READ = 922;
     public static final int ID_EXPORT = 923;
+    public static final int ID_LOCAL_PIN = 924;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_EXPORT;
+        return id >= ID_COPY_ID && id <= ID_LOCAL_PIN;
     }
 
     public interface Adder {
@@ -148,6 +149,10 @@ public class SparkProfileMenu {
         if (fragment instanceof org.telegram.ui.ChatActivity) {
             if (SparkConfig.get(SparkConfig.COLLECTION)) {
                 list.add(new Entry(ID_COLLECTION, R.drawable.msg_saved, label("Sammlung", marked)));
+            }
+            if (SparkConfig.get(SparkConfig.LOCAL_PINS)) {
+                boolean lp = org.telegram.messenger.spark.SparkPins.isPinned(account, userId != 0 ? userId : -chatId);
+                list.add(new Entry(ID_LOCAL_PIN, lp ? R.drawable.msg_unpin : R.drawable.msg_pin, label(lp ? "Lokal lösen" : "Lokal anheften", marked)));
             }
             if (SparkConfig.ghost(SparkConfig.GHOST_READ)) {
                 list.add(new Entry(ID_MARK_READ, R.drawable.msg_markread, label("Jetzt als gelesen melden", marked)));
@@ -568,6 +573,15 @@ public class SparkProfileMenu {
                 org.telegram.messenger.spark.SparkPeople.setMuted(account, userId, m);
                 BulletinFactory.of(fragment).createSimpleBulletin(m ? R.raw.ic_mute : R.raw.ic_unmute,
                     m ? "✦ Keine Benachrichtigungen mehr von dieser Person – in allen Chats" : "✦ Benachrichtigungen von dieser Person wieder an").show();
+                break;
+            }
+            case ID_LOCAL_PIN: {
+                long did = userId != 0 ? userId : -chatId;
+                org.telegram.messenger.spark.SparkPins.toggle(account, did);
+                boolean now = org.telegram.messenger.spark.SparkPins.isPinned(account, did);
+                MessagesController.getInstance(account).sortDialogs(null);
+                org.telegram.messenger.NotificationCenter.getInstance(account).postNotificationName(org.telegram.messenger.NotificationCenter.dialogsNeedReload);
+                BulletinFactory.of(fragment).createSimpleBulletin(R.raw.contact_check, now ? "✦ Lokal angeheftet" : "✦ Lokal gelöst").show();
                 break;
             }
             case ID_MARK_READ:

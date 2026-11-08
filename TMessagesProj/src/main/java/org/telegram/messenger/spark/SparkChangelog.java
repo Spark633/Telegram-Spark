@@ -28,7 +28,11 @@ public class SparkChangelog {
             "Gelöschte Service-Nachrichten: rote Blase statt roter Schrift",
             "Ausgeblendete Nachrichten: mehrere hintereinander werden zu „N ausgeblendete Nachrichten“ zusammengefasst, Antippen deckt alle auf",
             "Zur ersten Nachricht: hebt die erste echte Nachricht hervor",
-            "Nachrichten-Menü: nur noch „Stummschalten“; „Bereich markieren“ verständlicher beschriftet"
+            "Nachrichten-Menü: nur noch „Stummschalten“; „Bereich markieren“ verständlicher beschriftet",
+            "Nachrichten-Menü anpassen: Telegram- und Sparkgram-Einträge einzeln ausblenden (Darstellung)",
+            "Lokal anheften: beliebig viele Chats oben halten (Chat-Menü), direkt unter den angehefteten",
+            "Gelöschte Chats: Liste der gelöschten/verlassenen Chats mit Name, Benutzername und letzter Nachricht",
+            "Zwischenablage-Schutz: Kopiertes nach 30 s – 5 min automatisch löschen (Privatsphäre)"
         ),
         new Release("0.14", "08.11.2026",
             "Export, Sicherung und Medien speichern funktionieren jetzt (Ordner Download/Sparkgram, mit Bestätigung)",

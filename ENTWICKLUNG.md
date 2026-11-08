@@ -160,18 +160,23 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - 0.15 (in Arbeit): Updater-Wiederholung + `Release.unknown` (fester Link), `ALWAYS_DOWNLOADS`
   (`DialogsActivity.updateProxyButton`), Export `serviceText` via MessageObject, Ghost 7 s/12 s + nur Privatchats lesen,
   `ChatActionCell.sparkDeletedRed` (rote Blase in drawBackground), `sparkReveal` deckt Folge auf.
+  Zusammenfassen ausgeblendeter Folgen: `ChatActivity.sparkPrepareCollapsed` beim Binden, `ChatActionCell.sparkMergedHidden`
+  (Höhe 0, kein Zeichnen). Menü aufräumen: `SparkMenu` + Filter vor `options.isEmpty()` in ChatActivity.createMenu.
+  Lokal anheften: `SparkPins` + `dialogComparator` (nach Server-Pins), Chat-Menü 924. Gelöschte Chats:
+  `SparkDeletedChats.remember` in `deleteDialog(did, onlyHistory 0/3, revoke)`. Zwischenablage: `SparkClipboard`
+  in beiden `AndroidUtilities.addToClipboard`.
 
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
 - **Etappe 4 Rest:** automatisch übersetzen.
-- **Etappe 7 Rest:** Ordner „Gelöschte Chats“, Ungelesen pro Konto, mehr Anheften (lokal),
+- **Etappe 7 Rest:** Ungelesen pro Konto,
   In-App-Benachrichtigungen,
   Duplikate in „Gespeichertes“, RP: Persona pro Chat, Zitieren mit Formatierung,
   Auto-Ordner, Sortierung. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
-- **Etappe 8 Rest:** Menüs aufräumen,
-  App-Sperre, versteckte Konten, Zwischenablage-Schutz, Proxy-Verwaltung (+ Anleitung).
+- **Etappe 8 Rest:**
+  App-Sperre, versteckte Konten, Proxy-Verwaltung (+ Anleitung).
 - Nebenher: eigenes Firebase für Push, mehr Konten ohne Start-Nachteil, Übernahme nach `main`.
 - Gestrichen: Sprachnachricht→Text, „Nachricht zeichnen“, Gerätetyp anderer, „zuletzt online“ erzwingen,
   Stories ausblenden, nachträgliches „für alle löschen“ nach „nur für mich“.

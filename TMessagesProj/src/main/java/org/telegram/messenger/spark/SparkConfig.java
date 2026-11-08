@@ -102,6 +102,10 @@ public class SparkConfig {
     public static final String USER_MESSAGES = "userMessages";
     // Download-Knopf in der Chatuebersicht immer anzeigen
     public static final String ALWAYS_DOWNLOADS = "alwaysDownloads";
+    // Etappe 7/8: lokal anheften, geloeschte Chats, Zwischenablage-Schutz
+    public static final String LOCAL_PINS = "localPins";
+    public static final String DELETED_CHATS = "deletedChats";
+    public static final String CLIPBOARD_CLEAR = "clipboardClear";
 
     // Doppeltipp auf eine Nachricht: 0 = Telegram (Reaktion), 1 = Antworten, 2 = Kopieren, 3 = Wiederholen, 4 = Lesezeichen
     public static final String[] DOUBLE_TAP_NAMES = {"Reaktion (Telegram)", "Antworten", "Kopieren", "Wiederholen", "Lesezeichen"};
@@ -259,6 +263,8 @@ public class SparkConfig {
             case BOOKMARKS:
             case USER_MESSAGES:
             case ALWAYS_DOWNLOADS:
+            case LOCAL_PINS:
+            case DELETED_CHATS:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:

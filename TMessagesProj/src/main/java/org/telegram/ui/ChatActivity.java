@@ -31542,6 +31542,17 @@ public class ChatActivity extends BaseFragment implements
                 options.add(OPTION_SPARK_HISTORY);
                 icons.add(R.drawable.msg_edit);
             }
+            // Sparkgram: ausgeblendete Menuepunkte entfernen
+            if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MASTER)) {
+                java.util.Set<Integer> sparkHidden = org.telegram.messenger.spark.SparkMenu.hidden();
+                for (int i = options.size() - 1; i >= 0; i--) {
+                    if (sparkHidden.contains(options.get(i)) && items.size() == options.size() && icons.size() == options.size()) {
+                        options.remove(i);
+                        items.remove(i);
+                        icons.remove(i);
+                    }
+                }
+            }
             if (options.isEmpty() && optionsView == null) {
                 return false;
             }

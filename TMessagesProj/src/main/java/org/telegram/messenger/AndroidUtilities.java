@@ -3610,6 +3610,7 @@ public class AndroidUtilities {
     }
 
     public static boolean addToClipboard(CharSequence plain, String html) {
+        org.telegram.messenger.spark.SparkClipboard.onCopied(plain); // Sparkgram
         if (html == null) return addToClipboard(plain);
         try {
             android.content.ClipboardManager clipboard = (android.content.ClipboardManager) ApplicationLoader.applicationContext.getSystemService(Context.CLIPBOARD_SERVICE);
@@ -3623,6 +3624,7 @@ public class AndroidUtilities {
     }
 
     public static boolean addToClipboard(CharSequence str) {
+        org.telegram.messenger.spark.SparkClipboard.onCopied(str); // Sparkgram: Zwischenablage-Schutz
         try {
             android.content.ClipboardManager clipboard = (android.content.ClipboardManager) ApplicationLoader.applicationContext.getSystemService(Context.CLIPBOARD_SERVICE);
 
