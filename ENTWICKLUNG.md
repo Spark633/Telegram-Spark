@@ -186,7 +186,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - **Etappe 4 Rest:** automatisch übersetzen.
 - **Etappe 7 Rest:**
   In-App-Benachrichtigungen,
-  Duplikate in „Gespeichertes“, RP: Persona pro Chat, Zitieren mit Formatierung,
+  RP: Persona pro Chat, Zitieren mit Formatierung,
   Auto-Ordner. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
 - **Etappe 8 Rest:**
   Proxy-Verwaltung (+ Anleitung). (App-Sperre: hat Telegram schon – Code-Sperre.)
