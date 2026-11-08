@@ -19,6 +19,11 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.21", "09.11.2026",
+            "Wirst du direkt nach neuen Nachrichten entfernt, werden diese trotzdem gespeichert (vorher konnten sie verloren gehen)",
+            "Melden, wenn du aus einer Gruppe entfernt wirst: Einblendung in der App und/oder Android-Benachrichtigung (einzeln abschaltbar)",
+            "Vor dem Verlassen einer Gruppe wird der Verlauf (bis 10.000 Nachrichten) heruntergeladen und gesichert, danach erst verlassen (abschaltbar)"
+        ),
         new Release("0.20", "08.11.2026",
             "Verlassene private Gruppe: das Fenster „Privater Kanal“ (kam von der Boost-Abfrage) erscheint nicht mehr",
             "Beim Verlassen/Löschen ist der Chat schon während des „Rückgängig“-Countdowns rot markiert",

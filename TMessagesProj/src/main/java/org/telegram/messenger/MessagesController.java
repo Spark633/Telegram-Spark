@@ -10119,7 +10119,17 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     /** Sparkgram: verlassene/entfernte Chats behalten statt loeschen (true = behalten, nicht loeschen). */
+    /** Sparkgram: selbst verlassene Gruppen (damit sie nicht als "entfernt" gelten). */
+    public final java.util.HashSet<Long> sparkSelfLeft = new java.util.HashSet<>();
+
     public boolean sparkKeepChat(long did, int kind) {
+        if (kind == org.telegram.messenger.spark.SparkDeletedChats.KIND_KICKED && sparkSelfLeft.contains(did)) {
+            kind = org.telegram.messenger.spark.SparkDeletedChats.KIND_LEFT; // selbst verlassen, nicht entfernt
+        }
+        if (kind == org.telegram.messenger.spark.SparkDeletedChats.KIND_KICKED
+                && !org.telegram.messenger.spark.SparkKickNotify.wasNotified(currentAccount, did)) {
+            org.telegram.messenger.spark.SparkKickNotify.onKicked(currentAccount, did);
+        }
         if (!org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_CHATS)) {
             return false;
         }
@@ -16079,6 +16089,10 @@ public class MessagesController extends BaseController implements NotificationCe
         if (peer == null) {
             return;
         }
+        if (peer instanceof TLRPC.TL_inputPeerUser && UserObject.isUserSelf(getUser(peer.user_id)) && !forceDelete
+                && org.telegram.messenger.spark.SparkLeaveBackup.backupFirst(currentAccount, chatId, () -> deleteParticipantFromChat(chatId, peer, forceDelete, revoke, whenDone))) {
+            return; // Sparkgram: erst Verlauf sichern, dann verlassen
+        }
         TLObject request;
         TLRPC.Chat ownerChat = getChat(chatId);
         boolean self = peer instanceof TLRPC.TL_inputPeerUser && UserObject.isUserSelf(getMessagesController().getUser(peer.user_id));
@@ -16130,6 +16144,7 @@ public class MessagesController extends BaseController implements NotificationCe
             request = req;
         }
         if (self) {
+            sparkSelfLeft.add(-chatId);
             if (!sparkKeepChat(-chatId, org.telegram.messenger.spark.SparkDeletedChats.KIND_LEFT)) { // Sparkgram
                 deleteDialog(-chatId, 0, revoke);
             }
@@ -16152,6 +16167,10 @@ public class MessagesController extends BaseController implements NotificationCe
     public void deleteParticipantFromChat(long chatId, TLRPC.User user, TLRPC.Chat chat, boolean forceDelete, boolean revoke) {
         if (user == null && chat == null) {
             return;
+        }
+        if (user != null && UserObject.isUserSelf(user) && !forceDelete
+                && org.telegram.messenger.spark.SparkLeaveBackup.backupFirst(currentAccount, chatId, () -> deleteParticipantFromChat(chatId, user, chat, forceDelete, revoke))) {
+            return; // Sparkgram: erst Verlauf sichern, dann verlassen
         }
         TLRPC.InputPeer inputPeer;
         if (user != null) {
@@ -16216,6 +16235,7 @@ public class MessagesController extends BaseController implements NotificationCe
             request = req;
         }
         if (UserObject.isUserSelf(user)) {
+            sparkSelfLeft.add(-chatId);
             if (!sparkKeepChat(-chatId, org.telegram.messenger.spark.SparkDeletedChats.KIND_LEFT)) { // Sparkgram
                 deleteDialog(-chatId, 0, revoke);
             }
@@ -16557,6 +16577,40 @@ public class MessagesController extends BaseController implements NotificationCe
         return 0;
     }
 
+    // Sparkgram: zurueckgehaltene Kanal-Updates (Luecke) – falls das Nachladen scheitert (entfernt/verlassen)
+    private final LongSparseArray<ArrayList<TLRPC.Updates>> sparkHeldUpdates = new LongSparseArray<>();
+
+    private void sparkSaveHeldUpdates(long channelId) {
+        ArrayList<TLRPC.Updates> held = sparkHeldUpdates.get(channelId);
+        sparkHeldUpdates.remove(channelId);
+        if (held == null || held.isEmpty() || !sparkKeepLeftOn()) {
+            return;
+        }
+        ArrayList<TLRPC.Message> msgs = new ArrayList<>();
+        for (TLRPC.Updates u : held) {
+            if (u.users != null) putUsers(u.users, false);
+            if (u.chats != null) putChats(u.chats, false);
+            ArrayList<TLRPC.Update> list = new ArrayList<>();
+            if (u.updates != null) list.addAll(u.updates);
+            if (u.update != null) list.add(u.update);
+            for (TLRPC.Update up : list) {
+                if (up instanceof TL_update.TL_updateNewChannelMessage && ((TL_update.TL_updateNewChannelMessage) up).message != null) {
+                    msgs.add(((TL_update.TL_updateNewChannelMessage) up).message);
+                }
+            }
+        }
+        if (msgs.isEmpty()) {
+            return;
+        }
+        getMessagesStorage().putMessages(msgs, true, true, false, 0, 0, 0);
+        ArrayList<MessageObject> objs = new ArrayList<>();
+        for (TLRPC.Message m : msgs) {
+            objs.add(new MessageObject(currentAccount, m, true, true));
+        }
+        updateInterfaceWithMessages(-channelId, objs, 0);
+        getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
+    }
+
     private void processChannelsUpdatesQueue(long channelId, int state) {
         ArrayList<TLRPC.Updates> updatesQueue = updatesQueueChannels.get(channelId);
         if (updatesQueue == null) {
@@ -16602,6 +16656,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         FileLog.d("HOLE IN CHANNEL " + channelId + " UPDATES QUEUE - getChannelDifference ");
                     }
                     updatesStartWaitTimeChannels.delete(channelId);
+                    sparkHeldUpdates.put(channelId, new ArrayList<>(updatesQueue)); // Sparkgram: fuer den Fall, dass man inzwischen entfernt wurde
                     updatesQueueChannels.remove(channelId);
                     getChannelDifference(channelId);
                 }
@@ -16913,6 +16968,7 @@ public class MessagesController extends BaseController implements NotificationCe
         }
         getConnectionsManager().sendRequest(req, (response, error) -> {
             if (response != null) {
+                AndroidUtilities.runOnUIThread(() -> sparkHeldUpdates.remove(channelId));
                 TLRPC.updates_ChannelDifference res = (TLRPC.updates_ChannelDifference) response;
 
                 LongSparseArray<TLRPC.User> usersDict = new LongSparseArray<>();
@@ -17087,6 +17143,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 });
             } else if (error != null) {
                 AndroidUtilities.runOnUIThread(() -> {
+                    sparkSaveHeldUpdates(channelId); // Sparkgram: zurueckgehaltene Nachrichten trotzdem speichern
                     checkChannelError(error.text, channelId);
                     NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.onReceivedChannelDifference, channelId);
                 });

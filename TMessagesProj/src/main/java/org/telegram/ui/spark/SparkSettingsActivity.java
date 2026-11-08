@@ -126,6 +126,10 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_ADMIN_TOOLS = 107;
     private static final int ID_ADMIN_TEMPLATES = 108;
     private static final int ID_LEFT_ONLY_FOLDER = 109;
+    private static final int ID_LEAVE_BACKUP = 110;
+    private static final int ID_KICK_NOTIFY = 111;
+    private static final int ID_KICK_INAPP = 112;
+    private static final int ID_KICK_SYSTEM = 113;
     private static final int ID_DUPLICATES = 105;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
@@ -211,6 +215,12 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(subCheck(ID_LEFT_FOLDER, R.string.SparkLeftFolderToggle, SparkConfig.LEFT_FOLDER));
             if (SparkConfig.getRaw(SparkConfig.LEFT_FOLDER)) {
                 items.add(UItem.asCheck(ID_LEFT_ONLY_FOLDER, "      Nur im Ordner „Verlassen“ anzeigen").setChecked(SparkConfig.getRaw(SparkConfig.LEFT_ONLY_FOLDER)));
+            }
+            items.add(UItem.asCheck(ID_LEAVE_BACKUP, "      Vor dem Verlassen Verlauf sichern").setChecked(SparkConfig.getRaw(SparkConfig.LEAVE_BACKUP)));
+            items.add(UItem.asCheck(ID_KICK_NOTIFY, "      Melden, wenn ich entfernt werde").setChecked(SparkConfig.getRaw(SparkConfig.KICK_NOTIFY)));
+            if (SparkConfig.getRaw(SparkConfig.KICK_NOTIFY)) {
+                items.add(UItem.asCheck(ID_KICK_INAPP, "            als Einblendung in der App").setChecked(SparkConfig.prefs().getBoolean("kickNotifyInApp", true)));
+                items.add(UItem.asCheck(ID_KICK_SYSTEM, "            als Android-Benachrichtigung").setChecked(SparkConfig.prefs().getBoolean("kickNotifySystem", true)));
             }
             items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Liste öffnen"));
             items.add(UItem.asShadow("Verlassene Gruppen zeigt Sparkgram auch dann, wenn sie schon länger in Telegrams Speicher auf diesem Gerät liegen. Dabei können auch Gruppen auftauchen, die du nur über einen Link angesehen hast oder in die dich jemand ungefragt hinzugefügt hat."));
@@ -528,6 +538,15 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_AUTO_FOLDERS: presentFragment(new SparkAutoFoldersActivity()); break;
             case ID_PERSONA: toggle(SparkConfig.PERSONA); break;
             case ID_ADMIN_TOOLS: expand(SparkConfig.ADMIN_TOOLS); break;
+            case ID_LEAVE_BACKUP: toggle(SparkConfig.LEAVE_BACKUP); break;
+            case ID_KICK_NOTIFY: toggle(SparkConfig.KICK_NOTIFY); break;
+            case ID_KICK_INAPP:
+            case ID_KICK_SYSTEM: {
+                String k = item.id == ID_KICK_INAPP ? "kickNotifyInApp" : "kickNotifySystem";
+                SparkConfig.prefs().edit().putBoolean(k, !SparkConfig.prefs().getBoolean(k, true)).apply();
+                listView.adapter.update(true);
+                break;
+            }
             case ID_LEFT_ONLY_FOLDER:
                 toggle(SparkConfig.LEFT_ONLY_FOLDER);
                 getMessagesController().sortDialogs(null);
