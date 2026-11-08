@@ -7289,7 +7289,52 @@ public class ChatActivityEnterView extends FrameLayout implements
         }
     }
 
+    private boolean sparkReplyConfirmed; // Sparkgram
+
+    /**
+     * Sparkgram: Antwort auf eine Nachricht, die man nach dem Wiederbeitritt (Verlauf fuer neue Mitglieder verborgen)
+     * nicht mehr sehen darf? Telegram nimmt sie an, bei den anderen erscheint sie aber nur als normale Nachricht.
+     */
+    private boolean sparkReplyHidden() {
+        if (replyingMessageObject == null || parentFragment == null || replyingMessageObject.messageOwner == null) return false;
+        TLRPC.Chat chat = parentFragment.getCurrentChat();
+        if (chat == null || !ChatObject.isChannel(chat) || !chat.megagroup || ChatObject.isNotInChat(chat) || chat.date <= 0) return false;
+        TLRPC.ChatFull info = parentFragment.getCurrentChatInfo();
+        if (info != null && !info.hidden_prehistory) return false;
+        if (ChatObject.isPublic(chat)) return false;
+        return replyingMessageObject.messageOwner.date < chat.date; // vor dem eigenen (Wieder-)Beitritt
+    }
+
     protected boolean sendMessageInternal(boolean notify, int scheduleDate, int scheduleRepeatPeriod, long payStars, boolean allowConfirm) {
+        if (!sparkReplyConfirmed && messageEditText != null && messageEditText.length() > 0 && sparkReplyHidden()
+                && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MASTER)) {
+            final MessageObject target = replyingMessageObject;
+            org.telegram.ui.ActionBar.AlertDialog.Builder b = new org.telegram.ui.ActionBar.AlertDialog.Builder(getContext(), resourcesProvider);
+            b.setTitle(org.telegram.ui.spark.SparkUi.mark("Antwort nicht sichtbar"));
+            b.setMessage("Diese Nachricht ist von vor deinem Wiederbeitritt. Die anderen sehen deine Antwort nur als normale Nachricht.\n\nTrotzdem als Zitat senden?");
+            b.setPositiveButton("Ja", (d, w) -> {
+                // Zitat (Name + Textauszug) vor den eigenen Text setzen und ohne Antwort-Bezug senden
+                String name = "";
+                TLRPC.User u = accountInstance.getMessagesController().getUser(target.getFromChatId());
+                if (u != null) name = UserObject.getUserName(u);
+                CharSequence orig = target.messageOwner.message != null && target.messageOwner.message.length() > 0 ? target.messageOwner.message : target.messageText;
+                String excerpt = orig == null ? "" : orig.toString().replace('\n', ' ');
+                if (excerpt.length() > 120) excerpt = excerpt.substring(0, 120) + " …";
+                String quote = "» " + (name.isEmpty() ? "" : name + ": ") + excerpt + "\n\n";
+                messageEditText.getText().insert(0, quote);
+                if (parentFragment != null) parentFragment.hideFieldPanel(false);
+                setReplyingMessageObject(null, null);
+                sparkReplyConfirmed = true;
+                try {
+                    sendMessageInternal(notify, scheduleDate, scheduleRepeatPeriod, payStars, allowConfirm);
+                } finally {
+                    sparkReplyConfirmed = false;
+                }
+            });
+            b.setNegativeButton("Nein", null); // Text bleibt im Eingabefeld
+            if (parentFragment != null) parentFragment.showDialog(b.create()); else b.show();
+            return true;
+        }
         final boolean allowConfirmFinal = allowConfirm && !animatorEphemeralMessageVisibility.getValue();
 
         final Runnable send = () -> {
