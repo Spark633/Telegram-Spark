@@ -28280,7 +28280,13 @@ public class ChatActivity extends BaseFragment implements
             sparkNoRejoin = org.telegram.messenger.spark.SparkRejoin.cantRejoin(currentChat) && !isThreadChat();
             if (sparkNoRejoin) {
                 // Sparkgram: verlassene private/gesperrte Gruppe – Beitreten geht nicht, daher "Gruppe löschen"
-                bottomOverlayChatText.setText(LocaleController.getString(R.string.DeleteThisGroup));
+                String sparkLabel = LocaleController.getString(R.string.DeleteThisGroup);
+                if (currentChat instanceof TLRPC.TL_channelForbidden || currentChat.kicked) {
+                    int until = currentChat instanceof TLRPC.TL_channelForbidden ? ((TLRPC.TL_channelForbidden) currentChat).until_date : 0;
+                    String bis = until > 0 && until < Integer.MAX_VALUE - 1 ? " bis " + new java.text.SimpleDateFormat("dd.MM.yy", java.util.Locale.GERMANY).format(new java.util.Date(until * 1000L)) : "";
+                    sparkLabel = "Gesperrt" + bis + " · " + sparkLabel;
+                }
+                bottomOverlayChatText.setText(sparkLabel);
                 bottomOverlayChatText.setEnabled(true);
                 showBottomOverlayProgress(false, false);
             } else if (ChatObject.isChannel(currentChat) && !(currentChat instanceof TLRPC.TL_channelForbidden)) {
