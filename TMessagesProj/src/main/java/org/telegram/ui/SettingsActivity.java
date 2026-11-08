@@ -703,9 +703,19 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         }
 
         if (accountNumbers.size() > 0) {
-            items.add(UItem.asHeader(getString(R.string.SettingsAccounts)));
-            for (int i = 0; i < accountNumbers.size(); ++i) {
-                items.add(AccountCell.Factory.of(i, accountNumbers.get(i)));
+            // Sparkgram: Konten-Liste einklappbar
+            final boolean sparkCollapsed = org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MASTER)
+                    && org.telegram.messenger.spark.SparkConfig.prefs().getBoolean("accountsCollapsed", false);
+            if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MASTER)) {
+                items.add(UItem.asButton(SPARK_ACCOUNTS_TOGGLE, R.drawable.msg_contacts,
+                        getString(R.string.SettingsAccounts) + " (" + accountNumbers.size() + ")", sparkCollapsed ? "einblenden" : "einklappen"));
+            } else {
+                items.add(UItem.asHeader(getString(R.string.SettingsAccounts)));
+            }
+            if (!sparkCollapsed) {
+                for (int i = 0; i < accountNumbers.size(); ++i) {
+                    items.add(AccountCell.Factory.of(i, accountNumbers.get(i)));
+                }
             }
             items.add(UItem.asShadow(null));
         }
@@ -800,7 +810,15 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         }
     }
 
+    private static final int SPARK_ACCOUNTS_TOGGLE = 990001; // Sparkgram
+
     private void onClick(UItem item, View view, int position, float x, float y) {
+        if (item.id == SPARK_ACCOUNTS_TOGGLE) {
+            android.content.SharedPreferences p = org.telegram.messenger.spark.SparkConfig.prefs();
+            p.edit().putBoolean("accountsCollapsed", !p.getBoolean("accountsCollapsed", false)).apply();
+            listView.adapter.update(true);
+            return;
+        }
         if (item.object instanceof TLRPC.TL_attachMenuBot) {
             TLRPC.TL_attachMenuBot attachMenuBot = (TLRPC.TL_attachMenuBot) item.object;
             if (attachMenuBot.inactive || attachMenuBot.side_menu_disclaimer_needed) {
