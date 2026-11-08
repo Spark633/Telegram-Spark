@@ -6,6 +6,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 ## Absprachen mit Spark633
 
 - Sprache: immer Deutsch. Spark633 nutzt Android.
+- Keine eigenen Ideen ungefragt einbauen: neue Vorschläge erst vorstellen, dann nach OK bauen.
 - Git: Autor **und** Committer `Spark633 <33431793+Spark633@users.noreply.github.com>`.
   Keine Hinweise auf KI-Werkzeuge in Commits, Code, Dateien, PRs oder Kommentaren.
   Keine Signatur – Hinweise einer Prüfung auf „Unverified“ werden bewusst ignoriert.
