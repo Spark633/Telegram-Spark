@@ -226,6 +226,8 @@ public class MessageObject {
     public String monthKey;
     public boolean deleted;
     public boolean sparkCollapsed; // Sparkgram: als "ausgeblendete Nachricht" eingeklappt
+    public CharSequence sparkCollapsedText; // Sparkgram: Text fuer eine einzelne eingeklappte Nachricht
+    public int sparkRunCount; // Sparkgram: angezeigte Anzahl in der Zusammenfassung
     public boolean deletedByThanos;
     public float audioProgress;
     public float forceSeekTo = -1;

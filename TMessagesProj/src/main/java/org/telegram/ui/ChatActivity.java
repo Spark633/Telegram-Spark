@@ -19360,6 +19360,7 @@ public class ChatActivity extends BaseFragment implements
         obj.type = MessageObject.TYPE_DATE;
         obj.contentType = 1;
         obj.messageText = "🔕 Ausgeblendete Nachricht von " + name + " · antippen";
+        obj.sparkCollapsedText = obj.messageText;
         return false;
     }
 
@@ -19398,6 +19399,40 @@ public class ChatActivity extends BaseFragment implements
             case 4:
                 sparkBookmark(mo);
                 break;
+        }
+    }
+
+    /**
+     * Sparkgram: mehrere direkt aufeinanderfolgende eingeklappte Nachrichten zu einer Zeile zusammenfassen.
+     * Die oberste (aelteste) zeigt "N ausgeblendete Nachrichten", die anderen werden unsichtbar (Hoehe 0).
+     */
+    private void sparkPrepareCollapsed(MessageObject m, int idx, ChatActionCell cell) {
+        if (m == null || !m.sparkCollapsed || idx < 0 || idx >= messages.size()) {
+            cell.sparkMergedHidden = false;
+            return;
+        }
+        int top = idx;
+        while (top + 1 < messages.size() && messages.get(top + 1).sparkCollapsed) top++;
+        int bottom = idx;
+        while (bottom - 1 >= 0 && messages.get(bottom - 1).sparkCollapsed) bottom--;
+        int n = top - bottom + 1;
+        boolean hidden = top != idx;
+        if (cell.sparkMergedHidden != hidden) {
+            cell.sparkMergedHidden = hidden;
+            cell.requestLayout();
+        }
+        if (!hidden) {
+            CharSequence text = n == 1 ? m.sparkCollapsedText : "🔕 " + n + " ausgeblendete Nachrichten · antippen";
+            if (text != null && !TextUtils.equals(m.messageText, text)) m.messageText = text;
+            m.sparkRunCount = n;
+        } else {
+            MessageObject rep = messages.get(top);
+            if (rep.sparkRunCount != n) {
+                final int pos = top + chatAdapter.messagesStartRow;
+                AndroidUtilities.runOnUIThread(() -> {
+                    if (chatAdapter != null) chatAdapter.notifyItemChanged(pos);
+                });
+            }
         }
     }
 
@@ -38626,6 +38661,7 @@ public class ChatActivity extends BaseFragment implements
                     actionCell.isBotForum = UserObject.isBotForum(currentUser);
                     final boolean force = actionCell.firstInChat != firstInChat;
                     actionCell.firstInChat = firstInChat;
+                    sparkPrepareCollapsed(message, position - messagesStartRow, actionCell); // Sparkgram
                     actionCell.setMessageObject(message, force);
                     actionCell.setAlpha(1.0f);
                     actionCell.setShowTopic(true);

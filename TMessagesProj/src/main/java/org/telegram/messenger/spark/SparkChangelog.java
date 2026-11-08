@@ -21,12 +21,12 @@ public class SparkChangelog {
     public static final Release[] RELEASES = {
         new Release("0.15", "08.11.2026",
             "Schlagwort-Benachrichtigung: zeigt klar Chat und Absender, antippen springt direkt zur Nachricht",
-            "Update: bei GitHub-Störung (z. B. 503) automatische Wiederholung, sonst Download über den festen Link",
+            "Update: bei GitHub-Störung (z. B. 503) automatische Wiederholung, sonst direkt zur GitHub-Seite der neuesten Version",
             "Download-Knopf in der Chatübersicht immer anzeigen (abschaltbar)",
-            "Export: Service-Nachrichten mit echtem Text (z. B. „X ist beigetreten“)",
+            "Export: Service-Nachrichten mit echtem Text (z. B. „X ist beigetreten“), lange werden umgebrochen",
             "Ghost-Modus: nach dem Senden erst nach ca. 7 s offline; als gelesen nur Privatchats, nicht Gruppen",
             "Gelöschte Service-Nachrichten: rote Blase statt roter Schrift",
-            "Ausgeblendete Nachrichten: Antippen deckt alle direkt aufeinanderfolgenden auf",
+            "Ausgeblendete Nachrichten: mehrere hintereinander werden zu „N ausgeblendete Nachrichten“ zusammengefasst, Antippen deckt alle auf",
             "Zur ersten Nachricht: hebt die erste echte Nachricht hervor",
             "Nachrichten-Menü: nur noch „Stummschalten“; „Bereich markieren“ verständlicher beschriftet"
         ),

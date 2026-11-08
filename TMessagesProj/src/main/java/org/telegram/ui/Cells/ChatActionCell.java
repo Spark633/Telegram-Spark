@@ -642,6 +642,10 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
 
     public void setMessageObject(MessageObject messageObject, boolean force) {
         if (messageObject == null) return;
+        if (!messageObject.sparkCollapsed && sparkMergedHidden) { // Sparkgram: wiederverwendete Zelle
+            sparkMergedHidden = false;
+            requestLayout();
+        }
         org.telegram.messenger.spark.SparkMembership.onMessageShown(currentAccount, messageObject); // Sparkgram
         if (currentMessageObject != messageObject && walletSlidingOffset != 0) setWalletSlidingOffset(0);
         final boolean walletStateChanged = messageObject.messageOwner != null
@@ -1917,6 +1921,10 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        if (sparkMergedHidden) { // Sparkgram: Teil einer zusammengefassten Folge ausgeblendeter Nachrichten
+            setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), 0);
+            return;
+        }
         View diamond = walletActionLayout == null ? null : walletActionLayout.getDiamondSurface();
         if (diamond != null) {
             final int spec = MeasureSpec.makeMeasureSpec(dp(42), MeasureSpec.EXACTLY);
@@ -2216,6 +2224,7 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
     private ColoredImageSpan upgradeIconSpan;
 
     private boolean sparkDeletedRed; // Sparkgram
+    public boolean sparkMergedHidden; // Sparkgram: in Zusammenfassung enthalten, selbst unsichtbar
     private Paint sparkRedPaint; // Sparkgram
 
     private void buildLayout() {
@@ -2948,6 +2957,7 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
 
     @Override
     protected void onDraw(Canvas canvas) {
+        if (sparkMergedHidden) return; // Sparkgram
         canvas.save();
         canvas.translate(sideMenuWidth / 2f, getPaddingTop());
 
@@ -3529,6 +3539,7 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
     }
 
     public void drawBackground(Canvas canvas, boolean fromParent) {
+        if (sparkMergedHidden) return; // Sparkgram
         if (canDrawInParent) {
             if (hasGradientService() && !fromParent) {
                 return;
@@ -4059,6 +4070,7 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
     }
 
     public void drawReactions(Canvas canvas, boolean fromParent, Integer only) {
+        if (sparkMergedHidden) return; // Sparkgram
         if (canDrawInParent) {
             if (hasGradientService() && !fromParent) {
                 return;
@@ -4246,6 +4258,7 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
     }
 
     public void drawOutboundsContent(Canvas canvas) {
+        if (sparkMergedHidden) return; // Sparkgram
         canvas.save();
         canvas.translate(sideMenuWidth / 2f, getPaddingTop());
 

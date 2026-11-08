@@ -330,16 +330,22 @@ public class SparkExport {
 
         /** Zentrierte Zeile (Datum, Service-Nachricht) als kleine Pille. */
         private void drawCenter(String text) {
-            float h = 18;
+            // mehrzeilig, zentriert (lange Service-Nachrichten werden umgebrochen)
+            int maxW = (int) ((PAGE_W - 2 * MARGIN) * 0.8f);
+            android.text.StaticLayout l = new android.text.StaticLayout(text, pCenter, maxW, android.text.Layout.Alignment.ALIGN_CENTER, 1.1f, 0, false);
+            float tw = maxLineWidth(l);
+            float h = l.getHeight() + 7;
             if (spaceLeft() < h + 6) newPage();
             android.graphics.Canvas c = pdfPage.getCanvas();
-            text = TextUtils.ellipsize(text, pCenter, PAGE_W - 2 * MARGIN - 16, TextUtils.TruncateAt.END).toString();
-            float w = pCenter.measureText(text) + 16;
+            float w = tw + 16;
             float x = (PAGE_W - w) / 2f;
             android.graphics.Paint pill = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
             pill.setColor(0x55000000);
             c.drawRoundRect(new android.graphics.RectF(x, py, x + w, py + h), 9, 9, pill);
-            c.drawText(text, x + 8, py + 12.5f, pCenter);
+            c.save();
+            c.translate((PAGE_W - maxW) / 2f, py + 3.5f);
+            l.draw(c);
+            c.restore();
             py += h + 8;
         }
 

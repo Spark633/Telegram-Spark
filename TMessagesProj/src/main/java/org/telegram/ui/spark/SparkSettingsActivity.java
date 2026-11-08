@@ -565,8 +565,8 @@ public class SparkSettingsActivity extends UniversalFragment {
             if (release.unknown) {
                 AlertDialog.Builder ub = new AlertDialog.Builder(getParentActivity());
                 ub.setTitle(SparkUi.mark("Update"));
-                ub.setMessage("GitHub ist gerade nicht erreichbar (" + error + "), deshalb weiß ich nicht, ob es eine neuere Version gibt.\n\nNeueste Version trotzdem herunterladen?");
-                ub.setPositiveButton("Herunterladen", (d, w) -> downloadUpdate(release));
+                ub.setMessage("GitHub antwortet gerade nicht (" + error + "). Die neueste Version findest du direkt auf der GitHub-Seite.");
+                ub.setPositiveButton("GitHub öffnen", (d, w) -> Browser.openUrl(getParentActivity(), SparkUpdater.REPO_URL + "/releases/tag/build-" + release.channel));
                 ub.setNegativeButton(getString(R.string.Cancel), null);
                 showDialog(ub.create());
                 return;
@@ -597,7 +597,7 @@ public class SparkSettingsActivity extends UniversalFragment {
                 AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
                 b.setTitle(SparkUi.mark("Update"));
                 b.setMessage(problem + "\n\nAlternativ über GitHub herunterladen.");
-                b.setPositiveButton("GitHub öffnen", (d, w) -> Browser.openUrl(getParentActivity(), SparkUpdater.REPO_URL + "/releases"));
+                b.setPositiveButton("GitHub öffnen", (d, w) -> Browser.openUrl(getParentActivity(), SparkUpdater.REPO_URL + "/releases/tag/build-" + release.channel));
                 b.setNegativeButton(getString(R.string.Cancel), null);
                 showDialog(b.create());
             }
