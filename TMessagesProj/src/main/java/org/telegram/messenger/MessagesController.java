@@ -10090,7 +10090,8 @@ public class MessagesController extends BaseController implements NotificationCe
 
     /** Sparkgram: nur selbst erfasste verlassene/entfernte Chats behalten (keine alten Telegram-Reste). */
     public boolean sparkKeepLeft(TLRPC.Chat chat) {
-        return sparkKeepLeftOn() && chat != null && org.telegram.messenger.spark.SparkDeletedChats.kindOf(currentAccount, -chat.id) >= 0;
+        return sparkKeepLeftOn() && chat != null && (org.telegram.messenger.spark.SparkDeletedChats.kindOf(currentAccount, -chat.id) >= 0
+                || org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_OLD));
     }
 
     /** Sparkgram: verlassene/entfernte Chats behalten statt loeschen (true = behalten, nicht loeschen). */

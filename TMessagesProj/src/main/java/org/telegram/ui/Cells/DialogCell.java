@@ -598,6 +598,8 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
     private boolean drawPinBackground;
     private boolean drawPin;
     private boolean drawPinForced;
+    private boolean sparkLocalPin; // Sparkgram: lokal angeheftet (orange statt grau)
+    private static android.graphics.Paint sparkPinPaint;
     private int pinTop;
     private int pinLeft;
     protected int translateY;
@@ -3332,9 +3334,11 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                             drawPin = currentDialogFolderId == 0 && dialog.pinned;
                         }
                         // Sparkgram: lokal angeheftete Chats zeigen ebenfalls das Anheft-Symbol
+                        sparkLocalPin = false;
                         if (!drawPin && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LOCAL_PINS)
                                 && org.telegram.messenger.spark.SparkPins.isPinned(currentAccount, dialog.id)) {
                             drawPin = true;
+                            sparkLocalPin = true;
                         }
                         if (message != null) {
                             lastSendState = message.messageOwner.send_state;
@@ -4201,12 +4205,25 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                         dy + pd.getIntrinsicHeight());
 
 
+                    if (sparkLocalPin && drawPin) {
+                        // Sparkgram: lokal angeheftet = orange Kapsel und oranges Symbol
+                        if (sparkPinPaint == null) {
+                            sparkPinPaint = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+                        }
+                        sparkPinPaint.setColor(0x40ff9800);
+                        canvas.drawRoundRect(l, y, r, y + dp(17), dp(17 / 2f), dp(17 / 2f), sparkPinPaint);
+                        android.graphics.ColorFilter oldFilter = pd.getColorFilter();
+                        pd.setColorFilter(new android.graphics.PorterDuffColorFilter(0xffff9800, android.graphics.PorterDuff.Mode.SRC_IN));
+                        pd.draw(canvas);
+                        pd.setColorFilter(oldFilter);
+                    } else {
                     int a = timeTextPaint.getAlpha();
                     timeTextPaint.setAlpha(27);
                     canvas.drawRoundRect(l, y, r, y + dp(17), dp(17 / 2f), dp(17 / 2f), timeTextPaint);
                     timeTextPaint.setAlpha(a);
 
                     pd.draw(canvas);
+                    }
                 }
 
                 final int tpColor = timeLayout.getPaint().getColor();

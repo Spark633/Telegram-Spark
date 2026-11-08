@@ -121,6 +121,8 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_LEFT_FOLDER = 101;
     private static final int ID_UNREAD_FIRST = 102;
     private static final int ID_HIDDEN_ACCOUNTS = 103;
+    private static final int ID_KEEP_LEFT_OLD = 104;
+    private static final int ID_DUPLICATES = 105;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -242,6 +244,7 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader("Organisation"));
         items.add(UItem.asButton(ID_STATS, R.drawable.msg_stats, "Statistiken"));
+        items.add(UItem.asButton(ID_DUPLICATES, R.drawable.msg_saved, "Duplikate in Gespeichertes"));
         items.add(expandable(ID_BOOKMARKS, R.string.SparkBookmarksToggle, SparkConfig.BOOKMARKS, 1));
         if (open(SparkConfig.BOOKMARKS)) {
             items.add(UItem.asButton(ID_BOOKMARKS_OPEN, "      Lesezeichen öffnen"));
@@ -257,9 +260,10 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_EXPORT, R.string.SparkExportToggle, SparkConfig.EXPORT));
         items.add(check(ID_LOCAL_PINS, R.string.SparkLocalPinsToggle, SparkConfig.LOCAL_PINS));
         items.add(check(ID_UNREAD_FIRST, R.string.SparkUnreadFirstToggle, SparkConfig.UNREAD_FIRST));
-        items.add(expandable(ID_DELETED_CHATS, R.string.SparkDeletedChatsToggle, SparkConfig.DELETED_CHATS, 3));
+        items.add(expandable(ID_DELETED_CHATS, R.string.SparkDeletedChatsToggle, SparkConfig.DELETED_CHATS, 4));
         if (open(SparkConfig.DELETED_CHATS)) {
             items.add(subCheck(ID_KEEP_LEFT, R.string.SparkKeepLeftToggle, SparkConfig.KEEP_LEFT_CHATS));
+            items.add(UItem.asCheck(ID_KEEP_LEFT_OLD, "      Auch ältere aus dem Speicher (nach Neustart)").setChecked(SparkConfig.getRaw(SparkConfig.KEEP_LEFT_OLD)));
             items.add(subCheck(ID_LEFT_FOLDER, R.string.SparkLeftFolderToggle, SparkConfig.LEFT_FOLDER));
             items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Liste öffnen"));
         }
@@ -470,6 +474,8 @@ public class SparkSettingsActivity extends UniversalFragment {
                 break;
             }
             case ID_STATS: presentFragment(new SparkStatsActivity()); break;
+            case ID_DUPLICATES: presentFragment(new SparkDuplicatesActivity()); break;
+            case ID_KEEP_LEFT_OLD: toggle(SparkConfig.KEEP_LEFT_OLD); break;
             case ID_TEMPLATES: expand(SparkConfig.TEMPLATES); break;
             case ID_TEMPLATES_OPEN: presentFragment(new SparkTemplatesActivity()); break;
             case ID_MUTE_PEOPLE: expand(SparkConfig.MUTE_PEOPLE); break;

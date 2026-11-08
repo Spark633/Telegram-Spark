@@ -21,9 +21,10 @@ public class SparkChangelog {
     public static final Release[] RELEASES = {
         new Release("0.17", "08.11.2026",
             "Verlassene Gruppen: Verlauf bleibt beim Verlassen erhalten, Gruppe wird nicht mehr automatisch entfernt",
-            "Nur noch selbst verlassene/entfernte Gruppen werden behalten – alte Telegram-Reste tauchen nicht mehr auf",
+            "Neue Option: auch ältere verlassene Gruppen aus Telegrams Speicher anzeigen (Organisation → Gelöschte & verlassene Chats)",
+            "Duplikate in Gespeichertes: gleiche Fotos, Videos, Dateien, Sticker und Texte finden und aufräumen (älteste bleibt)",
             "Chat- und Profil-Menü: wieder ein Eintrag „✦ Sparkgram“, darin die Gruppen als Unterpunkte",
-            "Lokal angeheftete Chats zeigen das Anheft-Symbol",
+            "Lokal angeheftete Chats: eigenes oranges Anheft-Symbol (unterscheidbar von normal angehefteten)",
             "Download-Knopf: stehendes Symbol, Animation nur bei laufendem Download"
         ),
         new Release("0.16", "08.11.2026",
