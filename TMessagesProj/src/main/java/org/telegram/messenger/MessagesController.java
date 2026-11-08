@@ -1295,6 +1295,19 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     private SparkLeftFilter sparkLeftFilter;
+
+    /** Sparkgram: Chat nur im Ordner "Verlassen" zeigen (nicht in "Alle Chats" und anderen Ordnern)? */
+    public boolean sparkLeftOnlyInFolder(long dialogId) {
+        if (dialogId == 0 || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LEFT_ONLY_FOLDER)
+                || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LEFT_FOLDER) || !sparkKeepLeftOn()) {
+            return false;
+        }
+        if (dialogId > 0) {
+            return org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, dialogId);
+        }
+        TLRPC.Chat chat = getChat(-dialogId);
+        return chat != null && ChatObject.isNotInChat(chat);
+    }
     public int sparkFilterSuppress; // >0 solange die Ordnerverwaltung offen ist
 
     /** Ordner "Verlassen" je nach Einstellung hinzufuegen/entfernen (immer am Ende). */
@@ -1354,6 +1367,9 @@ public class MessagesController extends BaseController implements NotificationCe
         }
 
         public boolean includesDialog(AccountInstance accountInstance, long dialogId, TLRPC.Dialog d) {
+            if (accountInstance.getMessagesController().sparkLeftOnlyInFolder(dialogId)) {
+                return false; // Sparkgram: verlassene/geloeschte nur im Ordner "Verlassen"
+            }
             if (neverShow.contains(dialogId)) {
                 return false;
             }
@@ -22868,6 +22884,9 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     private void addDialogToItsFolder(int index, TLRPC.Dialog dialog) {
+        if (index == -1 && dialog instanceof TLRPC.TL_dialog && sparkLeftOnlyInFolder(dialog.id)) {
+            return; // Sparkgram: verlassene/geloeschte nur im Ordner "Verlassen"
+        }
         int folderId;
         if (dialog instanceof TLRPC.TL_dialogFolder) {
             folderId = 0;

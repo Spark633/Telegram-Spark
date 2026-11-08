@@ -112,6 +112,7 @@ public class SparkConfig {
     public static final String AUTO_FOLDERS = "autoFolders";
     public static final String PERSONA = "persona";
     public static final String ADMIN_TOOLS = "adminTools";
+    public static final String LEFT_ONLY_FOLDER = "leftOnlyFolder";
     // Sortierung: ungelesene Chats oben
     public static final String UNREAD_FIRST = "unreadFirst";
 

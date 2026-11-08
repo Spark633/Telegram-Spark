@@ -51,9 +51,9 @@ public class SparkPersona {
             if (p.photo != null || p.document != null || p.location != null || p.poll != null || p.game != null || p.invoice != null || p.user != null) return;
             if (TextUtils.isEmpty(p.message.trim()) || !isActive(account, p.peer)) return;
             String raw = name(account, p.peer);
-            // Klammer-Paar in der Persona ("[]", "{}", "()") = Nachricht damit umschliessen
+            // Klammer-Paar in der Persona ("[]", "{}", "()", "<>", "--", "==") = Nachricht damit umschliessen
             String open = null, close = null;
-            String[][] pairs = {{"[", "]"}, {"{", "}"}, {"(", ")"}};
+            String[][] pairs = {{"[", "]"}, {"{", "}"}, {"(", ")"}, {"<", ">"}, {"-", "-"}, {"=", "="}};
             for (String[] pr : pairs) {
                 if (raw.contains(pr[0] + pr[1])) {
                     open = pr[0];

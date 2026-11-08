@@ -608,7 +608,7 @@ public class SparkProfileMenu {
         box.addView(input, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, 0, 24, 0, 24, 0));
         AlertDialog.Builder b = new AlertDialog.Builder(fragment.getParentActivity());
         b.setTitle(SparkUi.mark("Persona in diesem Chat"));
-        b.setMessage("Deine Nachrichten in diesem Chat beginnen dann mit dem Namen in Fett, z. B. „Luna: Hallo“. Mit [] oder {} wird die Nachricht zusätzlich eingeklammert: „Luna []“ → „Luna: [Hallo]“, nur „[]“ → „[Hallo]“. Nur in diesem Chat, nur auf diesem Gerät gespeichert.");
+        b.setMessage("Deine Nachrichten in diesem Chat beginnen dann mit dem Namen in Fett, z. B. „Luna: Hallo“. Mit [], {}, (), <>, -- oder == wird die Nachricht zusätzlich eingeschlossen: „Luna []“ → „Luna: [Hallo]“, nur „[]“ → „[Hallo]“. Nur in diesem Chat, nur auf diesem Gerät gespeichert.");
         b.setView(box);
         b.setPositiveButton("Speichern", (d, w) -> {
             org.telegram.messenger.spark.SparkPersona.set(account, dialogId, input.getText().toString());

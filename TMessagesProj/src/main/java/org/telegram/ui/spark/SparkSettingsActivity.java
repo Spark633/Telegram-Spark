@@ -125,6 +125,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_PERSONA = 106;
     private static final int ID_ADMIN_TOOLS = 107;
     private static final int ID_ADMIN_TEMPLATES = 108;
+    private static final int ID_LEFT_ONLY_FOLDER = 109;
     private static final int ID_DUPLICATES = 105;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
@@ -208,6 +209,9 @@ public class SparkSettingsActivity extends UniversalFragment {
         if (open(SparkConfig.DELETED_CHATS)) {
             items.add(subCheck(ID_KEEP_LEFT, R.string.SparkKeepLeftToggle, SparkConfig.KEEP_LEFT_CHATS));
             items.add(subCheck(ID_LEFT_FOLDER, R.string.SparkLeftFolderToggle, SparkConfig.LEFT_FOLDER));
+            if (SparkConfig.getRaw(SparkConfig.LEFT_FOLDER)) {
+                items.add(UItem.asCheck(ID_LEFT_ONLY_FOLDER, "      Nur im Ordner „Verlassen“ anzeigen").setChecked(SparkConfig.getRaw(SparkConfig.LEFT_ONLY_FOLDER)));
+            }
             items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Liste öffnen"));
             items.add(UItem.asShadow("Verlassene Gruppen zeigt Sparkgram auch dann, wenn sie schon länger in Telegrams Speicher auf diesem Gerät liegen. Dabei können auch Gruppen auftauchen, die du nur über einen Link angesehen hast oder in die dich jemand ungefragt hinzugefügt hat."));
         }
@@ -524,6 +528,11 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_AUTO_FOLDERS: presentFragment(new SparkAutoFoldersActivity()); break;
             case ID_PERSONA: toggle(SparkConfig.PERSONA); break;
             case ID_ADMIN_TOOLS: expand(SparkConfig.ADMIN_TOOLS); break;
+            case ID_LEFT_ONLY_FOLDER:
+                toggle(SparkConfig.LEFT_ONLY_FOLDER);
+                getMessagesController().sortDialogs(null);
+                getNotificationCenter().postNotificationName(org.telegram.messenger.NotificationCenter.dialogsNeedReload);
+                break;
             case ID_ADMIN_TEMPLATES: presentFragment(new SparkAdminActivity()); break;
             case ID_TEMPLATES: expand(SparkConfig.TEMPLATES); break;
             case ID_TEMPLATES_OPEN: presentFragment(new SparkTemplatesActivity()); break;
