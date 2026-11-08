@@ -27,7 +27,10 @@ public class SparkChangelog {
             "Chat- und Profil-Menü: Funktionen in Unterpunkten gesammelt (Infos …, Notiz & Medien …, Übersetzen …, Löschen & Export …); Sammlung, Chat-Sticker, Übersetzen, Löschen und Export auch im Profil",
             "Lokal anheften auch beim Markieren von Chats in der Chatübersicht",
             "Export: zusätzlich „In Gespeicherte“ ablegen",
-            "Download-Knopf nur noch animiert, während wirklich etwas lädt"
+            "Download-Knopf nur noch animiert, während wirklich etwas lädt",
+            "Ungelesen pro Konto: Zähler in der Kontoauswahl",
+            "Versteckte Konten: in Kontoauswahl und Einstellungen ausblenden (Konten → Versteckte Konten)",
+            "Sortierung: ungelesene Chats oben (abschaltbar)"
         ),
         new Release("0.15", "08.11.2026",
             "Schlagwort-Benachrichtigung: zeigt klar Chat und Absender, antippen springt direkt zur Nachricht",

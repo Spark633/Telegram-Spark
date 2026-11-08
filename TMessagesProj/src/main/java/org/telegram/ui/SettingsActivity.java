@@ -650,6 +650,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 accountNumbers.add(a);
             }
         }
+        org.telegram.messenger.spark.SparkAccounts.filter(accountNumbers, currentAccount); // Sparkgram: versteckte Konten
         Collections.sort(accountNumbers, (o1, o2) -> {
             long l1 = UserConfig.getInstance(o1).loginTime;
             long l2 = UserConfig.getInstance(o2).loginTime;

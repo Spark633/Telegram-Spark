@@ -119,6 +119,8 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_MENU_EDIT = 99;
     private static final int ID_KEEP_LEFT = 100;
     private static final int ID_LEFT_FOLDER = 101;
+    private static final int ID_UNREAD_FIRST = 102;
+    private static final int ID_HIDDEN_ACCOUNTS = 103;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -254,6 +256,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         }
         items.add(check(ID_EXPORT, R.string.SparkExportToggle, SparkConfig.EXPORT));
         items.add(check(ID_LOCAL_PINS, R.string.SparkLocalPinsToggle, SparkConfig.LOCAL_PINS));
+        items.add(check(ID_UNREAD_FIRST, R.string.SparkUnreadFirstToggle, SparkConfig.UNREAD_FIRST));
         items.add(expandable(ID_DELETED_CHATS, R.string.SparkDeletedChatsToggle, SparkConfig.DELETED_CHATS, 3));
         if (open(SparkConfig.DELETED_CHATS)) {
             items.add(subCheck(ID_KEEP_LEFT, R.string.SparkKeepLeftToggle, SparkConfig.KEEP_LEFT_CHATS));
@@ -343,6 +346,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         // Konten: immer aktiv, nicht vom Hauptschalter betroffen
         items.add(UItem.asHeader(getString(R.string.SparkHeaderAccounts)));
         items.add(UItem.asButton(ID_BACKUP, R.drawable.msg_download, "Sicherung & Konten übertragen"));
+        items.add(UItem.asButton(ID_HIDDEN_ACCOUNTS, R.drawable.msg_secret, "Versteckte Konten"));
         items.add(UItem.asShadow(getString(R.string.SparkAccountsInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderUpdates)));
@@ -431,6 +435,13 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_USER_MESSAGES: toggle(SparkConfig.USER_MESSAGES); break;
             case ID_ALWAYS_DOWNLOADS: toggle(SparkConfig.ALWAYS_DOWNLOADS); break;
             case ID_LOCAL_PINS: toggle(SparkConfig.LOCAL_PINS); break;
+            case ID_UNREAD_FIRST: {
+                toggle(SparkConfig.UNREAD_FIRST);
+                getMessagesController().sortDialogs(null);
+                getNotificationCenter().postNotificationName(org.telegram.messenger.NotificationCenter.dialogsNeedReload);
+                break;
+            }
+            case ID_HIDDEN_ACCOUNTS: presentFragment(new SparkHiddenAccountsActivity()); break;
             case ID_KEEP_LEFT: toggle(SparkConfig.KEEP_LEFT_CHATS); sparkRefreshLeftFolder(); break;
             case ID_LEFT_FOLDER: toggle(SparkConfig.LEFT_FOLDER); sparkRefreshLeftFolder(); break;
             case ID_DELETED_CHATS: expand(SparkConfig.DELETED_CHATS); break;

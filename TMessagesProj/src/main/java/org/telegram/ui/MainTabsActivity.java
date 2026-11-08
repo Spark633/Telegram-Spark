@@ -620,6 +620,7 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             }
             return 0;
         });
+        org.telegram.messenger.spark.SparkAccounts.filter(accountNumbers, currentAccount); // Sparkgram: versteckte Konten
 
         ItemOptions o = ItemOptions.makeOptions(this, button);
         if (UserConfig.getActivatedAccountsCount() < UserConfig.MAX_ACCOUNT_COUNT) {
@@ -719,6 +720,20 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         textView.setMaxLines(2);
         textView.setEllipsize(TextUtils.TruncateAt.END);
         btn.addView(textView, LayoutHelper.createLinear(0, LayoutHelper.WRAP_CONTENT, 1f, Gravity.CENTER_VERTICAL, 13, 0, 14, 0));
+
+        // Sparkgram: Ungelesen pro Konto
+        int unread = org.telegram.messenger.MessagesStorage.getInstance(account).getMainUnreadCount();
+        if (unread > 0 && !selected && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MASTER)) {
+            final TextView counter = new TextView(getContext());
+            counter.setText(unread > 999 ? "999+" : String.valueOf(unread));
+            counter.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
+            counter.setTypeface(AndroidUtilities.bold());
+            counter.setGravity(Gravity.CENTER);
+            counter.setPadding(dp(7), 0, dp(7), 0);
+            counter.setTextColor(getThemedColor(Theme.key_featuredStickers_buttonText));
+            counter.setBackground(Theme.createRoundRectDrawable(dp(10), getThemedColor(Theme.key_featuredStickers_addButton)));
+            btn.addView(counter, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, 20, Gravity.CENTER_VERTICAL, 0, 0, 14, 0));
+        }
 
         return btn;
     }

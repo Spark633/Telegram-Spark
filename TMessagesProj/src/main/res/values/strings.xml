@@ -11795,6 +11795,7 @@
     <string name="SparkKeepLeftToggle">Verlassene Gruppen behalten (rot)</string>
     <string name="SparkLeftFolderToggle">Ordner „Verlassen“ in der Chatliste</string>
     <string name="SparkClipboardToggle">Zwischenablage automatisch leeren</string>
+    <string name="SparkUnreadFirstToggle">Ungelesene Chats oben</string>
     <string name="SparkHeaderPeople">Personen</string>
     <string name="SparkOnlineLog">Online-Protokoll</string>
     <string name="SparkOnlineLogToggle">Online-Protokoll aufzeichnen</string>

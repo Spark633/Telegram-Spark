@@ -109,6 +109,8 @@ public class SparkConfig {
     // verlassene/entfernte Gruppen in der Chatliste behalten (rot markiert)
     public static final String KEEP_LEFT_CHATS = "keepLeftChats";
     public static final String LEFT_FOLDER = "leftFolder";
+    // Sortierung: ungelesene Chats oben
+    public static final String UNREAD_FIRST = "unreadFirst";
 
     // Doppeltipp auf eine Nachricht: 0 = Telegram (Reaktion), 1 = Antworten, 2 = Kopieren, 3 = Wiederholen, 4 = Lesezeichen
     public static final String[] DOUBLE_TAP_NAMES = {"Reaktion (Telegram)", "Antworten", "Kopieren", "Wiederholen", "Lesezeichen"};

@@ -1511,6 +1511,12 @@ public class MessagesController extends BaseController implements NotificationCe
             if (sparkRank2 < 0) return -1;
             return Integer.compare(sparkRank1, sparkRank2);
         }
+        // Sparkgram: ungelesene Chats oben
+        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.UNREAD_FIRST)) {
+            boolean u1 = dialog1.unread_count > 0 || dialog1.unread_mark;
+            boolean u2 = dialog2.unread_count > 0 || dialog2.unread_mark;
+            if (u1 != u2) return u1 ? -1 : 1;
+        }
         MediaDataController mediaDataController = getMediaDataController();
         long date1 = DialogObject.getLastMessageOrDraftDate(dialog1, mediaDataController.getDraft(dialog1.id, 0));
         long date2 = DialogObject.getLastMessageOrDraftDate(dialog2, mediaDataController.getDraft(dialog2.id, 0));

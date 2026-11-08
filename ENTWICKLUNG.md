@@ -176,18 +176,20 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   (zweites Löschen endgültig, onlyHistory 3 blockiert), `SparkDeletedChats.kindOf/icon`, `SparkPeople.isHidden`
   (Einklappen pro Person), Menü-Gruppen `SparkProfileMenu.ORDER` als Unterpunkte (IDs 930–933, `showSubGroup`), DialogsActivity `spark_local_pin`,
   `DownloadProgressIcon` Animation nur bei aktiven Downloads.
+  `SparkAccounts` (versteckte Konten, Filter in MainTabsActivity.openAccountSelector + SettingsActivity), Ungelesen-Zähler
+  in `MainTabsActivity.accountView`, `UNREAD_FIRST` im dialogComparator.
 
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
 - **Etappe 4 Rest:** automatisch übersetzen.
-- **Etappe 7 Rest:** Ungelesen pro Konto,
+- **Etappe 7 Rest:**
   In-App-Benachrichtigungen,
   Duplikate in „Gespeichertes“, RP: Persona pro Chat, Zitieren mit Formatierung,
-  Auto-Ordner, Sortierung. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
+  Auto-Ordner. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
 - **Etappe 8 Rest:**
-  App-Sperre, versteckte Konten, Proxy-Verwaltung (+ Anleitung).
+  Proxy-Verwaltung (+ Anleitung). (App-Sperre: hat Telegram schon – Code-Sperre.)
 - Nebenher: eigenes Firebase für Push, mehr Konten ohne Start-Nachteil, Übernahme nach `main`.
 - Gestrichen: Sprachnachricht→Text, „Nachricht zeichnen“, Gerätetyp anderer, „zuletzt online“ erzwingen,
   Stories ausblenden, nachträgliches „für alle löschen“ nach „nur für mich“.
