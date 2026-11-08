@@ -196,7 +196,7 @@ public class SparkProfileMenu {
 
     // Gruppen: Infos | Persönliches & Medien | Übersetzen | Löschen & Export | Rest
     private static final int[][] ORDER = {
-        {ID_COPY_ID, ID_INFO, ID_ADMINS, ID_ACTIVE, ID_TIMEZONE, ID_ONLINE_LOG, ID_NAME_HISTORY},
+        {ID_COPY_ID, ID_INFO, ID_LOCAL_NAME, ID_ADMINS, ID_ACTIVE, ID_TIMEZONE, ID_ONLINE_LOG, ID_NAME_HISTORY},
         {ID_NOTE, ID_COLLECTION, ID_TEMPLATES, ID_CHAT_STICKERS, ID_BOT_SEND},
         {ID_TRANSLATE_CHAT, ID_TRANSLATE_INPUT},
         {ID_DELETE_OWN, ID_EXPORT},
