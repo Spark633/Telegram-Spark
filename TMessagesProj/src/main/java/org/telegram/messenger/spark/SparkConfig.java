@@ -111,6 +111,7 @@ public class SparkConfig {
     public static final String LEFT_FOLDER = "leftFolder";
     public static final String AUTO_FOLDERS = "autoFolders";
     public static final String PERSONA = "persona";
+    public static final String ADMIN_TOOLS = "adminTools";
     // Sortierung: ungelesene Chats oben
     public static final String UNREAD_FIRST = "unreadFirst";
 
@@ -276,6 +277,7 @@ public class SparkConfig {
             case LEFT_FOLDER:
             case AUTO_FOLDERS:
             case PERSONA:
+            case ADMIN_TOOLS:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:

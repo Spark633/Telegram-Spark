@@ -24,6 +24,7 @@ public class SparkChangelog {
             "Auch ältere verlassene Gruppen aus Telegrams Speicher werden angezeigt (Hinweis in den Einstellungen)",
             "Duplikate in Gespeichertes: gleiche Fotos, Videos, Dateien, Sticker und Texte finden und aufräumen (älteste bleibt)",
             "Auto-Ordner: Regeln „Chatname enthält … → Ordner …“, neue Chats werden automatisch einsortiert (Organisation)",
+            "Admin-Vorlagen: Nachricht antippen → „✦ Admin“ → Vorlage (z. B. RL-Bilder): Nachricht löschen, Einschränkung je Stufe (1. Mal, 2. Mal …) mit Dauer, eigener Text mit {user}; Zähler pro Person lokal",
             "RP-Persona pro Chat: deine Nachrichten beginnen dort mit dem Namen deiner Figur in Fett (Chat-Menü → Sparkgram)",
             "Chat- und Profil-Menü: wieder ein Eintrag „✦ Sparkgram“, darin die Gruppen als Unterpunkte",
             "Lokal angeheftete Chats: eigenes oranges Anheft-Symbol (unterscheidbar von normal angehefteten)",

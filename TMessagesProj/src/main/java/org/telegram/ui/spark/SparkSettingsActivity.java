@@ -123,6 +123,8 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_HIDDEN_ACCOUNTS = 103;
     private static final int ID_AUTO_FOLDERS = 104;
     private static final int ID_PERSONA = 106;
+    private static final int ID_ADMIN_TOOLS = 107;
+    private static final int ID_ADMIN_TEMPLATES = 108;
     private static final int ID_DUPLICATES = 105;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
@@ -306,6 +308,10 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderGroups)));
         items.add(check(ID_GROUP_ADMINS, R.string.SparkAdminsList, SparkConfig.GROUP_ADMINS));
+        items.add(expandable(ID_ADMIN_TOOLS, R.string.SparkAdminToolsToggle, SparkConfig.ADMIN_TOOLS, 1));
+        if (open(SparkConfig.ADMIN_TOOLS)) {
+            items.add(UItem.asButton(ID_ADMIN_TEMPLATES, R.drawable.msg_admins, "Admin-Vorlagen verwalten"));
+        }
         items.add(check(ID_GROUP_ACTIVE, R.string.SparkActiveMembers, SparkConfig.GROUP_ACTIVE));
         items.add(check(ID_CHANNEL_AUTHORS, R.string.SparkKnownAuthorsToggle, SparkConfig.CHANNEL_AUTHORS));
         items.add(expandable(ID_MEMBER_CHECK, R.string.SparkMemberCheckToggle, SparkConfig.MEMBER_CHECK, 2));
@@ -480,6 +486,8 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_DUPLICATES: presentFragment(new SparkDuplicatesActivity()); break;
             case ID_AUTO_FOLDERS: presentFragment(new SparkAutoFoldersActivity()); break;
             case ID_PERSONA: toggle(SparkConfig.PERSONA); break;
+            case ID_ADMIN_TOOLS: expand(SparkConfig.ADMIN_TOOLS); break;
+            case ID_ADMIN_TEMPLATES: presentFragment(new SparkAdminActivity()); break;
             case ID_TEMPLATES: expand(SparkConfig.TEMPLATES); break;
             case ID_TEMPLATES_OPEN: presentFragment(new SparkTemplatesActivity()); break;
             case ID_MUTE_PEOPLE: expand(SparkConfig.MUTE_PEOPLE); break;

@@ -182,7 +182,8 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).
-- **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
+- **Etappe 2:** Admin-Vorlagen in 0.17 (`SparkAdmin`, `SparkAdminActivity`, Option 908). Weitere Admin-Ideen
+  (inaktive Mitglieder, verdächtige Konten, Admin-Protokoll, Beitrittsanfragen) bei Bedarf.
 - **Etappe 4:** erledigt (automatisch übersetzen auf Wunsch gestrichen).
 - **Etappe 7 Rest:**
   In-App-Benachrichtigungen,

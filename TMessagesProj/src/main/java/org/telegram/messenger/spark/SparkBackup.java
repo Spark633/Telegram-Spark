@@ -21,8 +21,8 @@ import java.util.Set;
  */
 public class SparkBackup {
 
-    private static final String[] PER_ACCOUNT = {"sparkgram_config_", "sparkgram_notes_", "sparkgram_keywords_", "sparkgram_people_", "sparkgram_local_names_"};
-    private static final String[] GLOBAL = {"sparkgram_config", "sparkgram_local_names"};
+    private static final String[] PER_ACCOUNT = {"sparkgram_config_", "sparkgram_notes_", "sparkgram_keywords_", "sparkgram_people_", "sparkgram_local_names_", "sparkgram_admin_counts_", "sparkgram_persona_", "sparkgram_autofolders_"};
+    private static final String[] GLOBAL = {"sparkgram_config", "sparkgram_local_names", "sparkgram_admin"};
 
     public static class Account {
         public long userId;

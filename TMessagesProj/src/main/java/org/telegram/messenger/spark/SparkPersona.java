@@ -41,10 +41,13 @@ public class SparkPersona {
         prefs(account).edit().putBoolean("a" + dialogId, active).apply();
     }
 
+    /** Waehrend true werden keine Persona-Namen gesetzt (z. B. fuer Admin-Texte). */
+    public static boolean suppress;
+
     /** Vor dem Senden: Persona-Namen vor eine reine Textnachricht setzen. */
     public static void apply(int account, SendMessagesHelper.SendMessageParams p) {
         try {
-            if (p == null || p.message == null || p.retryMessageObject != null) return;
+            if (suppress || p == null || p.message == null || p.retryMessageObject != null) return;
             if (p.photo != null || p.document != null || p.location != null || p.poll != null || p.game != null || p.invoice != null || p.user != null) return;
             if (TextUtils.isEmpty(p.message.trim()) || !isActive(account, p.peer)) return;
             String n = name(account, p.peer);
