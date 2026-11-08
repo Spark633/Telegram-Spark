@@ -15,7 +15,7 @@ public class SparkMenu {
         {28, "Statistik"}, {115, "Statistik anzeigen"}, {23, "Melden"}, {104, "Profil öffnen"},
         {106, "Faktencheck"}, {108, "Geschenk"}, {117, "Geld senden"}, {103, "Schneller laden (Premium)"},
         {902, "✦ Details"}, {903, "✦ Wiederholen"}, {904, "✦ Medien …"}, {905, "✦ Stummschalten"},
-        {906, "✦ Lesezeichen"}, {907, "✦ Alle Nachrichten dieser Person"}, {900, "✦ Bearbeitungsverlauf"}
+        {906, "✦ Lesezeichen"}, {907, "✦ Alle Nachrichten dieser Person"}, {908, "✦ Erinnern"}, {900, "✦ Bearbeitungsverlauf"}
     };
 
     private static Set<Integer> cache;

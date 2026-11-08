@@ -1272,6 +1272,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_SPARK_MUTE = 905; // Sparkgram
     public final static int OPTION_SPARK_BOOKMARK = 906; // Sparkgram
     public final static int OPTION_SPARK_USER_MSGS = 907; // Sparkgram
+    public final static int OPTION_SPARK_REMIND = 908; // Sparkgram
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -31520,6 +31521,11 @@ public class ChatActivity extends BaseFragment implements
                     options.add(OPTION_SPARK_USER_MSGS);
                     icons.add(R.drawable.msg_search);
                 }
+                if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.REMINDERS) && chatMode == 0) {
+                    items.add(org.telegram.ui.spark.SparkUi.mark("Erinnern"));
+                    options.add(OPTION_SPARK_REMIND);
+                    icons.add(R.drawable.msg_calendar2);
+                }
                 if (org.telegram.ui.spark.SparkMedia.hasActions(selectedObject)) {
                     items.add(org.telegram.ui.spark.SparkUi.mark("Medien …"));
                     options.add(OPTION_SPARK_MEDIA);
@@ -33879,6 +33885,10 @@ public class ChatActivity extends BaseFragment implements
             }
             case OPTION_SPARK_BOOKMARK: {
                 sparkBookmark(selectedObject);
+                break;
+            }
+            case OPTION_SPARK_REMIND: {
+                org.telegram.ui.spark.SparkReminder.show(this, selectedObject);
                 break;
             }
             case OPTION_SPARK_USER_MSGS: {

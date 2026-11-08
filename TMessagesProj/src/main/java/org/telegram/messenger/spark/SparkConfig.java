@@ -109,8 +109,8 @@ public class SparkConfig {
     // verlassene/entfernte Gruppen in der Chatliste behalten (rot markiert)
     public static final String KEEP_LEFT_CHATS = "keepLeftChats";
     public static final String LEFT_FOLDER = "leftFolder";
-    /** Auch alte verlassene Gruppen aus Telegrams Speicher auf dem Geraet anzeigen. */
-    public static final String KEEP_LEFT_OLD = "keepLeftOld";
+    public static final String REMINDERS = "reminders";
+    public static final String AUTO_TRANSLATE = "autoTranslate";
     // Sortierung: ungelesene Chats oben
     public static final String UNREAD_FIRST = "unreadFirst";
 
@@ -274,7 +274,7 @@ public class SparkConfig {
             case DELETED_CHATS:
             case KEEP_LEFT_CHATS:
             case LEFT_FOLDER:
-            case KEEP_LEFT_OLD:
+            case REMINDERS:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:
