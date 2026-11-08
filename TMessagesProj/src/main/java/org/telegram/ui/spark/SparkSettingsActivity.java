@@ -326,11 +326,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asShadow(getString(R.string.SparkHideInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderLook)));
-        items.add(check(ID_PROFILE_MENU_GROUPED, R.string.SparkProfileMenuGroupedToggle, SparkConfig.PROFILE_MENU_GROUPED));
-        items.add(expandable(ID_CHAT_MENU, R.string.SparkChatMenuToggle, SparkConfig.CHAT_MENU, 1));
-        if (open(SparkConfig.CHAT_MENU)) {
-            items.add(subCheck(ID_CHAT_MENU_GROUPED, R.string.SparkMenuGroupedToggle, SparkConfig.CHAT_MENU_GROUPED));
-        }
+        items.add(check(ID_CHAT_MENU, R.string.SparkChatMenuToggle, SparkConfig.CHAT_MENU));
         items.add(check(ID_MARKER, R.string.SparkMarkerToggle, SparkConfig.SPARK_MARKER));
         items.add(check(ID_ALWAYS_DOWNLOADS, R.string.SparkAlwaysDownloadsToggle, SparkConfig.ALWAYS_DOWNLOADS));
         items.add(UItem.asButton(ID_MENU_EDIT, R.drawable.msg_list, "Nachrichten-Menü anpassen"));
@@ -549,7 +545,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_PHOTO_MANAGER: expand(SparkConfig.PHOTO_MANAGER); break;
             case ID_NOTES: expand(SparkConfig.NOTES); break;
             case ID_MARKER: toggle(SparkConfig.SPARK_MARKER); break;
-            case ID_CHAT_MENU: expand(SparkConfig.CHAT_MENU); break;
+            case ID_CHAT_MENU: toggle(SparkConfig.CHAT_MENU); break;
             case ID_PROFILE_MENU_GROUPED: toggle(SparkConfig.PROFILE_MENU_GROUPED); break;
             case ID_CHAT_MENU_GROUPED: toggle(SparkConfig.CHAT_MENU_GROUPED); break;
             case ID_MEMBER_CHECK: expand(SparkConfig.MEMBER_CHECK); break;

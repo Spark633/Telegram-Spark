@@ -2177,7 +2177,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 TLRPC.Message message = pinnedDialogs.messages.get(a);
                 if (message.peer_id.channel_id != 0) {
                     TLRPC.Chat chat = chatsDict.get(message.peer_id.channel_id);
-                    if (chat != null && chat.left && !sparkKeepLeftOn() && (promoDialogId == 0 || promoDialogId != -chat.id)) {
+                    if (chat != null && chat.left && !sparkKeepLeft(chat) && (promoDialogId == 0 || promoDialogId != -chat.id)) {
                         continue;
                     }
                 } else if (message.peer_id.chat_id != 0) {
@@ -2231,7 +2231,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (DialogObject.isChannel(d)) {
                     TLRPC.Chat chat = chatsDict.get(-d.id);
                     if (chat != null) {
-                        if (chat.left && !sparkKeepLeftOn() && (promoDialogId == 0 || promoDialogId != d.id)) {
+                        if (chat.left && !sparkKeepLeft(chat) && (promoDialogId == 0 || promoDialogId != d.id)) {
                             continue;
                         }
                     }
@@ -10088,6 +10088,11 @@ public class MessagesController extends BaseController implements NotificationCe
         return org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_CHATS);
     }
 
+    /** Sparkgram: nur selbst erfasste verlassene/entfernte Chats behalten (keine alten Telegram-Reste). */
+    public boolean sparkKeepLeft(TLRPC.Chat chat) {
+        return sparkKeepLeftOn() && chat != null && org.telegram.messenger.spark.SparkDeletedChats.kindOf(currentAccount, -chat.id) >= 0;
+    }
+
     /** Sparkgram: verlassene/entfernte Chats behalten statt loeschen (true = behalten, nicht loeschen). */
     public boolean sparkKeepChat(long did, int kind) {
         if (!org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_CHATS)) {
@@ -10103,7 +10108,8 @@ public class MessagesController extends BaseController implements NotificationCe
 
     public void deleteDialog(final long did, int onlyHistory, boolean revoke) {
         // Sparkgram: geloeschte Privatchats lokal behalten (Ordner "Verlassen"), zweites Loeschen = endgueltig
-        if (onlyHistory == 3 && org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, did)) {
+        if (onlyHistory == 3 && (org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, did)
+                || did < 0 && sparkKeepLeftOn() && org.telegram.messenger.spark.SparkDeletedChats.kindOf(currentAccount, did) >= 0)) {
             return; // automatisches Aufraeumen leerer Chats verhindern
         }
         if (onlyHistory == 0 && did > 0 && sparkKeepLeftOn() && !org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, did)
@@ -13033,7 +13039,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
                 if (message.peer_id.channel_id != 0) {
                     TLRPC.Chat chat = chatsDict.get(message.peer_id.channel_id);
-                    if (chat != null && chat.left && !sparkKeepLeftOn()) {
+                    if (chat != null && chat.left && !sparkKeepLeft(chat)) {
                         continue;
                     }
                 } else if (message.peer_id.chat_id != 0) {
@@ -13076,7 +13082,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (DialogObject.isChannel(d)) {
                     TLRPC.Chat chat = chatsDict.get(-d.id);
                     if (chat != null && chat.left) {
-                        if (!sparkKeepLeftOn()) continue; // Sparkgram: verlassene behalten (ohne Updates)
+                        if (!sparkKeepLeft(chat)) continue; // Sparkgram: verlassene behalten (ohne Updates)
                     } else {
                         channelsPts.put(-d.id, d.pts);
                     }
@@ -13510,7 +13516,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
                 if (message.peer_id.channel_id != 0) {
                     TLRPC.Chat chat = chatsDict.get(message.peer_id.channel_id);
-                    if (chat != null && chat.left && !sparkKeepLeftOn() && (promoDialogId == 0 || promoDialogId != -chat.id)) {
+                    if (chat != null && chat.left && !sparkKeepLeft(chat) && (promoDialogId == 0 || promoDialogId != -chat.id)) {
                         continue;
                     }
                 } else if (message.peer_id.chat_id != 0) {
@@ -13627,14 +13633,14 @@ public class MessagesController extends BaseController implements NotificationCe
                         if (!chat.megagroup) {
                             allowCheck = false;
                         }
-                        if (ChatObject.isNotInChat(chat) && !sparkKeepLeftOn() && (promoDialogId == 0 || promoDialogId != d.id)) {
+                        if (ChatObject.isNotInChat(chat) && !sparkKeepLeft(chat) && (promoDialogId == 0 || promoDialogId != d.id)) {
                             continue;
                         }
                     }
                     channelsPts.put(-d.id, d.pts);
                 } else if (DialogObject.isChatDialog(d.id)) {
                     TLRPC.Chat chat = chatsDict.get(-d.id);
-                    if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat) && !sparkKeepLeftOn())) {
+                    if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat) && !sparkKeepLeft(chat))) {
                         continue;
                     }
                 }
@@ -14200,12 +14206,12 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (promoDialogId == 0 || promoDialogId != message.dialog_id) {
                     if (message.peer_id != null && message.peer_id.channel_id != 0) {
                         TLRPC.Chat chat = chatsDict.get(message.peer_id.channel_id);
-                        if (chat != null && ChatObject.isNotInChat(chat) && !sparkKeepLeftOn()) {
+                        if (chat != null && ChatObject.isNotInChat(chat) && !sparkKeepLeft(chat)) {
                             continue;
                         }
                     } else if (message.peer_id != null && message.peer_id.chat_id != 0) {
                         TLRPC.Chat chat = chatsDict.get(message.peer_id.chat_id);
-                        if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat) && !sparkKeepLeftOn())) {
+                        if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat) && !sparkKeepLeft(chat))) {
                             continue;
                         }
                     }
@@ -14228,12 +14234,12 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (promoDialogId == 0 || promoDialogId != d.id) {
                     if (DialogObject.isChannel(d)) {
                         TLRPC.Chat chat = chatsDict.get(-d.id);
-                        if (chat != null && ChatObject.isNotInChat(chat) && !sparkKeepLeftOn()) {
+                        if (chat != null && ChatObject.isNotInChat(chat) && !sparkKeepLeft(chat)) {
                             continue;
                         }
                     } else if (DialogObject.isChatDialog(d.id)) {
                         TLRPC.Chat chat = chatsDict.get(-d.id);
-                        if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat) && !sparkKeepLeftOn())) {
+                        if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat) && !sparkKeepLeft(chat))) {
                             continue;
                         }
                     }
@@ -16066,7 +16072,7 @@ public class MessagesController extends BaseController implements NotificationCe
             TLRPC.TL_messages_deleteChatUser req = new TLRPC.TL_messages_deleteChatUser();
             req.chat_id = chatId;
             req.user_id = (TLRPC.InputUser) getInputUser(peer);
-            req.revoke_history = true;
+            req.revoke_history = !(self && sparkKeepLeftOn()); // Sparkgram: Verlauf beim Verlassen behalten
             request = req;
         }
         if (self) {
@@ -16152,7 +16158,7 @@ public class MessagesController extends BaseController implements NotificationCe
             TLRPC.TL_messages_deleteChatUser req = new TLRPC.TL_messages_deleteChatUser();
             req.chat_id = chatId;
             req.user_id = getInputUser(user);
-            req.revoke_history = true;
+            req.revoke_history = !(UserObject.isUserSelf(user) && sparkKeepLeftOn()); // Sparkgram: Verlauf beim Verlassen behalten
             request = req;
         }
         if (UserObject.isUserSelf(user)) {
@@ -17574,7 +17580,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     TLRPC.Message message = res.messages.get(a);
                     if (message.peer_id.channel_id != 0) {
                         TLRPC.Chat chat = chatsDict.get(message.peer_id.channel_id);
-                        if (chat != null && chat.left && !sparkKeepLeftOn()) {
+                        if (chat != null && chat.left && !sparkKeepLeft(chat)) {
                             continue;
                         }
                     } else if (message.peer_id.chat_id != 0) {
@@ -17601,7 +17607,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     DialogObject.initDialog(d);
                     if (DialogObject.isChannel(d)) {
                         TLRPC.Chat chat = chatsDict.get(-d.id);
-                        if (chat != null && chat.left && !sparkKeepLeftOn()) {
+                        if (chat != null && chat.left && !sparkKeepLeft(chat)) {
                             continue;
                         }
                     } else if (DialogObject.isChatDialog(d.id)) {

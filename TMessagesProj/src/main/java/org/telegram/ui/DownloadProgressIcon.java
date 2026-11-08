@@ -39,6 +39,7 @@ public class DownloadProgressIcon extends View implements NotificationCenter.Not
     int currentColor;
     private boolean wasDrawn;
     private boolean sparkAnimating = true; // Sparkgram
+    private android.graphics.drawable.Drawable sparkStatic;
 
     public DownloadProgressIcon(int currentAccount, Context context) {
         super(context);
@@ -111,6 +112,13 @@ public class DownloadProgressIcon extends View implements NotificationCenter.Not
 
         int cy = getMeasuredHeight() / 2 + AndroidUtilities.dp(8);
         float r = AndroidUtilities.dp(1f);
+        if (!sparkAnimating && !showCompletedIcon) {
+            paint.setAlpha(0);
+            paint2.setAlpha(0);
+        } else {
+            paint.setAlpha(255);
+            paint2.setAlpha(100);
+        }
 
         float startPadding = AndroidUtilities.dp(16);
         float width = getMeasuredWidth() - startPadding * 2;
@@ -127,11 +135,13 @@ public class DownloadProgressIcon extends View implements NotificationCenter.Not
         }
         if (showCompletedIcon) {
             downloadCompleteImageReceiver.draw(canvas);
+        } else if (!sparkAnimating) {
+            // Sparkgram: stehendes Symbol, wird unten ohne Zuschnitt gezeichnet
         } else {
             downloadImageReceiver.draw(canvas);
         }
 
-        if (progress == 1f && !showCompletedIcon) {
+        if (progress == 1f && !showCompletedIcon && sparkAnimating) {
             if (downloadDrawable.getCurrentFrame() == 0) {
                 downloadCompleteDrawable.setCurrentFrame(0, false);
                 downloadCompleteDrawable.start();
@@ -139,6 +149,17 @@ public class DownloadProgressIcon extends View implements NotificationCenter.Not
             }
         }
         canvas.restore();
+        if (!sparkAnimating && !showCompletedIcon) {
+            // Sparkgram: ohne laufenden Download ein stehendes Symbol statt der Animation
+            if (sparkStatic == null) {
+                sparkStatic = getContext().getResources().getDrawable(R.drawable.msg_download).mutate();
+            }
+            sparkStatic.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_actionBarDefaultIcon), PorterDuff.Mode.SRC_IN));
+            int sz = AndroidUtilities.dp(24);
+            int l = (getMeasuredWidth() - sz) / 2, t = (getMeasuredHeight() - sz) / 2;
+            sparkStatic.setBounds(l, t, l + sz, t + sz);
+            sparkStatic.draw(canvas);
+        }
         if (getAlpha() != 0) {
             wasDrawn = true;
         }

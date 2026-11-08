@@ -3331,6 +3331,11 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                         } else {
                             drawPin = currentDialogFolderId == 0 && dialog.pinned;
                         }
+                        // Sparkgram: lokal angeheftete Chats zeigen ebenfalls das Anheft-Symbol
+                        if (!drawPin && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LOCAL_PINS)
+                                && org.telegram.messenger.spark.SparkPins.isPinned(currentAccount, dialog.id)) {
+                            drawPin = true;
+                        }
                         if (message != null) {
                             lastSendState = message.messageOwner.send_state;
                         }

@@ -247,48 +247,45 @@ public class SparkProfileMenu {
     }
 
     public static void addItems(BaseFragment fragment, Adder menu, long userId, long chatId, boolean grouped) {
-        if (grouped) {
-            if (!entries(fragment, userId, chatId, false).isEmpty()) {
-                menu.add(ID_GROUP, R.drawable.settings_features, SparkUi.mark("Sparkgram"));
-            }
+        // Immer ein einziger Eintrag "✦ Sparkgram"; darin Gruppen als Unterpunkte (Wunsch Spark633)
+        if (!entries(fragment, userId, chatId, false).isEmpty()) {
+            menu.add(ID_GROUP, R.drawable.settings_features, SparkUi.mark("Sparkgram"));
+        }
+    }
+
+    /** Auswahlfenster "Sparkgram": Gruppen (mehrere Funktionen) als Unterpunkte, einzelne Funktionen direkt. */
+    private static void showGroup(BaseFragment fragment, long userId, long chatId) {
+        final ArrayList<Entry> all = entries(fragment, userId, chatId, false);
+        if (all.isEmpty()) {
             return;
         }
-        // Gruppen mit mehreren Funktionen als je ein Unterpunkt, einzelne direkt
-        ArrayList<Entry> all = entries(fragment, userId, chatId, true);
         int[] count = new int[GROUP_NAMES.length];
         for (Entry e : all) {
             int g = groupOf(e.id);
             if (g < GROUP_NAMES.length) count[g]++;
         }
+        final ArrayList<Entry> rows = new ArrayList<>();
         boolean[] added = new boolean[GROUP_NAMES.length];
         for (Entry e : all) {
             int g = groupOf(e.id);
             if (g < GROUP_NAMES.length && count[g] > 1) {
                 if (!added[g]) {
                     added[g] = true;
-                    menu.add(ID_SUBGROUP_BASE + g, GROUP_ICONS[g], SparkUi.mark(GROUP_NAMES[g] + " …"));
+                    rows.add(new Entry(ID_SUBGROUP_BASE + g, GROUP_ICONS[g], GROUP_NAMES[g] + " …"));
                 }
             } else {
-                menu.add(e.id, e.icon, e.text);
+                rows.add(e);
             }
         }
-    }
-
-    /** Kleines Auswahlfenster mit allen Sparkgram-Funktionen (gesammelte Ansicht). */
-    private static void showGroup(BaseFragment fragment, long userId, long chatId) {
-        final ArrayList<Entry> list = entries(fragment, userId, chatId, false);
-        if (list.isEmpty()) {
-            return;
-        }
-        CharSequence[] texts = new CharSequence[list.size()];
-        int[] icons = new int[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            texts[i] = list.get(i).text;
-            icons[i] = list.get(i).icon;
+        CharSequence[] texts = new CharSequence[rows.size()];
+        int[] icons = new int[rows.size()];
+        for (int i = 0; i < rows.size(); i++) {
+            texts[i] = rows.get(i).text;
+            icons[i] = rows.get(i).icon;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
         builder.setTitle(SparkUi.mark("Sparkgram"));
-        builder.setItems(texts, icons, (dialog, which) -> handle(fragment, list.get(which).id, userId, chatId));
+        builder.setItems(texts, icons, (dialog, which) -> handle(fragment, rows.get(which).id, userId, chatId));
         fragment.showDialog(builder.create());
     }
 

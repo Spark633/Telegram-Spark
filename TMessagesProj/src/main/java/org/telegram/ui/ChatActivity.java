@@ -23160,7 +23160,9 @@ public class ChatActivity extends BaseFragment implements
             }
         } else if (id == NotificationCenter.chatInfoCantLoad) {
             long chatId = (Long) args[0];
-            if (currentChat != null && currentChat.id == chatId) {
+            if (currentChat != null && currentChat.id == chatId && getMessagesController().sparkKeepLeft(currentChat)) {
+                // Sparkgram: verlassene Gruppe bleibt lesbar, nicht schliessen/loeschen
+            } else if (currentChat != null && currentChat.id == chatId) {
                 int reason = (Integer) args[1];
                 if (getParentActivity() == null || closeChatDialog != null) {
                     return;
