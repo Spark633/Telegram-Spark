@@ -20,7 +20,7 @@ public class SparkChangelog {
 
     public static final Release[] RELEASES = {
         new Release("0.20", "08.11.2026",
-            "Einstellungen: Liste der angemeldeten Konten einklappbar (auf „Konten“ tippen)"
+            "Einstellungen: Liste der angemeldeten Konten einklappbar – auf die Überschrift „Konten ▲/▼“ tippen"
         ),
         new Release("0.19", "08.11.2026",
             "Verlassene Gruppe wird nach dem Verlassen sofort rot angezeigt; kein „Privater Kanal“-Fenster mehr beim Öffnen",

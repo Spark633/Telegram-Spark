@@ -1131,6 +1131,7 @@ public class UniversalAdapter extends AdapterWithDiffUtils {
             clickable = factory != null && factory.isClickable();
         } else {
             clickable = (
+                viewType == VIEW_TYPE_HEADER && item != null && "sparkClickable".equals(item.object) || // Sparkgram
                 viewType == VIEW_TYPE_TEXT ||
                 viewType == VIEW_TYPE_TEXT_CHECK ||
                 viewType == VIEW_TYPE_ICON_TEXT_CHECK ||
