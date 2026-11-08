@@ -237,6 +237,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
     private void sparkStartQr() {
         if (getParentActivity() == null || sparkQrRunning) return;
         sparkQrRunning = true;
+        sparkQrActive.put(currentAccount, this);
         android.widget.LinearLayout box = new android.widget.LinearLayout(getParentActivity());
         box.setOrientation(android.widget.LinearLayout.VERTICAL);
         box.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -260,8 +261,22 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         sparkQrRequest();
     }
 
+    private static final java.util.HashMap<Integer, LoginActivity> sparkQrActive = new java.util.HashMap<>();
+
+    /** Telegram hat gemeldet, dass der QR-Code gescannt wurde -> Token erneut abfragen. */
+    public static void sparkOnLoginToken(int account) {
+        LoginActivity a = sparkQrActive.get(account);
+        if (a != null && a.sparkQrRunning) {
+            AndroidUtilities.cancelRunOnUIThread(a.sparkQrPoll);
+            a.sparkQrShownUntil = 0;
+            if (a.sparkQrStatus != null) a.sparkQrStatus.setText("Gescannt – melde an …");
+            a.sparkQrRequest();
+        }
+    }
+
     private void sparkStopQr() {
         sparkQrRunning = false;
+        if (sparkQrActive.get(currentAccount) == this) sparkQrActive.remove(currentAccount);
         sparkQrShownUntil = 0;
         AndroidUtilities.cancelRunOnUIThread(sparkQrPoll);
     }
@@ -295,10 +310,6 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             TLRPC.TL_auth_loginToken t = (TLRPC.TL_auth_loginToken) res;
             // angezeigten Code nicht staendig wechseln: erst kurz vor Ablauf einen neuen zeigen
             int now = ConnectionsManager.getInstance(currentAccount).getCurrentTime();
-            if (sparkQrShownUntil - 5 > now) {
-                AndroidUtilities.runOnUIThread(sparkQrPoll, 3000);
-                return;
-            }
             sparkQrShownUntil = t.expires;
             String link = "tg://login?token=" + android.util.Base64.encodeToString(t.token, android.util.Base64.URL_SAFE | android.util.Base64.NO_WRAP | android.util.Base64.NO_PADDING);
             try {
@@ -311,7 +322,8 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 FileLog.e(e);
             }
             if (sparkQrStatus != null) sparkQrStatus.setText("Auf deinem anderen Gerät: Einstellungen → Geräte → „QR-Code scannen“ (bzw. „Desktop-Gerät verbinden“) und diesen Code scannen.");
-            AndroidUtilities.runOnUIThread(sparkQrPoll, 3000);
+            // neuen Code erst kurz vor Ablauf holen; gescannt wird ueber sparkOnLoginToken gemeldet
+            AndroidUtilities.runOnUIThread(sparkQrPoll, Math.max(5, t.expires - now - 2) * 1000L);
         } else if (res instanceof TLRPC.TL_auth_loginTokenMigrateTo) {
             // Konto liegt in einem anderen Rechenzentrum: dort einloesen
             final TLRPC.TL_auth_loginTokenMigrateTo mt = (TLRPC.TL_auth_loginTokenMigrateTo) res;

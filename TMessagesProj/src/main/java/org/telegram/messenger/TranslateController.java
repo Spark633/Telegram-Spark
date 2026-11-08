@@ -235,6 +235,40 @@ public class TranslateController extends BaseController {
         return isFeatureAvailable(dialogId) && translatingDialogs.get(dialogId, isChatAutoTranslated(dialogId));
     }
 
+    // Sparkgram: Uebersetzung ueber Google/DeepL Nachricht fuer Nachricht (mit kleiner Pause gegen Sperren)
+    private void sparkAlternative(boolean isTranscription, ArrayList<Integer> ids, ArrayList<Utilities.Callback4<Boolean, Integer, TLRPC.TL_textWithEntities, String>> callbacks, ArrayList<TLRPC.TL_textWithEntities> texts, String toLanguage) {
+        sparkAltStep(isTranscription, ids, callbacks, texts, toLanguage, 0, new boolean[1]);
+    }
+
+    private void sparkAltStep(boolean isTranscription, ArrayList<Integer> ids, ArrayList<Utilities.Callback4<Boolean, Integer, TLRPC.TL_textWithEntities, String>> callbacks, ArrayList<TLRPC.TL_textWithEntities> texts, String toLanguage, int index, boolean[] errorShown) {
+        final int n = Math.min(ids.size(), Math.min(callbacks.size(), texts.size()));
+        if (index >= n) return;
+        final int id = ids.get(index);
+        final Utilities.Callback4<Boolean, Integer, TLRPC.TL_textWithEntities, String> cb = callbacks.get(index);
+        final TLRPC.TL_textWithEntities original = texts.get(index);
+        final Runnable next = () -> AndroidUtilities.runOnUIThread(() -> sparkAltStep(isTranscription, ids, callbacks, texts, toLanguage, index + 1, errorShown), 150);
+        final String text = original != null ? original.text : null;
+        if (TextUtils.isEmpty(text) || text.trim().isEmpty()) {
+            cb.run(isTranscription, id, original != null ? original : new TLRPC.TL_textWithEntities(), toLanguage);
+            next.run();
+            return;
+        }
+        TranslateAlert2.alternativeTranslate(text, "auto", toLanguage, (result, rateLimit) -> {
+            if (result != null) {
+                final TLRPC.TL_textWithEntities r = new TLRPC.TL_textWithEntities();
+                r.text = result;
+                cb.run(isTranscription, id, r, toLanguage);
+            } else {
+                cb.run(isTranscription, id, original, toLanguage); // Original stehen lassen
+                if (!errorShown[0]) {
+                    errorShown[0] = true;
+                    NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.showBulletin, Bulletin.TYPE_ERROR, getString(rateLimit ? R.string.TranslationFailedAlert1 : R.string.TranslationFailedAlert2));
+                }
+            }
+            next.run();
+        });
+    }
+
     // Sparkgram: Chat-Uebersetzung erzwingen, auch wenn Telegram den Chat nicht als fremdsprachig erkannt hat
     public void sparkForceTranslate(long dialogId, boolean on) {
         if (on) {
@@ -1122,22 +1156,8 @@ public class TranslateController extends BaseController {
 
                 final String method = getMessagesController().translationsAutoEnabled;
                 if ("alternative".equals(method) || "system".equals(method) || "disabled".equals(method) && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE)) {
-                    final String toLanguage = pendingTranslation1.language;
-                    for (int i = 0; i < pendingTranslation1.messageIds.size(); ++i) {
-                        final int id = pendingTranslation1.messageIds.get(i);
-                        final Utilities.Callback4<Boolean, Integer, TLRPC.TL_textWithEntities, String> _callback = pendingTranslation1.callbacks.get(i);
-                        final String _text = pendingTranslation1.messageTexts.get(i).text;
-                        TranslateAlert2.alternativeTranslate(_text, null, toLanguage, (result, rateLimit) -> {
-                            if (result != null) {
-                                final TLRPC.TL_textWithEntities resultWithEntities = new TLRPC.TL_textWithEntities();
-                                resultWithEntities.text = result;
-                                _callback.run(isTranscription, id, resultWithEntities, toLanguage);
-                            } else {
-                                toggleTranslatingDialog(dialogId, false);
-                                NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.showBulletin, Bulletin.TYPE_ERROR, getString(rateLimit ? R.string.TranslationFailedAlert1 : R.string.TranslationFailedAlert2));
-                            }
-                        });
-                    }
+                    // Sparkgram: nacheinander, leere Texte ueberspringen, Einzelfehler stoppen nicht alles
+                    sparkAlternative(isTranscription, new ArrayList<>(pendingTranslation1.messageIds), new ArrayList<>(pendingTranslation1.callbacks), new ArrayList<>(pendingTranslation1.messageTexts), pendingTranslation1.language);
                     return;
                 }/* else if ("system".equals(method)) {
                     final String toLanguage = pendingTranslation1.language;
@@ -1188,21 +1208,7 @@ public class TranslateController extends BaseController {
                             callbacks.get(i).run(isTranscription, ids.get(i), TranslateAlert2.preprocess(texts.get(i), translated.get(i)), toLanguage);
                         }
                     } else if (sparkUseAlternative() || err != null && ("TRANSLATIONS_DISABLED_ALT".equalsIgnoreCase(err.text) || org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.TRANSLATE_FREE))) {
-                        for (int i = 0; i < ids.size(); ++i) {
-                            final int id = ids.get(i);
-                            final Utilities.Callback4<Boolean, Integer, TLRPC.TL_textWithEntities, String> _callback = callbacks.get(i);
-                            final String _text = texts.get(i).text;
-                            TranslateAlert2.alternativeTranslate(_text, null, toLanguage, (result, rateLimit) -> {
-                                if (result != null) {
-                                    final TLRPC.TL_textWithEntities resultWithEntities = new TLRPC.TL_textWithEntities();
-                                    resultWithEntities.text = result;
-                                    _callback.run(isTranscription, id, resultWithEntities, toLanguage);
-                                } else {
-                                    toggleTranslatingDialog(dialogId, false);
-                                    NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.showBulletin, Bulletin.TYPE_ERROR, getString(rateLimit ? R.string.TranslationFailedAlert1 : R.string.TranslationFailedAlert2));
-                                }
-                            });
-                        }
+                        sparkAlternative(isTranscription, new ArrayList<>(ids), new ArrayList<>(callbacks), new ArrayList<>(texts), toLanguage);
                     } else if (err != null && "TO_LANG_INVALID".equals(err.text)) {
                         toggleTranslatingDialog(dialogId, false);
                         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.showBulletin, Bulletin.TYPE_ERROR, getString(R.string.TranslationFailedAlert2));

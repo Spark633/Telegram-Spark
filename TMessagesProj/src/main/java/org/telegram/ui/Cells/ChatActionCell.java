@@ -2281,6 +2281,12 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
                 ((SpannableStringBuilder) text).setSpan(new ColoredImageSpan(iconResId), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
         }
+        // Sparkgram: geloeschte Service-Nachrichten (z. B. Beitrittsmeldungen) kennzeichnen
+        if (currentMessageObject != null && currentMessageObject.getId() > 0 && text != null && text.length() > 0
+                && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_DELETED)
+                && org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).isDeleted(currentMessageObject.getDialogId(), currentMessageObject.getId())) {
+            text = new SpannableStringBuilder(text).append("  🗑 gelöscht");
+        }
         createLayout(text, previousWidth);
         if (birthdayLayout != null) {
             textLayout = null;

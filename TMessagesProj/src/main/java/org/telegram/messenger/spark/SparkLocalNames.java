@@ -12,13 +12,25 @@ import org.telegram.messenger.ApplicationLoader;
  */
 public class SparkLocalNames {
 
-    private static SharedPreferences prefs;
+    // pro Konto ("sparkgram_local_names_<konto>"); alte gemeinsame Namen werden beim ersten Zugriff uebernommen
+    private static final java.util.HashMap<Integer, SharedPreferences> prefsByAccount = new java.util.HashMap<>();
 
-    private static SharedPreferences prefs() {
-        if (prefs == null) {
-            prefs = ApplicationLoader.applicationContext.getSharedPreferences("sparkgram_local_names", Context.MODE_PRIVATE);
+    private static synchronized SharedPreferences prefs() {
+        int account = org.telegram.messenger.UserConfig.selectedAccount;
+        SharedPreferences p = prefsByAccount.get(account);
+        if (p == null) {
+            p = ApplicationLoader.applicationContext.getSharedPreferences("sparkgram_local_names_" + account, Context.MODE_PRIVATE);
+            if (!p.getBoolean("__migrated", false)) {
+                SharedPreferences old = ApplicationLoader.applicationContext.getSharedPreferences("sparkgram_local_names", Context.MODE_PRIVATE);
+                SharedPreferences.Editor e = p.edit();
+                for (java.util.Map.Entry<String, ?> en : old.getAll().entrySet()) {
+                    if (en.getValue() instanceof String) e.putString(en.getKey(), (String) en.getValue());
+                }
+                e.putBoolean("__migrated", true).apply();
+            }
+            prefsByAccount.put(account, p);
         }
-        return prefs;
+        return p;
     }
 
     /** Spitzname oder null. */

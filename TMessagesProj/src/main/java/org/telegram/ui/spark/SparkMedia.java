@@ -137,8 +137,7 @@ public class SparkMedia {
         String prefix = mo.isVoice() ? "Sprachnachricht_" : "Sparkgram_";
         String name = prefix + mo.getDialogId() + "_" + mo.getId() + extension(mo);
         String mime = mo.getDocument() != null ? mo.getDocument().mime_type : null;
-        MediaController.saveFile(f.getAbsolutePath(), fragment.getParentActivity(), 2, name, mime, uri ->
-            BulletinFactory.of(fragment).createSimpleBulletin(R.raw.ic_download, "✦ In „Downloads“ gespeichert").show());
+        SparkUi.saveToDownloads(fragment, f, name, mime);
     }
 
     // ------------------------------------------------------------ Kopie senden
@@ -214,14 +213,14 @@ public class SparkMedia {
                     }
                     if (f != null && f.exists()) {
                         String ext = d.mime_type != null && d.mime_type.contains("x-tgsticker") ? ".tgs" : d.mime_type != null && d.mime_type.contains("webm") ? ".webm" : ".webp";
-                        MediaController.saveFile(f.getAbsolutePath(), ApplicationLoader.applicationContext, 2, shortName + "_" + (i + 1) + ext, d.mime_type, null, false);
+                        SparkUi.saveToDownloads(f, shortName + "_" + (i + 1) + ext, d.mime_type, null);
                         saved++;
                     }
                 }
                 final int savedF = saved;
                 AndroidUtilities.runOnUIThread(() -> {
                     try { progress.dismiss(); } catch (Throwable ignore) {}
-                    BulletinFactory.of(fragment).createSimpleBulletin(R.raw.ic_download, "✦ " + savedF + " von " + docs.size() + " Stickern in „Downloads“ gespeichert").show();
+                    BulletinFactory.of(fragment).createSimpleBulletin(R.raw.ic_download, "✦ " + savedF + " von " + docs.size() + " Stickern gespeichert: Download/Sparkgram").show();
                 });
             });
         });

@@ -178,8 +178,13 @@ public class SparkExport {
                         return;
                     }
                     String name = "Chat_" + title.replaceAll("[^A-Za-z0-9ÄÖÜäöüß_-]+", "_") + "_" + new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(new Date()) + (pdf ? ".pdf" : ".html");
-                    MediaController.saveFile(file.getAbsolutePath(), fragment.getParentActivity(), 2, name, pdf ? "application/pdf" : "text/html", uri ->
-                        BulletinFactory.of(fragment).createSimpleBulletin(R.raw.ic_download, "✦ " + list.size() + " Nachrichten exportiert → Downloads/" + name).show());
+                    SparkUi.saveToDownloads(file, name, pdf ? "application/pdf" : "text/html", path -> {
+                        if (path != null) {
+                            BulletinFactory.of(fragment).createSimpleBulletin(R.raw.ic_download, "✦ " + list.size() + " Nachrichten exportiert: " + path).show();
+                        } else {
+                            BulletinFactory.of(fragment).createErrorBulletin("Speichern fehlgeschlagen").show();
+                        }
+                    });
                 });
             });
         }

@@ -83,10 +83,14 @@ public class SparkUpdater {
                         for (int i = 0; i < assets.length(); i++) {
                             JSONObject a = assets.getJSONObject(i);
                             if (a.optString("name").endsWith(".apk")) {
-                                release.apkName = a.optString("name");
-                                release.apkUrl = a.optString("browser_download_url");
-                                release.apkSize = a.optLong("size");
-                                break;
+                                // feste Datei "Sparkgram-<kanal>.apk" bevorzugen (bleibt bei neuen Baeuen gleich)
+                                boolean fixed = a.optString("name").equals("Sparkgram-" + channel + ".apk");
+                                if (release.apkUrl == null || fixed) {
+                                    release.apkName = a.optString("name");
+                                    release.apkUrl = a.optString("browser_download_url");
+                                    release.apkSize = a.optLong("size");
+                                }
+                                if (fixed) break;
                             }
                         }
                     }
@@ -138,8 +142,11 @@ public class SparkUpdater {
             dir.mkdirs();
             File target = new File(dir, "sparkgram-update.apk");
             String error = null;
+            String[] urls = {release.apkUrl, "https://github.com/" + REPO + "/releases/download/build-" + release.channel + "/Sparkgram-" + release.channel + ".apk"};
+            for (String url : urls) {
+            error = null;
             try {
-                HttpURLConnection c = (HttpURLConnection) new URL(release.apkUrl).openConnection();
+                HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
                 c.setRequestProperty("User-Agent", "Sparkgram-Updater");
                 c.setInstanceFollowRedirects(true);
                 c.setConnectTimeout(15000);
@@ -163,18 +170,32 @@ public class SparkUpdater {
                 } finally {
                     c.disconnect();
                 }
+            } catch (java.io.FileNotFoundException e) {
+                FileLog.e(e);
+                error = "Datei nicht gefunden (vermutlich wird gerade eine neue Version gebaut)";
+                target.delete();
+                continue;
             } catch (Exception e) {
                 FileLog.e(e);
                 error = e.getMessage();
                 target.delete();
+            }
+            break;
             }
             final String err = error;
             AndroidUtilities.runOnUIThread(() -> done.run(err == null ? target : null, err));
         });
     }
 
-    public static void install(Activity activity, File apk) {
+    /** Startet die Installation. Liefert eine Fehlermeldung oder null. */
+    public static String install(Activity activity, File apk) {
         try {
+            // Android 8+: Erlaubnis "Unbekannte Apps installieren" fuer Sparkgram noetig
+            if (Build.VERSION.SDK_INT >= 26 && !activity.getPackageManager().canRequestPackageInstalls()) {
+                Intent s = new Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + ApplicationLoader.getApplicationId()));
+                activity.startActivity(s);
+                return "Bitte erlaube Sparkgram „Unbekannte Apps installieren“ und tippe danach nochmal auf Aktualisieren.";
+            }
             Intent intent = new Intent(Intent.ACTION_VIEW);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
             Uri uri;
@@ -185,8 +206,10 @@ public class SparkUpdater {
             }
             intent.setDataAndType(uri, "application/vnd.android.package-archive");
             activity.startActivity(intent);
+            return null;
         } catch (Exception e) {
             FileLog.e(e);
+            return e.getClass().getSimpleName() + ": " + e.getMessage();
         }
     }
 }

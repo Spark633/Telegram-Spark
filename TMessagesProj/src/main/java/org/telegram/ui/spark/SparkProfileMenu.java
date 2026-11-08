@@ -472,7 +472,7 @@ public class SparkProfileMenu {
                 BulletinFactory.of(chat).createErrorBulletin("Erste Nachricht nicht gefunden" + (err != null ? " (" + err.text + ")" : "")).show();
                 return;
             }
-            chat.scrollToMessageId(first, 0, true, 0, true, 0);
+            chat.scrollToMessageId(first, 0, true, 0, false, 0); // wie beim Antippen einer Antwort: oben + aufblinken
         }));
     }
 

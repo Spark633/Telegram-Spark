@@ -138,4 +138,117 @@ public class SparkBot {
         if (l.contains("unauthorized")) return "Der Bot-Token ist ungültig.";
         return d;
     }
+
+    // ---------------------------------------------------------------- Postfach (getUpdates)
+
+    public static class Incoming {
+        public long updateId;
+        public long chatId;
+        public String chatTitle;
+        public String fromName;
+        public String fromUsername;
+        public long messageId;
+        public long date;
+        public String text;
+    }
+
+    /** Neue Nachrichten an den Bot abholen und lokal speichern. Hintergrund-Thread! Liefert Fehler oder null. */
+    public static String fetch() {
+        String token = token();
+        if (TextUtils.isEmpty(token)) return "Kein Bot-Token hinterlegt";
+        try {
+            long offset = SparkConfig.prefs().getLong("botOffset", 0);
+            JSONObject o = call(token, "getUpdates", "timeout=0&limit=100&offset=" + offset + "&allowed_updates=" + URLEncoder.encode("[\"message\",\"channel_post\"]", "UTF-8"));
+            if (!o.optBoolean("ok")) {
+                String d = o.optString("description", "Fehler");
+                if (d.toLowerCase().contains("webhook")) return "Der Bot nutzt einen Webhook – dann kann Sparkgram seine Nachrichten nicht abholen.";
+                if (d.toLowerCase().contains("conflict")) return "Ein anderes Programm holt gerade die Nachrichten dieses Bots ab.";
+                return d;
+            }
+            org.json.JSONArray res = o.getJSONArray("result");
+            org.json.JSONArray stored = new org.json.JSONArray(SparkConfig.prefs().getString("botInbox", "[]"));
+            for (int i = 0; i < res.length(); i++) {
+                JSONObject u = res.getJSONObject(i);
+                offset = Math.max(offset, u.getLong("update_id") + 1);
+                JSONObject m = u.optJSONObject("message");
+                if (m == null) m = u.optJSONObject("channel_post");
+                if (m == null) continue;
+                JSONObject chat = m.optJSONObject("chat");
+                JSONObject from = m.optJSONObject("from");
+                JSONObject e = new JSONObject();
+                e.put("u", u.getLong("update_id"));
+                e.put("c", chat != null ? chat.optLong("id") : 0);
+                e.put("ct", chat != null ? chat.optString("title", "") : "");
+                e.put("f", from != null ? (from.optString("first_name", "") + " " + from.optString("last_name", "")).trim() : "");
+                e.put("fu", from != null ? from.optString("username", "") : "");
+                e.put("m", m.optLong("message_id"));
+                e.put("d", m.optLong("date"));
+                String text = m.optString("text", m.optString("caption", ""));
+                if (text.isEmpty()) {
+                    if (m.has("photo")) text = "[Foto]";
+                    else if (m.has("sticker")) text = "[Sticker " + m.optJSONObject("sticker").optString("emoji", "") + "]";
+                    else if (m.has("voice")) text = "[Sprachnachricht]";
+                    else if (m.has("video")) text = "[Video]";
+                    else if (m.has("document")) text = "[Datei]";
+                    else text = "[Nachricht]";
+                }
+                e.put("t", text);
+                stored.put(e);
+            }
+            // nur die letzten 300 behalten
+            org.json.JSONArray trimmed = new org.json.JSONArray();
+            for (int i = Math.max(0, stored.length() - 300); i < stored.length(); i++) trimmed.put(stored.get(i));
+            SparkConfig.prefs().edit().putLong("botOffset", offset).putString("botInbox", trimmed.toString()).apply();
+            return null;
+        } catch (Exception e) {
+            FileLog.e(e);
+            return e.getMessage();
+        }
+    }
+
+    /** Gespeicherte Nachrichten an den Bot, neueste zuerst. */
+    public static java.util.ArrayList<Incoming> inbox() {
+        java.util.ArrayList<Incoming> list = new java.util.ArrayList<>();
+        try {
+            org.json.JSONArray a = new org.json.JSONArray(SparkConfig.prefs().getString("botInbox", "[]"));
+            for (int i = a.length() - 1; i >= 0; i--) {
+                JSONObject e = a.getJSONObject(i);
+                Incoming in = new Incoming();
+                in.updateId = e.optLong("u");
+                in.chatId = e.optLong("c");
+                in.chatTitle = e.optString("ct");
+                in.fromName = e.optString("f");
+                in.fromUsername = e.optString("fu");
+                in.messageId = e.optLong("m");
+                in.date = e.optLong("d");
+                in.text = e.optString("t");
+                list.add(in);
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+        return list;
+    }
+
+    public static void clearInbox() {
+        SparkConfig.prefs().edit().remove("botInbox").apply();
+    }
+
+    /** Antwort an eine Bot-API-Chat-ID senden. Hintergrund-Thread! */
+    public static Result sendRaw(long chatId, String text, long replyTo) {
+        Result r = new Result();
+        try {
+            String body = "chat_id=" + chatId + "&text=" + URLEncoder.encode(text, "UTF-8");
+            if (replyTo > 0) {
+                body += "&reply_parameters=" + URLEncoder.encode("{\"message_id\":" + replyTo + ",\"allow_sending_without_reply\":true}", "UTF-8");
+            }
+            JSONObject o = call(token(), "sendMessage", body);
+            r.ok = o.optBoolean("ok");
+            if (!r.ok) r.error = explain(o.optString("description", "Fehler"));
+        } catch (Exception e) {
+            FileLog.e(e);
+            r.error = e.getMessage();
+        }
+        return r;
+    }
 }

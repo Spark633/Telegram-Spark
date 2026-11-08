@@ -19,6 +19,20 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.14", "08.11.2026",
+            "Export, Sicherung und Medien speichern funktionieren jetzt (Ordner Download/Sparkgram, mit Bestätigung)",
+            "Update in der App: lädt die feste APK, zeigt Fortschritt in %, fragt nach der Installations-Erlaubnis und meldet Fehler",
+            "Ghost-Modus: nach dem Senden sofort wieder offline, und der Chat gilt als gelesen",
+            "QR-Anmeldung reagiert jetzt auf Telegrams Scan-Signal (Code wechselt nicht mehr ständig)",
+            "Chats übersetzen: Nachricht für Nachricht, leere werden übersprungen, ein Fehler stoppt nicht mehr alles",
+            "Zur ersten Nachricht: springt nach oben und lässt sie kurz aufblinken",
+            "Mitglieder & Aktivität: „Weiter durchsuchen“ fest oben angeheftet",
+            "Person stummschalten auch über das Nachrichten-Menü; Liste der Stummgeschalteten; Nachrichten in Gruppen ausblenden",
+            "Gelöschte Beitrittsmeldungen und andere Service-Nachrichten zeigen „🗑 gelöscht“",
+            "Bot-Postfach: Nachrichten an deinen Bot ansehen und als Bot antworten",
+            "Lokale Namen gelten jetzt pro Konto",
+            "Einstellungen aufgeräumt: kürzere Texte, Unterpunkte auch bei ausgeschaltetem Punkt aufklappbar, Sicherung unter „Konten“"
+        ),
         new Release("0.13", "07.11.2026",
             "„Zur ersten Nachricht“ funktioniert jetzt in allen Chats (fragt die älteste Nachricht direkt ab)",
             "Chat-Menü: „Chat übersetzen an/aus“ – übersetzt jeden Chat, auch wenn Telegram ihn nicht als fremdsprachig erkennt",

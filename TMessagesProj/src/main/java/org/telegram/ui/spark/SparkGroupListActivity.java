@@ -112,6 +112,7 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
     }
 
     private android.widget.TextView pinnedHeader;
+    private android.widget.TextView pinnedMore;
 
     @Override
     public View createView(android.content.Context context) {
@@ -123,8 +124,27 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
             pinnedHeader.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlueHeader));
             pinnedHeader.setBackgroundColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhite));
             pinnedHeader.setPadding(AndroidUtilities.dp(21), AndroidUtilities.dp(12), AndroidUtilities.dp(21), AndroidUtilities.dp(12));
-            pinnedHeader.setElevation(AndroidUtilities.dp(2));
-            ((android.widget.FrameLayout) v).addView(pinnedHeader, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, android.view.Gravity.TOP));
+            // Kopf + "Weiter durchsuchen" fest oben
+            android.widget.LinearLayout pinned = new android.widget.LinearLayout(context);
+            pinned.setOrientation(android.widget.LinearLayout.VERTICAL);
+            pinned.setBackgroundColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhite));
+            pinned.setElevation(AndroidUtilities.dp(2));
+            pinned.addView(pinnedHeader);
+            pinnedMore = new android.widget.TextView(context);
+            pinnedMore.setText("▶  Weiter durchsuchen (+1000 Nachrichten)");
+            pinnedMore.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 15);
+            pinnedMore.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlueText4));
+            pinnedMore.setPadding(AndroidUtilities.dp(21), 0, AndroidUtilities.dp(21), AndroidUtilities.dp(12));
+            pinnedMore.setOnClickListener(x -> {
+                error = null;
+                scanStep(PAGES_PER_STEP);
+                update();
+            });
+            pinned.addView(pinnedMore);
+            ((android.widget.FrameLayout) v).addView(pinned, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, android.view.Gravity.TOP));
+            pinned.addOnLayoutChangeListener((vv, l, t, r, b, ol, ot, or, ob) -> {
+                if (b - t != ob - ot) listView.setPadding(0, b - t, 0, 0);
+            });
             listView.setPadding(0, AndroidUtilities.dp(44), 0, 0);
             listView.setClipToPadding(false);
             updateHeader();
@@ -140,6 +160,9 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
     }
 
     private void updateHeader() {
+        if (pinnedMore != null) {
+            pinnedMore.setVisibility(!endReached && !loading && membersLoaded ? View.VISIBLE : View.GONE);
+        }
         if (pinnedHeader != null) {
             pinnedHeader.setText(headerText());
         }
@@ -427,7 +450,7 @@ public class SparkGroupListActivity extends UniversalFragment implements Notific
             items.add(UItem.asShadow(error));
         }
         // Knopf oben, damit er bei langen Listen sichtbar ist
-        if (!endReached && !loading) {
+        if (!endReached && !loading && pinnedMore == null) {
             items.add(UItem.asButton(ID_MORE, R.drawable.msg_retry, mode == MODE_ACTIVE ? "Weiter durchsuchen (+1000 Nachrichten)" : "Weiter zurück durchsuchen (+1000)").accent());
         }
         for (int i = 0; i < rows.size(); i++) {

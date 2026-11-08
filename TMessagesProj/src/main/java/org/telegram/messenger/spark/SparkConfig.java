@@ -95,6 +95,8 @@ public class SparkConfig {
     // Etappe 7: Organisation
     public static final String MUTE_PEOPLE = "mutePeople";
     public static final String TEMPLATES = "templates";
+    // Nachrichten stummgeschalteter Personen im Chat ausblenden
+    public static final String MUTE_HIDE = "muteHide";
     // Etappe 8: Ghost-Modus (Oberschalter + einzelne Teile)
     public static final String GHOST = "ghost";
     public static final String GHOST_READ = "ghostRead";
@@ -108,7 +110,7 @@ public class SparkConfig {
     }
 
     public static int selectLimit() {
-        return get(SELECT_NO_LIMIT) ? 1000 : 100;
+        return get(MASTER) ? 1000 : 100;
     }
     // Schlagwort-Alarm
     public static final String KEYWORDS = "keywords";
@@ -170,6 +172,10 @@ public class SparkConfig {
         if (!MASTER.equals(key) && !UPDATE_TEST_BUILDS.equals(key) && !getRaw(MASTER)) {
             return false;
         }
+        // feste Vorgaben ohne eigenen Schalter
+        if (KEEP_OWN_DELETED.equals(key)) return getRaw(KEEP_DELETED);
+        if (FORWARD_NO_SENDER.equals(key)) return false;
+        if (PHOTO_MANAGER.equals(key) || SELECT_NO_LIMIT.equals(key)) return true;
         return getRaw(key);
     }
 

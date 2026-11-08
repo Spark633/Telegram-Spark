@@ -449,4 +449,57 @@ public class SparkUi {
         }
         dialog.show();
     }
+
+    /**
+     * Kopiert eine Datei nach „Download/Sparkgram“ (Android 10+: MediaStore, sonst direkt).
+     * onDone bekommt den angezeigten Pfad oder null bei Fehler (auf dem UI-Thread).
+     */
+    public static void saveToDownloads(java.io.File src, String name, String mime, org.telegram.messenger.Utilities.Callback<String> onDone) {
+        org.telegram.messenger.Utilities.globalQueue.postRunnable(() -> {
+            String shown = null;
+            try {
+                android.content.Context ctx = org.telegram.messenger.ApplicationLoader.applicationContext;
+                if (android.os.Build.VERSION.SDK_INT >= 29) {
+                    android.content.ContentValues v = new android.content.ContentValues();
+                    v.put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, name);
+                    if (mime != null) v.put(android.provider.MediaStore.MediaColumns.MIME_TYPE, mime);
+                    v.put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/Sparkgram");
+                    android.net.Uri uri = ctx.getContentResolver().insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, v);
+                    if (uri == null) throw new java.io.IOException("MediaStore insert fehlgeschlagen");
+                    try (java.io.InputStream in = new java.io.FileInputStream(src); java.io.OutputStream out = ctx.getContentResolver().openOutputStream(uri)) {
+                        byte[] buf = new byte[64 * 1024];
+                        int n;
+                        while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                    }
+                } else {
+                    java.io.File dir = new java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS), "Sparkgram");
+                    dir.mkdirs();
+                    java.io.File dest = new java.io.File(dir, name);
+                    try (java.io.InputStream in = new java.io.FileInputStream(src); java.io.OutputStream out = new java.io.FileOutputStream(dest)) {
+                        byte[] buf = new byte[64 * 1024];
+                        int n;
+                        while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                    }
+                }
+                shown = "Download/Sparkgram/" + name;
+            } catch (Throwable e) {
+                org.telegram.messenger.FileLog.e(e);
+            }
+            final String result = shown;
+            AndroidUtilities.runOnUIThread(() -> {
+                if (onDone != null) onDone.run(result);
+            });
+        });
+    }
+
+    /** Wie saveToDownloads, mit Hinweis unten im Bildschirm. */
+    public static void saveToDownloads(org.telegram.ui.ActionBar.BaseFragment fragment, java.io.File src, String name, String mime) {
+        saveToDownloads(src, name, mime, path -> {
+            if (path != null) {
+                org.telegram.ui.Components.BulletinFactory.of(fragment).createSimpleBulletin(org.telegram.messenger.R.raw.ic_download, "✦ Gespeichert: " + path).show();
+            } else {
+                org.telegram.ui.Components.BulletinFactory.of(fragment).createErrorBulletin("Speichern fehlgeschlagen").show();
+            }
+        });
+    }
 }

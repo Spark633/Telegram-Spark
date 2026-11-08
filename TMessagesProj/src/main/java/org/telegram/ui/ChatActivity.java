@@ -1269,6 +1269,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_SPARK_DETAILS = 902; // Sparkgram
     public final static int OPTION_SPARK_REPEAT = 903; // Sparkgram
     public final static int OPTION_SPARK_MEDIA = 904; // Sparkgram
+    public final static int OPTION_SPARK_MUTE = 905; // Sparkgram
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -19317,6 +19318,14 @@ public class ChatActivity extends BaseFragment implements
         }
     }
 
+    /** Sparkgram: Nachrichten einzeln stummgeschalteter Personen in Gruppen ausblenden. */
+    private boolean sparkHideMuted(MessageObject obj) {
+        return obj != null && dialog_id < 0 && !obj.isOutOwner()
+            && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_PEOPLE)
+            && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_HIDE)
+            && org.telegram.messenger.spark.SparkPeople.isMuted(currentAccount, obj.getFromChatId());
+    }
+
     private boolean sparkIsSelected(MessageObject mo) {
         return selectedMessagesIds[0].indexOfKey(mo.getId()) >= 0 || selectedMessagesIds[1].indexOfKey(mo.getId()) >= 0;
     }
@@ -21370,7 +21379,7 @@ public class ChatActivity extends BaseFragment implements
             if (messagesDict[loadIndex].indexOfKey(messageId) >= 0) {
                 continue;
             }
-            if (obj.messageOwner instanceof TLRPC.TL_messageEmpty) {
+            if (obj.messageOwner instanceof TLRPC.TL_messageEmpty || sparkHideMuted(obj)) {
                 continue;
             }
             if (getTopicId() != 0 && obj.messageOwner.action instanceof TLRPC.TL_messageActionTopicCreate) {
@@ -25962,7 +25971,7 @@ public class ChatActivity extends BaseFragment implements
                 if (action instanceof TLRPC.TL_messageActionChannelMigrateFrom) {
                     continue;
                 }
-                if (obj.messageOwner instanceof TLRPC.TL_messageEmpty) {
+                if (obj.messageOwner instanceof TLRPC.TL_messageEmpty || sparkHideMuted(obj)) {
                     continue;
                 }
                 if (!isTopic && threadMessageObject != null && obj.isReply() && !(obj.messageOwner.action instanceof TLRPC.TL_messageActionPinMessage)) {
@@ -26098,7 +26107,7 @@ public class ChatActivity extends BaseFragment implements
                 if (action instanceof TLRPC.TL_messageActionChannelMigrateFrom) {
                     continue;
                 }
-                if (obj.messageOwner instanceof TLRPC.TL_messageEmpty) {
+                if (obj.messageOwner instanceof TLRPC.TL_messageEmpty || sparkHideMuted(obj)) {
                     continue;
                 }
                 if (threadMessageObject != null && threadMessageObject.messageOwner.replies != null && obj.isReply() && !(obj.messageOwner.action instanceof TLRPC.TL_messageActionPinMessage)) {
@@ -31362,6 +31371,12 @@ public class ChatActivity extends BaseFragment implements
                     options.add(OPTION_SPARK_REPEAT);
                     icons.add(R.drawable.msg_retry);
                 }
+                if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_PEOPLE) && !selectedObject.isOutOwner() && selectedObject.getFromChatId() > 0 && dialog_id < 0) {
+                    boolean m = org.telegram.messenger.spark.SparkPeople.isMuted(currentAccount, selectedObject.getFromChatId());
+                    items.add(org.telegram.ui.spark.SparkUi.mark(m ? "Person wieder laut" : "Person stummschalten"));
+                    options.add(OPTION_SPARK_MUTE);
+                    icons.add(m ? R.drawable.msg_unmute : R.drawable.msg_mute);
+                }
                 if (org.telegram.ui.spark.SparkMedia.hasActions(selectedObject)) {
                     items.add(org.telegram.ui.spark.SparkUi.mark("Medien …"));
                     options.add(OPTION_SPARK_MEDIA);
@@ -33706,6 +33721,16 @@ public class ChatActivity extends BaseFragment implements
         switch (option) {
             case OPTION_SPARK_HISTORY: {
                 org.telegram.ui.spark.SparkUi.showEditHistory(this, selectedObject);
+                break;
+            }
+            case OPTION_SPARK_MUTE: {
+                long uid = selectedObject.getFromChatId();
+                boolean m = !org.telegram.messenger.spark.SparkPeople.isMuted(currentAccount, uid);
+                org.telegram.messenger.spark.SparkPeople.setMuted(currentAccount, uid, m);
+                TLRPC.User mu = getMessagesController().getUser(uid);
+                String nm = mu != null ? UserObject.getUserName(mu) : "Person";
+                BulletinFactory.of(this).createSimpleBulletin(m ? R.raw.ic_mute : R.raw.ic_unmute,
+                    m ? "✦ " + nm + " stummgeschaltet" + (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_HIDE) ? " – Nachrichten werden ausgeblendet" : "") : "✦ " + nm + " wieder laut").show();
                 break;
             }
             case OPTION_SPARK_MEDIA: {

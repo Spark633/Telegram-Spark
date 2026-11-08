@@ -14578,6 +14578,50 @@ public class MessagesController extends BaseController implements NotificationCe
         }
     }
 
+    /**
+     * Sparkgram: nach dem Senden im Ghost-Modus sofort wieder "offline" melden
+     * und (wer antwortet, hat gelesen) den Chat als gelesen melden.
+     */
+    public void sparkGhostAfterSend(long dialogId) {
+        if (!org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.GHOST)) {
+            return;
+        }
+        AndroidUtilities.runOnUIThread(() -> {
+            if (org.telegram.messenger.spark.SparkConfig.ghost(org.telegram.messenger.spark.SparkConfig.GHOST_OFFLINE)) {
+                for (int delay : new int[]{1500, 5000}) {
+                    AndroidUtilities.runOnUIThread(() -> {
+                        TL_account.updateStatus req = new TL_account.updateStatus();
+                        req.offline = true;
+                        getConnectionsManager().sendRequest(req, (response, error) -> {
+                            if (error == null) offlineSent = true;
+                        });
+                    }, delay);
+                }
+            }
+            if (org.telegram.messenger.spark.SparkConfig.ghost(org.telegram.messenger.spark.SparkConfig.GHOST_READ) && dialogId != 0 && !DialogObject.isEncryptedDialog(dialogId)) {
+                TLRPC.InputPeer peer = getInputPeer(dialogId);
+                TLObject req;
+                if (peer instanceof TLRPC.TL_inputPeerChannel) {
+                    TLRPC.TL_channels_readHistory r = new TLRPC.TL_channels_readHistory();
+                    r.channel = getInputChannel(-dialogId);
+                    r.max_id = Integer.MAX_VALUE;
+                    req = r;
+                } else {
+                    TLRPC.TL_messages_readHistory r = new TLRPC.TL_messages_readHistory();
+                    r.peer = peer;
+                    r.max_id = Integer.MAX_VALUE;
+                    req = r;
+                }
+                getConnectionsManager().sendRequest(req, (response, error) -> {
+                    if (response instanceof TLRPC.TL_messages_affectedMessages) {
+                        TLRPC.TL_messages_affectedMessages res = (TLRPC.TL_messages_affectedMessages) response;
+                        processNewDifferenceParams(-1, res.pts, -1, res.pts_count);
+                    }
+                });
+            }
+        });
+    }
+
     private void completeReadTask(ReadTask task) {
         // Sparkgram: Ghost-Modus -> keine Lesebestaetigung an den Server (lokal gilt der Chat als gelesen)
         if (org.telegram.messenger.spark.SparkConfig.ghost(org.telegram.messenger.spark.SparkConfig.GHOST_READ) && !DialogObject.isEncryptedDialog(task.dialogId)) {
@@ -17901,6 +17945,12 @@ public class MessagesController extends BaseController implements NotificationCe
 
     // must be run from Utilities.stageQueue
     public void processUpdates(final TLRPC.Updates updates, boolean fromQueue) {
+        // Sparkgram: QR-Anmeldung – Telegram meldet, dass der Code gescannt wurde
+        if (updates instanceof TLRPC.TL_updateShort && updates.update instanceof TL_update.TL_updateLoginToken) {
+            final int acc = currentAccount;
+            AndroidUtilities.runOnUIThread(() -> org.telegram.ui.LoginActivity.sparkOnLoginToken(acc));
+            return;
+        }
         if (updates instanceof TLRPC.TL_updates || updates instanceof TLRPC.TL_updatesCombined) {
             boolean hasMessageIdUpdates = false;
             for (int i = 0; i < updates.updates.size(); i++) {

@@ -141,6 +141,16 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   bei SESSION_PASSWORD_NEEDED Telegrams Passwort-Seite, Erfolg über `onAuthSuccess`). Altes Gerät scannt über
   Einstellungen → Geräte (tg://login?token=…). Export: `SparkExport.exportChat` (Chat-Menü 923, PDF über `android.graphics.pdf.PdfDocument` + StaticLayout, oder HTML; in Downloads).
 
+- 0.14 (in Arbeit): `SparkUi.saveToDownloads` (MediaStore, Download/Sparkgram) statt `MediaController.saveFile`
+  (verwirft Dateien aus dem internen Speicher!). Updater: feste APK `Sparkgram-<kanal>.apk`, Fallback bei 404,
+  Installations-Erlaubnis. Ghost: `MessagesController.sparkGhostAfterSend` (aus beiden `SendMessagesHelper.sendMessage`).
+  QR: `TL_updateLoginToken` in `processUpdates` → `LoginActivity.sparkOnLoginToken`. Chat-Übersetzung:
+  `TranslateController.sparkAlternative` (seriell, 150 ms). Stummschalten: `OPTION_SPARK_MUTE` 905,
+  `ChatActivity.sparkHideMuted` (3 Ladestellen), `SparkMutedActivity`. `ChatActionCell`: „🗑 gelöscht“.
+  `SparkBot.fetch/inbox/sendRaw` + `SparkBotInboxActivity` (getUpdates). Lokale Namen pro Konto (Migration).
+  Feste Vorgaben in `SparkConfig.get`: KEEP_OWN_DELETED=KEEP_DELETED, FORWARD_NO_SENDER=false, PHOTO_MANAGER/SELECT_NO_LIMIT=true.
+  Achtung: Python `open(p,'w')` vor dem Lesen leert die Datei – nie `open(p,'w').write(open(p).read())`.
+
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).

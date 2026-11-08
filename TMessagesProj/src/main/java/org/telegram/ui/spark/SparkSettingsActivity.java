@@ -103,6 +103,9 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_GHOST_OFFLINE = 83;
     private static final int ID_EXPORT = 84;
     private static final int ID_BACKUP = 85;
+    private static final int ID_MUTE_HIDE = 86;
+    private static final int ID_MUTE_LIST = 87;
+    private static final int ID_BOT_INBOX = 88;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -130,7 +133,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     }
 
     private boolean open(String key) {
-        return expanded.contains(key) && SparkConfig.getRaw(key);
+        return expanded.contains(key);
     }
 
     private void expand(String key) {
@@ -169,17 +172,11 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(subCheck(ID_CLONE_PHOTO, R.string.SparkClonePhoto, SparkConfig.CLONE_PHOTO));
             items.add(UItem.asButton(ID_PROFILE_LIBRARY, R.drawable.msg_contacts, getString(R.string.SparkProfileLibrary)));
         }
-        items.add(expandable(ID_PHOTO_MANAGER, R.string.SparkPhotoManagerToggle, SparkConfig.PHOTO_MANAGER, 1));
-        if (open(SparkConfig.PHOTO_MANAGER)) {
-            items.add(UItem.asButton(ID_PHOTO_MANAGER_OPEN, R.drawable.msg_photos, getString(R.string.SparkPhotoManager)));
-        }
+        items.add(UItem.asButton(ID_PHOTO_MANAGER_OPEN, R.drawable.msg_photos, "Profilbilder verwalten"));
         items.add(UItem.asShadow(getString(R.string.SparkProfileToolsInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderMessages)));
-        items.add(expandable(ID_KEEP_DELETED, R.string.SparkKeepDeletedToggle, SparkConfig.KEEP_DELETED, 1));
-        if (open(SparkConfig.KEEP_DELETED)) {
-            items.add(subCheck(ID_KEEP_OWN_DELETED, R.string.SparkKeepOwnDeletedToggle, SparkConfig.KEEP_OWN_DELETED));
-        }
+        items.add(check(ID_KEEP_DELETED, R.string.SparkKeepDeletedToggle, SparkConfig.KEEP_DELETED));
         items.add(check(ID_EDIT_HISTORY, R.string.SparkEditHistoryToggle, SparkConfig.EDIT_HISTORY));
         items.add(UItem.asShadow(getString(R.string.SparkMessagesInfo)));
 
@@ -187,11 +184,9 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_MSG_DETAILS, R.string.SparkMsgDetailsToggle, SparkConfig.MSG_DETAILS));
         items.add(check(ID_MSG_REPEAT, R.string.SparkMsgRepeatToggle, SparkConfig.MSG_REPEAT));
         items.add(check(ID_FORWARD_TIME, R.string.SparkForwardTimeToggle, SparkConfig.FORWARD_TIME));
-        items.add(check(ID_FORWARD_NO_SENDER, R.string.SparkForwardNoSenderToggle, SparkConfig.FORWARD_NO_SENDER));
         items.add(check(ID_FORWARD_COUNT, R.string.SparkForwardCountToggle, SparkConfig.FORWARD_COUNT));
         items.add(check(ID_JUMP_FIRST, R.string.SparkJumpFirstToggle, SparkConfig.JUMP_FIRST));
         items.add(check(ID_DELETE_OWN_ALL, R.string.SparkDeleteOwnToggle, SparkConfig.DELETE_OWN_ALL));
-        items.add(check(ID_SELECT_NO_LIMIT, R.string.SparkSelectNoLimitToggle, SparkConfig.SELECT_NO_LIMIT));
         items.add(check(ID_SELECT_RANGE, R.string.SparkSelectRangeToggle, SparkConfig.SELECT_RANGE));
         items.add(UItem.asShadow(getString(R.string.SparkMsgToolsInfo)));
 
@@ -206,10 +201,11 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asShadow(getString(R.string.SparkMediaInfo)));
 
         items.add(UItem.asHeader("Bot"));
-        items.add(expandable(ID_BOT_SEND, R.string.SparkBotSendToggle, SparkConfig.BOT_SEND, 1));
+        items.add(expandable(ID_BOT_SEND, R.string.SparkBotSendToggle, SparkConfig.BOT_SEND, 2));
         if (open(SparkConfig.BOT_SEND)) {
             String bn = org.telegram.messenger.spark.SparkBot.botName();
             items.add(UItem.asButton(ID_BOT_TOKEN, "      Bot-Token", android.text.TextUtils.isEmpty(org.telegram.messenger.spark.SparkBot.token()) ? "fehlt" : (bn != null ? bn : "gesetzt")));
+            items.add(UItem.asButton(ID_BOT_INBOX, "      Bot-Postfach"));
         }
         items.add(UItem.asShadow(getString(R.string.SparkBotInfo)));
 
@@ -224,12 +220,15 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader("Organisation"));
         items.add(UItem.asButton(ID_STATS, R.drawable.msg_stats, "Statistiken"));
-        items.add(UItem.asButton(ID_BACKUP, R.drawable.msg_download, "Sicherung & Konten übertragen"));
         items.add(expandable(ID_TEMPLATES, R.string.SparkTemplatesToggle, SparkConfig.TEMPLATES, 1));
         if (open(SparkConfig.TEMPLATES)) {
             items.add(UItem.asButton(ID_TEMPLATES_OPEN, R.drawable.msg_stories_caption, "Vorlagen verwalten"));
         }
-        items.add(check(ID_MUTE_PEOPLE, R.string.SparkMutePeopleToggle, SparkConfig.MUTE_PEOPLE));
+        items.add(expandable(ID_MUTE_PEOPLE, R.string.SparkMutePeopleToggle, SparkConfig.MUTE_PEOPLE, 2));
+        if (open(SparkConfig.MUTE_PEOPLE)) {
+            items.add(subCheck(ID_MUTE_HIDE, R.string.SparkMuteHide, SparkConfig.MUTE_HIDE));
+            items.add(UItem.asButton(ID_MUTE_LIST, "      Stummgeschaltete (" + org.telegram.messenger.spark.SparkPeople.allMuted(currentAccount).size() + ")"));
+        }
         items.add(check(ID_EXPORT, R.string.SparkExportToggle, SparkConfig.EXPORT));
         items.add(UItem.asShadow(getString(R.string.SparkOrgInfo)));
 
@@ -311,6 +310,7 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         // Konten: immer aktiv, nicht vom Hauptschalter betroffen
         items.add(UItem.asHeader(getString(R.string.SparkHeaderAccounts)));
+        items.add(UItem.asButton(ID_BACKUP, R.drawable.msg_download, "Sicherung & Konten übertragen"));
         items.add(UItem.asShadow(getString(R.string.SparkAccountsInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderUpdates)));
@@ -374,7 +374,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_INFO: toggle(SparkConfig.PROFILE_INFO); break;
             case ID_INFO_ROW: toggle(SparkConfig.PROFILE_INFO_ROW); break;
             case ID_PHOTO_DATE: toggle(SparkConfig.PHOTO_DATE); break;
-            case ID_KEEP_DELETED: expand(SparkConfig.KEEP_DELETED); break;
+            case ID_KEEP_DELETED: toggle(SparkConfig.KEEP_DELETED); break;
             case ID_KEEP_OWN_DELETED: toggle(SparkConfig.KEEP_OWN_DELETED); break;
             case ID_HIDE_PREMIUM: expand(SparkConfig.HIDE_PREMIUM); break;
             case ID_MSG_DETAILS: toggle(SparkConfig.MSG_DETAILS); break;
@@ -390,10 +390,13 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_COLLECTION: expand(SparkConfig.COLLECTION); break;
             case ID_COLLECTION_OPEN: presentFragment(new SparkCollectionActivity(0)); break;
             case ID_BOT_SEND: expand(SparkConfig.BOT_SEND); break;
+            case ID_BOT_INBOX: presentFragment(new SparkBotInboxActivity()); break;
             case ID_STATS: presentFragment(new SparkStatsActivity()); break;
             case ID_TEMPLATES: expand(SparkConfig.TEMPLATES); break;
             case ID_TEMPLATES_OPEN: presentFragment(new SparkTemplatesActivity()); break;
-            case ID_MUTE_PEOPLE: toggle(SparkConfig.MUTE_PEOPLE); break;
+            case ID_MUTE_PEOPLE: expand(SparkConfig.MUTE_PEOPLE); break;
+            case ID_MUTE_HIDE: toggle(SparkConfig.MUTE_HIDE); break;
+            case ID_MUTE_LIST: presentFragment(new SparkMutedActivity()); break;
             case ID_EXPORT: toggle(SparkConfig.EXPORT); break;
             case ID_BACKUP: presentFragment(new SparkBackupActivity()); break;
             case ID_GHOST: expand(SparkConfig.GHOST); break;
@@ -546,17 +549,21 @@ public class SparkSettingsActivity extends UniversalFragment {
     }
 
     private void downloadUpdate(SparkUpdater.Release release) {
-        final AlertDialog progress = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER);
+        final AlertDialog progress = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_LOADING);
+        progress.setMessage("Lade Update … 0 %");
         progress.setCanCancel(false);
         progress.show();
-        SparkUpdater.download(release, null, (file, error) -> {
-            progress.dismiss();
-            if (file == null) {
-                BulletinFactory.of(this).createErrorBulletin(LocaleController.formatString(R.string.SparkError, String.valueOf(error))).show();
-                return;
-            }
-            if (getParentActivity() != null) {
-                SparkUpdater.install(getParentActivity(), file);
+        SparkUpdater.download(release, p -> progress.setMessage("Lade Update … " + (int) (p * 100) + " %"), (file, error) -> {
+            try { progress.dismiss(); } catch (Throwable ignore) {}
+            if (getParentActivity() == null) return;
+            String problem = file == null ? "Download fehlgeschlagen: " + error : SparkUpdater.install(getParentActivity(), file);
+            if (problem != null) {
+                AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
+                b.setTitle(SparkUi.mark("Update"));
+                b.setMessage(problem + "\n\nAlternativ über GitHub herunterladen.");
+                b.setPositiveButton("GitHub öffnen", (d, w) -> Browser.openUrl(getParentActivity(), SparkUpdater.REPO_URL + "/releases"));
+                b.setNegativeButton(getString(R.string.Cancel), null);
+                showDialog(b.create());
             }
         });
     }

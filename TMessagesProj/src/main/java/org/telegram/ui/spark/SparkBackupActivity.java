@@ -120,8 +120,7 @@ public class SparkBackupActivity extends UniversalFragment {
                 fos.write(json.getBytes(StandardCharsets.UTF_8));
             }
             String name = "Sparkgram-Sicherung_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.GERMANY).format(new Date()) + ".json";
-            MediaController.saveFile(f.getAbsolutePath(), getParentActivity(), 2, name, "application/json", uri ->
-                BulletinFactory.of(this).createSimpleBulletin(R.raw.ic_download, "✦ Gespeichert: Downloads/" + name).show());
+            SparkUi.saveToDownloads(this, f, name, "application/json");
         } catch (Exception e) {
             FileLog.e(e);
             BulletinFactory.of(this).createErrorBulletin("Fehler: " + e.getMessage()).show();
