@@ -19,6 +19,16 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.16", "08.11.2026",
+            "Verlassene Gruppen bleiben jetzt auch nach Neustart/Neuladen der Chatliste erhalten",
+            "Gelöschte Privatchats bleiben lokal im Ordner „Verlassen“ (auf dem Server gelöscht); nochmal löschen = endgültig",
+            "Symbole: 🚪 verlassen, 🔨 entfernt, 🗑 gelöscht – in der Chatliste und in der Liste",
+            "Stummschalten pro Person: nur Benachrichtigungen aus oder zusätzlich Nachrichten einklappen",
+            "Chat- und Profil-Menü neu sortiert und gruppiert (mit Trennlinien); Sammlung, Chat-Sticker, Übersetzen, Löschen und Export auch im Profil",
+            "Lokal anheften auch beim Markieren von Chats in der Chatübersicht",
+            "Export: zusätzlich „In Gespeicherte“ ablegen",
+            "Download-Knopf nur noch animiert, während wirklich etwas lädt"
+        ),
         new Release("0.15", "08.11.2026",
             "Schlagwort-Benachrichtigung: zeigt klar Chat und Absender, antippen springt direkt zur Nachricht",
             "Update: bei GitHub-Störung (z. B. 503) automatische Wiederholung, sonst direkt zur GitHub-Seite der neuesten Version",

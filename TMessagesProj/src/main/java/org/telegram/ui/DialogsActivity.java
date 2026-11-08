@@ -712,6 +712,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private final static int add_to_folder = 109;
     private final static int remove_from_folder = 110;
     private final static int community_ungroup = 111;
+    private final static int spark_local_pin = 9240; // Sparkgram
 
     private final static int ARCHIVE_ITEM_STATE_PINNED = 0;
     private final static int ARCHIVE_ITEM_STATE_SHOWED = 1;
@@ -4013,6 +4014,20 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     hideActionMode(false);
                 } else if (id == pin || id == read || id == delete || id == clear || id == mute || id == archive || id == block || id == archive2 || id == pin2) {
                     performSelectedDialogsAction(selectedDialogs, id, true, false);
+                } else if (id == spark_local_pin) {
+                    // Sparkgram: markierte Chats lokal anheften bzw. loesen
+                    boolean anyUnpinned = false;
+                    for (long did : selectedDialogs) {
+                        if (!org.telegram.messenger.spark.SparkPins.isPinned(currentAccount, did)) anyUnpinned = true;
+                    }
+                    for (long did : selectedDialogs) {
+                        boolean pinned = org.telegram.messenger.spark.SparkPins.isPinned(currentAccount, did);
+                        if (anyUnpinned != pinned) org.telegram.messenger.spark.SparkPins.toggle(currentAccount, did);
+                    }
+                    getMessagesController().sortDialogs(null);
+                    getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
+                    BulletinFactory.of(DialogsActivity.this).createSimpleBulletin(R.raw.contact_check, anyUnpinned ? "✦ Lokal angeheftet" : "✦ Lokal gelöst").show();
+                    hideActionMode(true);
                 }
             }
         });
@@ -6748,6 +6763,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         actionMode.addView(new View(getContext()), LayoutHelper.createLinear(5, LayoutHelper.MATCH_PARENT));
         archiveItem = otherItem.addSubItem(archive, R.drawable.msg_archive, LocaleController.getString(R.string.Archive));
         pin2Item = otherItem.addSubItem(pin2, R.drawable.msg_pin, LocaleController.getString(R.string.DialogPin));
+        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LOCAL_PINS)) {
+            otherItem.addSubItem(spark_local_pin, R.drawable.msg_pin, org.telegram.ui.spark.SparkUi.mark("Lokal anheften / lösen")); // Sparkgram
+        }
         addToFolderItem = otherItem.addSubItem(add_to_folder, R.drawable.msg_addfolder, LocaleController.getString(R.string.FilterAddTo));
         removeFromFolderItem = otherItem.addSubItem(remove_from_folder, R.drawable.msg_removefolder, LocaleController.getString(R.string.FilterRemoveFrom));
         readItem = otherItem.addSubItem(read, R.drawable.msg_markread, LocaleController.getString(R.string.MarkAsRead));

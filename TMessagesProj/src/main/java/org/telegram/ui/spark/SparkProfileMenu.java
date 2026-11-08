@@ -65,7 +65,9 @@ public class SparkProfileMenu {
         if (menu == null) {
             return;
         }
-        addItems(fragment, (id, icon, text) -> menu.addSubItem(id, icon, text), userId, chatId, SparkConfig.get(SparkConfig.PROFILE_MENU_GROUPED));
+        addItems(fragment, (id, icon, text) -> {
+            if (id == GAP) menu.addColoredGap(); else menu.addSubItem(id, icon, text);
+        }, userId, chatId, SparkConfig.get(SparkConfig.PROFILE_MENU_GROUPED));
     }
 
     /** Drei-Punkte-Menue im Chat (falls in den Einstellungen aktiviert). */
@@ -73,7 +75,9 @@ public class SparkProfileMenu {
         if (menu == null || !SparkConfig.get(SparkConfig.CHAT_MENU)) {
             return;
         }
-        addItems(fragment, (id, icon, text) -> menu.lazilyAddSubItem(id, icon, text), userId, chatId, SparkConfig.get(SparkConfig.CHAT_MENU_GROUPED));
+        addItems(fragment, (id, icon, text) -> {
+            if (id == GAP) menu.lazilyAddColoredGap(); else menu.lazilyAddSubItem(id, icon, text);
+        }, userId, chatId, SparkConfig.get(SparkConfig.CHAT_MENU_GROUPED));
     }
 
     private static class Entry {
@@ -145,10 +149,22 @@ public class SparkProfileMenu {
                 list.add(new Entry(ID_AUTHORS, R.drawable.msg_edit, label(getString(R.string.SparkKnownAuthors), marked)));
             }
         }
-        // nur im geoeffneten Chat
-        if (fragment instanceof org.telegram.ui.ChatActivity) {
+        // auch im Profil verfuegbar
+        if (!self) {
             if (SparkConfig.get(SparkConfig.COLLECTION)) {
                 list.add(new Entry(ID_COLLECTION, R.drawable.msg_saved, label("Sammlung", marked)));
+            }
+            if (SparkConfig.get(SparkConfig.STICKER_TOOLS)) {
+                list.add(new Entry(ID_CHAT_STICKERS, R.drawable.msg_sticker, label("Sticker dieses Chats", marked)));
+            }
+            if (SparkConfig.get(SparkConfig.TRANSLATE_FREE)) {
+                list.add(new Entry(ID_TRANSLATE_CHAT, R.drawable.msg_translate, label("Chat übersetzen an/aus", marked)));
+            }
+            if (SparkConfig.get(SparkConfig.DELETE_OWN_ALL)) {
+                list.add(new Entry(ID_DELETE_OWN, R.drawable.msg_delete, label(getString(R.string.SparkDeleteOwnAll), marked)));
+            }
+            if (SparkConfig.get(SparkConfig.EXPORT)) {
+                list.add(new Entry(ID_EXPORT, R.drawable.msg_download, label("Chat exportieren (PDF/HTML)", marked)));
             }
             if (SparkConfig.get(SparkConfig.LOCAL_PINS)) {
                 boolean lp = org.telegram.messenger.spark.SparkPins.isPinned(account, userId != 0 ? userId : -chatId);
@@ -157,20 +173,14 @@ public class SparkProfileMenu {
             if (SparkConfig.ghost(SparkConfig.GHOST_READ)) {
                 list.add(new Entry(ID_MARK_READ, R.drawable.msg_markread, label("Jetzt als gelesen melden", marked)));
             }
-            if (SparkConfig.get(SparkConfig.EXPORT)) {
-                list.add(new Entry(ID_EXPORT, R.drawable.msg_download, label("Chat exportieren (PDF/HTML)", marked)));
-            }
+        }
+        // nur im geoeffneten Chat (brauchen das Eingabefeld bzw. den Verlauf)
+        if (fragment instanceof org.telegram.ui.ChatActivity) {
             if (SparkConfig.get(SparkConfig.TEMPLATES)) {
                 list.add(new Entry(ID_TEMPLATES, R.drawable.msg_stories_caption, label("Textvorlagen", marked)));
             }
             if (SparkConfig.get(SparkConfig.BOT_SEND) && !android.text.TextUtils.isEmpty(org.telegram.messenger.spark.SparkBot.token())) {
                 list.add(new Entry(ID_BOT_SEND, R.drawable.msg_bot, label("Über Bot senden", marked)));
-            }
-            if (SparkConfig.get(SparkConfig.STICKER_TOOLS)) {
-                list.add(new Entry(ID_CHAT_STICKERS, R.drawable.msg_sticker, label("Sticker dieses Chats", marked)));
-            }
-            if (SparkConfig.get(SparkConfig.TRANSLATE_FREE)) {
-                list.add(new Entry(ID_TRANSLATE_CHAT, R.drawable.msg_translate, label("Chat übersetzen an/aus", marked)));
             }
             if (SparkConfig.get(SparkConfig.TRANSLATE_OWN)) {
                 list.add(new Entry(ID_TRANSLATE_INPUT, R.drawable.msg_translate, label(getString(R.string.SparkTranslateInput), marked)));
@@ -178,12 +188,36 @@ public class SparkProfileMenu {
             if (SparkConfig.get(SparkConfig.JUMP_FIRST)) {
                 list.add(new Entry(ID_JUMP_FIRST, R.drawable.msg_go_up, label(getString(R.string.SparkJumpFirst), marked)));
             }
-            if (SparkConfig.get(SparkConfig.DELETE_OWN_ALL)) {
-                list.add(new Entry(ID_DELETE_OWN, R.drawable.msg_delete, label(getString(R.string.SparkDeleteOwnAll), marked)));
-            }
         }
+        // Reihenfolge nach Gruppen (Wunsch Spark633), nicht genannte am Ende
+        java.util.Collections.sort(list, (a, b) -> Integer.compare(rank(a.id), rank(b.id)));
         return list;
     }
+
+    // Gruppen: Infos | Persönliches & Medien | Übersetzen | Löschen & Export | Rest
+    private static final int[][] ORDER = {
+        {ID_COPY_ID, ID_INFO, ID_ADMINS, ID_ACTIVE, ID_TIMEZONE, ID_ONLINE_LOG, ID_NAME_HISTORY},
+        {ID_NOTE, ID_COLLECTION, ID_TEMPLATES, ID_CHAT_STICKERS, ID_BOT_SEND},
+        {ID_TRANSLATE_CHAT, ID_TRANSLATE_INPUT},
+        {ID_DELETE_OWN, ID_EXPORT},
+    };
+
+    private static int rank(int id) {
+        int r = 0;
+        for (int g = 0; g < ORDER.length; g++) {
+            for (int i = 0; i < ORDER[g].length; i++) {
+                if (ORDER[g][i] == id) return g * 100 + i;
+            }
+        }
+        return 1000 + id; // Rest
+    }
+
+    private static int groupOf(int id) {
+        return rank(id) / 100;
+    }
+
+    /** Pseudo-ID fuer eine Trennlinie im Menue. */
+    public static final int GAP = -12345;
 
     private static CharSequence label(String text, boolean marked) {
         return marked ? SparkUi.mark(text) : text;
@@ -196,7 +230,13 @@ public class SparkProfileMenu {
             }
             return;
         }
+        int lastGroup = -1;
         for (Entry e : entries(fragment, userId, chatId, true)) {
+            int g = groupOf(e.id);
+            if (lastGroup >= 0 && g != lastGroup) {
+                menu.add(GAP, 0, null);
+            }
+            lastGroup = g;
             menu.add(e.id, e.icon, e.text);
         }
     }

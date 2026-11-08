@@ -180,7 +180,23 @@ public class SparkExport {
                     String name = "Chat_" + title.replaceAll("[^A-Za-z0-9ÄÖÜäöüß_-]+", "_") + "_" + new SimpleDateFormat("yyyy-MM-dd", Locale.GERMANY).format(new Date()) + (pdf ? ".pdf" : ".html");
                     SparkUi.saveToDownloads(file, name, pdf ? "application/pdf" : "text/html", path -> {
                         if (path != null) {
-                            BulletinFactory.of(fragment).createSimpleBulletin(R.raw.ic_download, "✦ " + list.size() + " Nachrichten exportiert: " + path).show();
+                            // zusaetzlich in "Gespeicherte Nachrichten" ablegen, damit die Datei auch in Telegram liegt
+                            final File copy = new File(ApplicationLoader.applicationContext.getCacheDir(), name);
+                            try {
+                                java.nio.channels.FileChannel src = new java.io.FileInputStream(file).getChannel();
+                                java.nio.channels.FileChannel dst = new java.io.FileOutputStream(copy).getChannel();
+                                dst.transferFrom(src, 0, src.size());
+                                src.close();
+                                dst.close();
+                            } catch (Exception e) {
+                                FileLog.e(e);
+                            }
+                            BulletinFactory.of(fragment).createSimpleBulletin(R.raw.ic_download, "✦ " + list.size() + " Nachrichten exportiert: " + path, "In Gespeicherte", () -> {
+                                long self = org.telegram.messenger.UserConfig.getInstance(account).getClientUserId();
+                                org.telegram.messenger.SendMessagesHelper.prepareSendingDocument(org.telegram.messenger.AccountInstance.getInstance(account), copy.getAbsolutePath(), copy.getAbsolutePath(), null, null,
+                                    pdf ? "application/pdf" : "text/html", self, null, null, null, null, null, true, 0, null, null, false);
+                                BulletinFactory.of(fragment).createSimpleBulletin(R.raw.saved_messages, "✦ In „Gespeicherte Nachrichten“ abgelegt").show();
+                            }).show();
                         } else {
                             BulletinFactory.of(fragment).createErrorBulletin("Speichern fehlgeschlagen").show();
                         }
