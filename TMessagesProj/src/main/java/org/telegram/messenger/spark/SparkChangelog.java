@@ -21,7 +21,7 @@ public class SparkChangelog {
     public static final Release[] RELEASES = {
         new Release("0.19", "08.11.2026",
             "Verlassene Gruppe wird nach dem Verlassen sofort rot angezeigt; kein „Privater Kanal“-Fenster mehr beim Öffnen",
-            "Sparkgram-Menü: Zurück-Pfeil oben links neben dem Namen; „Löschen & Export“ ganz unten",
+            "Sparkgram-Menü: Zurück-Pfeil oben links neben dem Namen; „Admin …“ direkt unter „Infos …“; „Löschen & Export“ ganz unten",
             "Duplikate: wählbar, ob beim Aufräumen die älteste oder die neueste Nachricht bleibt"
         ),
         new Release("0.18", "08.11.2026",

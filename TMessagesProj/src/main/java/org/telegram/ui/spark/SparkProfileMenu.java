@@ -236,7 +236,7 @@ public class SparkProfileMenu {
         int r = 0;
         for (int g = 0; g < ORDER.length; g++) {
             for (int i = 0; i < ORDER[g].length; i++) {
-                if (ORDER[g][i] == id) return (g == 3 ? 5000 : g * 100) + i; // "Löschen & Export" ganz unten
+                if (ORDER[g][i] == id) return (g == 3 ? 5000 : g == 4 ? 50 : g * 100) + i; // Admin direkt nach Infos, "Löschen & Export" ganz unten
             }
         }
         return 1000 + id; // Rest
