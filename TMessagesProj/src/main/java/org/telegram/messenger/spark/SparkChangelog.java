@@ -32,6 +32,9 @@ public class SparkChangelog {
             "Ausgeblendete Nachrichten (stummgeschaltete Personen) wie bei Discord: „🔕 Ausgeblendete Nachricht von … · antippen“ zeigt sie an",
             "QR-Code aus einem Screenshot (Galerie-Knopf) meldet jetzt auch Web/Desktop an",
             "„Weiterleiten ohne Absender“ wieder als Schalter (standardmäßig an)",
+            "Doppeltipp auf eine Nachricht wählbar: Reaktion, Antworten, Kopieren, Wiederholen oder Lesezeichen",
+            "Lesezeichen mit Schlagwörtern: Nachricht antippen → „✦ Lesezeichen“, Liste mit Filter, antippen springt zur Nachricht",
+            "„Alle Nachrichten dieser Person“ im Nachrichten-Menü in Gruppen",
             "Bot-Postfach: Nachrichten an deinen Bot ansehen und als Bot antworten",
             "Lokale Namen gelten jetzt pro Konto",
             "Einstellungen aufgeräumt: kürzere Texte, Unterpunkte auch bei ausgeschaltetem Punkt aufklappbar, Sicherung unter „Konten“"

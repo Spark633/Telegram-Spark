@@ -106,6 +106,10 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_MUTE_HIDE = 86;
     private static final int ID_MUTE_LIST = 87;
     private static final int ID_BOT_INBOX = 88;
+    private static final int ID_DOUBLE_TAP = 89;
+    private static final int ID_BOOKMARKS = 90;
+    private static final int ID_BOOKMARKS_OPEN = 91;
+    private static final int ID_USER_MESSAGES = 92;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -189,6 +193,8 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_JUMP_FIRST, R.string.SparkJumpFirstToggle, SparkConfig.JUMP_FIRST));
         items.add(check(ID_DELETE_OWN_ALL, R.string.SparkDeleteOwnToggle, SparkConfig.DELETE_OWN_ALL));
         items.add(check(ID_SELECT_RANGE, R.string.SparkSelectRangeToggle, SparkConfig.SELECT_RANGE));
+        items.add(check(ID_USER_MESSAGES, R.string.SparkUserMessagesToggle, SparkConfig.USER_MESSAGES));
+        items.add(UItem.asButton(ID_DOUBLE_TAP, SparkUi.mark("Doppeltipp"), SparkConfig.DOUBLE_TAP_NAMES[Math.max(0, Math.min(SparkConfig.DOUBLE_TAP_NAMES.length - 1, SparkConfig.prefs().getInt("doubleTap", 0)))]));
         items.add(UItem.asShadow(getString(R.string.SparkMsgToolsInfo)));
 
         items.add(UItem.asHeader("Medien"));
@@ -221,6 +227,10 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader("Organisation"));
         items.add(UItem.asButton(ID_STATS, R.drawable.msg_stats, "Statistiken"));
+        items.add(expandable(ID_BOOKMARKS, R.string.SparkBookmarksToggle, SparkConfig.BOOKMARKS, 1));
+        if (open(SparkConfig.BOOKMARKS)) {
+            items.add(UItem.asButton(ID_BOOKMARKS_OPEN, "      Lesezeichen öffnen"));
+        }
         items.add(expandable(ID_TEMPLATES, R.string.SparkTemplatesToggle, SparkConfig.TEMPLATES, 1));
         if (open(SparkConfig.TEMPLATES)) {
             items.add(UItem.asButton(ID_TEMPLATES_OPEN, R.drawable.msg_stories_caption, "Vorlagen verwalten"));
@@ -392,6 +402,19 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_COLLECTION_OPEN: presentFragment(new SparkCollectionActivity(0)); break;
             case ID_BOT_SEND: expand(SparkConfig.BOT_SEND); break;
             case ID_BOT_INBOX: presentFragment(new SparkBotInboxActivity()); break;
+            case ID_USER_MESSAGES: toggle(SparkConfig.USER_MESSAGES); break;
+            case ID_BOOKMARKS: expand(SparkConfig.BOOKMARKS); break;
+            case ID_BOOKMARKS_OPEN: presentFragment(new SparkBookmarksActivity()); break;
+            case ID_DOUBLE_TAP: {
+                AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
+                b.setTitle(SparkUi.mark("Doppeltipp auf eine Nachricht"));
+                b.setItems(SparkConfig.DOUBLE_TAP_NAMES, (d, w) -> {
+                    SparkConfig.setDoubleTap(w);
+                    listView.adapter.update(true);
+                });
+                showDialog(b.create());
+                break;
+            }
             case ID_STATS: presentFragment(new SparkStatsActivity()); break;
             case ID_TEMPLATES: expand(SparkConfig.TEMPLATES); break;
             case ID_TEMPLATES_OPEN: presentFragment(new SparkTemplatesActivity()); break;

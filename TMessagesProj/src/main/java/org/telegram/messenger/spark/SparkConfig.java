@@ -97,6 +97,20 @@ public class SparkConfig {
     public static final String TEMPLATES = "templates";
     // Nachrichten stummgeschalteter Personen im Chat ausblenden
     public static final String MUTE_HIDE = "muteHide";
+    // Lesezeichen mit Schlagwoertern, Nachrichten einer Person
+    public static final String BOOKMARKS = "bookmarks";
+    public static final String USER_MESSAGES = "userMessages";
+
+    // Doppeltipp auf eine Nachricht: 0 = Telegram (Reaktion), 1 = Antworten, 2 = Kopieren, 3 = Wiederholen, 4 = Lesezeichen
+    public static final String[] DOUBLE_TAP_NAMES = {"Reaktion (Telegram)", "Antworten", "Kopieren", "Wiederholen", "Lesezeichen"};
+
+    public static int doubleTap() {
+        return get(MASTER) ? prefs().getInt("doubleTap", 0) : 0;
+    }
+
+    public static void setDoubleTap(int action) {
+        prefs().edit().putInt("doubleTap", action).apply();
+    }
     // Etappe 8: Ghost-Modus (Oberschalter + einzelne Teile)
     public static final String GHOST = "ghost";
     public static final String GHOST_READ = "ghostRead";
@@ -240,6 +254,8 @@ public class SparkConfig {
             case BOT_SEND:
             case MUTE_PEOPLE:
             case FORWARD_NO_SENDER:
+            case BOOKMARKS:
+            case USER_MESSAGES:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:

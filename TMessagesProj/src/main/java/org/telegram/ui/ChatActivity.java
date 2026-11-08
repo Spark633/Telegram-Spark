@@ -1270,6 +1270,8 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_SPARK_REPEAT = 903; // Sparkgram
     public final static int OPTION_SPARK_MEDIA = 904; // Sparkgram
     public final static int OPTION_SPARK_MUTE = 905; // Sparkgram
+    public final static int OPTION_SPARK_BOOKMARK = 906; // Sparkgram
+    public final static int OPTION_SPARK_USER_MSGS = 907; // Sparkgram
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -1955,6 +1957,11 @@ public class ChatActivity extends BaseFragment implements
         @Override
         public boolean hasDoubleTap(View view, int position) {
             if (isQuickRepliesOrWelcomeMessagesMode()) return false;
+            // Sparkgram: eigene Doppeltipp-Aktion
+            if (org.telegram.messenger.spark.SparkConfig.doubleTap() != 0) {
+                MessageObject mo = view instanceof ChatMessageCell ? ((ChatMessageCell) view).getPrimaryMessageObject() : null;
+                return mo != null && mo.getId() > 0 && !mo.isSponsored() && !actionBar.isActionModeShowed() && !isInScheduleMode();
+            }
             String reactionStringSetting = getMediaDataController().getDoubleTapReaction();
             TLRPC.TL_availableReaction reaction = getMediaDataController().getReactionsMap().get(reactionStringSetting);
             if (reaction == null && (reactionStringSetting == null || !reactionStringSetting.startsWith("animated_"))) {
@@ -1981,6 +1988,13 @@ public class ChatActivity extends BaseFragment implements
         @Override
         public void onDoubleTap(View view, int position, float x, float y) {
             if (getParentActivity() == null || isSecretChat() || isInScheduleMode() || isInPreviewMode() || isQuickRepliesOrWelcomeMessagesMode()) {
+                return;
+            }
+            int sparkAction = org.telegram.messenger.spark.SparkConfig.doubleTap();
+            if (sparkAction != 0) {
+                if (view instanceof ChatMessageCell && ((ChatMessageCell) view).getPrimaryMessageObject() != null) {
+                    sparkDoubleTap(((ChatMessageCell) view).getPrimaryMessageObject(), sparkAction);
+                }
                 return;
             }
             MessageObject messageObject;
@@ -19349,6 +19363,44 @@ public class ChatActivity extends BaseFragment implements
         return false;
     }
 
+    /** Sparkgram: Lesezeichen anlegen bzw. Schlagwoerter aendern. */
+    private void sparkBookmark(MessageObject mo) {
+        if (mo == null) return;
+        final MessageObject target = mo;
+        org.telegram.messenger.spark.SparkBookmarks.Item old = org.telegram.messenger.spark.SparkBookmarks.find(currentAccount, mo.getDialogId(), mo.getId());
+        org.telegram.ui.spark.SparkBookmarksActivity.editTags(this, old != null ? old.tags : new ArrayList<>(), tags -> {
+            org.telegram.messenger.spark.SparkBookmarks.put(currentAccount, target, tags);
+            BulletinFactory.of(this).createSimpleBulletin(R.raw.saved_messages, "✦ Lesezeichen gespeichert", "Anzeigen", () -> presentFragment(new org.telegram.ui.spark.SparkBookmarksActivity())).show();
+        });
+    }
+
+    /** Sparkgram: eigene Doppeltipp-Aktion (statt Reaktion). */
+    private void sparkDoubleTap(MessageObject mo, int action) {
+        switch (action) {
+            case 1:
+                showFieldPanelForReply(mo);
+                if (chatActivityEnterView != null) chatActivityEnterView.openKeyboard();
+                break;
+            case 2: {
+                CharSequence t = mo.messageOwner != null && !TextUtils.isEmpty(mo.messageOwner.message) ? mo.messageOwner.message : mo.caption;
+                if (!TextUtils.isEmpty(t)) {
+                    AndroidUtilities.addToClipboard(t);
+                    BulletinFactory.of(this).createCopyBulletin(getString(R.string.TextCopied)).show();
+                }
+                break;
+            }
+            case 3: {
+                ArrayList<MessageObject> list = new ArrayList<>();
+                list.add(mo);
+                getSendMessagesHelper().sendMessage(list, getDialogId(), true, false, true, 0, 0);
+                break;
+            }
+            case 4:
+                sparkBookmark(mo);
+                break;
+        }
+    }
+
     /** Sparkgram: eingeklappte Nachricht wieder anzeigen. */
     private void sparkReveal(MessageObject collapsed) {
         sparkRevealed.add(collapsed.getId());
@@ -31409,6 +31461,17 @@ public class ChatActivity extends BaseFragment implements
                     options.add(OPTION_SPARK_MUTE);
                     icons.add(m ? R.drawable.msg_unmute : R.drawable.msg_mute);
                 }
+                if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.BOOKMARKS)) {
+                    boolean has = org.telegram.messenger.spark.SparkBookmarks.find(currentAccount, selectedObject.getDialogId(), selectedObject.getId()) != null;
+                    items.add(org.telegram.ui.spark.SparkUi.mark(has ? "Lesezeichen bearbeiten" : "Lesezeichen"));
+                    options.add(OPTION_SPARK_BOOKMARK);
+                    icons.add(R.drawable.msg_fave);
+                }
+                if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.USER_MESSAGES) && dialog_id < 0 && selectedObject.getFromChatId() > 0 && searchItem != null) {
+                    items.add(org.telegram.ui.spark.SparkUi.mark("Alle Nachrichten dieser Person"));
+                    options.add(OPTION_SPARK_USER_MSGS);
+                    icons.add(R.drawable.msg_search);
+                }
                 if (org.telegram.ui.spark.SparkMedia.hasActions(selectedObject)) {
                     items.add(org.telegram.ui.spark.SparkUi.mark("Medien …"));
                     options.add(OPTION_SPARK_MEDIA);
@@ -33753,6 +33816,21 @@ public class ChatActivity extends BaseFragment implements
         switch (option) {
             case OPTION_SPARK_HISTORY: {
                 org.telegram.ui.spark.SparkUi.showEditHistory(this, selectedObject);
+                break;
+            }
+            case OPTION_SPARK_BOOKMARK: {
+                sparkBookmark(selectedObject);
+                break;
+            }
+            case OPTION_SPARK_USER_MSGS: {
+                TLRPC.User su = getMessagesController().getUser(selectedObject.getFromChatId());
+                if (su != null) {
+                    openSearchWithText("");
+                    if (searchUserButton != null) {
+                        searchUserButton.callOnClick();
+                    }
+                    searchUserMessages(su, null);
+                }
                 break;
             }
             case OPTION_SPARK_MUTE: {

@@ -152,6 +152,9 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   Einklappen statt Ausblenden: `ChatActivity.sparkHideMuted` macht die Nachricht zur Service-Zeile
   (`type=TYPE_DATE, contentType=1`, `MessageObject.sparkCollapsed`), Tippen → `sparkReveal` (replaceMessageObjects).
   QR aus Galerie: `CameraScanActivity` ruft jetzt wie der Kamera-Weg `processQr` (sonst wurde Login nie angenommen).
+  Doppeltipp: `SparkConfig.doubleTap()` (global "doubleTap"), Eingriff in `hasDoubleTap`/`onDoubleTap`, `ChatActivity.sparkDoubleTap`.
+  Lesezeichen: `SparkBookmarks` (Prefs pro Konto, JSON), `SparkBookmarksActivity`, Menü 906; Personensuche: Menü 907
+  (`openSearchWithText("")` + `searchUserButton` + `searchUserMessages`, wie `checkInstantSearch`).
   Achtung: Python `open(p,'w')` vor dem Lesen leert die Datei – nie `open(p,'w').write(open(p).read())`.
 
 ## Roadmap (offen)
@@ -160,10 +163,10 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
 - **Etappe 4 Rest:** automatisch übersetzen.
 - **Etappe 7 Rest:** Ordner „Gelöschte Chats“, Ungelesen pro Konto, mehr Anheften (lokal),
-  In-App-Benachrichtigungen, Bookmarks mit Schlagwörtern,
+  In-App-Benachrichtigungen,
   Duplikate in „Gespeichertes“, RP: Persona pro Chat, Zitieren mit Formatierung,
-  Nachrichtenverlauf einer Person, Auto-Ordner, Sortierung. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
-- **Etappe 8 Rest:** Menüs aufräumen, Doppeltipp-Aktion,
+  Auto-Ordner, Sortierung. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
+- **Etappe 8 Rest:** Menüs aufräumen,
   App-Sperre, versteckte Konten, Zwischenablage-Schutz, Proxy-Verwaltung (+ Anleitung).
 - Nebenher: eigenes Firebase für Push, mehr Konten ohne Start-Nachteil, Übernahme nach `main`.
 - Gestrichen: Sprachnachricht→Text, „Nachricht zeichnen“, Gerätetyp anderer, „zuletzt online“ erzwingen,
