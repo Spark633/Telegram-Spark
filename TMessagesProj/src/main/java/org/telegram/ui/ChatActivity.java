@@ -1883,6 +1883,10 @@ public class ChatActivity extends BaseFragment implements
                 return;
             }
             wasManualScroll = true;
+            if (view instanceof ChatActionCell && ((ChatActionCell) view).getMessageObject() != null && ((ChatActionCell) view).getMessageObject().sparkCollapsed) {
+                sparkReveal(((ChatActionCell) view).getMessageObject()); // Sparkgram
+                return;
+            }
             if (view instanceof ChatActionCell) {
                 MessageObject message = ((ChatActionCell) view).getMessageObject();
                 if (message != null && message.messageOwner.action instanceof TLRPC.TL_messageActionWalletTonConnectRequest) {
@@ -19318,12 +19322,40 @@ public class ChatActivity extends BaseFragment implements
         }
     }
 
-    /** Sparkgram: Nachrichten einzeln stummgeschalteter Personen in Gruppen ausblenden. */
+    private final HashSet<Integer> sparkRevealed = new HashSet<>();
+
+    /**
+     * Sparkgram: Nachrichten einzeln stummgeschalteter Personen in Gruppen einklappen (wie bei Discord):
+     * statt der Nachricht erscheint eine Zeile "Ausgeblendete Nachricht von … · antippen".
+     * Liefert true nur, wenn die Nachricht ganz uebersprungen werden soll (Alben).
+     */
     private boolean sparkHideMuted(MessageObject obj) {
-        return obj != null && dialog_id < 0 && !obj.isOutOwner()
-            && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_PEOPLE)
-            && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_HIDE)
-            && org.telegram.messenger.spark.SparkPeople.isMuted(currentAccount, obj.getFromChatId());
+        if (obj == null || dialog_id >= 0 || obj.isOutOwner() || obj.messageOwner == null || obj.messageOwner.action != null
+                || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_PEOPLE)
+                || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_HIDE)
+                || !org.telegram.messenger.spark.SparkPeople.isMuted(currentAccount, obj.getFromChatId())
+                || sparkRevealed.contains(obj.getId())) {
+            return false;
+        }
+        if (obj.getGroupId() != 0) {
+            return true; // Alben ganz ausblenden (eingeklappt wuerde die Gruppierung stoeren)
+        }
+        TLRPC.User u = getMessagesController().getUser(obj.getFromChatId());
+        String name = u != null ? UserObject.getUserName(u) : "stummgeschalteter Person";
+        obj.sparkCollapsed = true;
+        obj.type = MessageObject.TYPE_DATE;
+        obj.contentType = 1;
+        obj.messageText = "🔕 Ausgeblendete Nachricht von " + name + " · antippen";
+        return false;
+    }
+
+    /** Sparkgram: eingeklappte Nachricht wieder anzeigen. */
+    private void sparkReveal(MessageObject collapsed) {
+        sparkRevealed.add(collapsed.getId());
+        MessageObject fresh = new MessageObject(currentAccount, collapsed.messageOwner, true, true);
+        ArrayList<MessageObject> list = new ArrayList<>();
+        list.add(fresh);
+        replaceMessageObjects(list, 0, false);
     }
 
     private boolean sparkIsSelected(MessageObject mo) {

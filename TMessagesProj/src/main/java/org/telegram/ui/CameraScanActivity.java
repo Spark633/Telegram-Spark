@@ -709,10 +709,22 @@ public class CameraScanActivity extends BaseFragment {
                                         Bitmap bitmap = ImageLoader.loadBitmap(info.path, null, screenSize.x, screenSize.y, true);
                                         QrResult res = tryReadQr(null, null, 0, 0, 0, bitmap);
                                         if (res != null) {
-                                            if (delegate != null) {
-                                                delegate.didFindQr(res.text);
+                                            // Sparkgram: wie beim Kamera-Weg erst processQr (z. B. Anmeldung annehmen)
+                                            final String found = res.text;
+                                            boolean loading = delegate != null && delegate.processQr(found, () -> AndroidUtilities.runOnUIThread(() -> {
+                                                if (delegate != null) {
+                                                    delegate.didFindQr(found);
+                                                }
+                                                finishFragment();
+                                            }));
+                                            if (!loading) {
+                                                if (delegate != null) {
+                                                    delegate.didFindQr(found);
+                                                }
+                                                removeSelfFromStack();
                                             }
-                                            removeSelfFromStack();
+                                        } else {
+                                            org.telegram.ui.Components.BulletinFactory.global().createErrorBulletin("Kein QR-Code im Bild gefunden").show();
                                         }
                                     }
                                 }

@@ -184,6 +184,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_MSG_DETAILS, R.string.SparkMsgDetailsToggle, SparkConfig.MSG_DETAILS));
         items.add(check(ID_MSG_REPEAT, R.string.SparkMsgRepeatToggle, SparkConfig.MSG_REPEAT));
         items.add(check(ID_FORWARD_TIME, R.string.SparkForwardTimeToggle, SparkConfig.FORWARD_TIME));
+        items.add(check(ID_FORWARD_NO_SENDER, R.string.SparkForwardNoSenderToggle, SparkConfig.FORWARD_NO_SENDER));
         items.add(check(ID_FORWARD_COUNT, R.string.SparkForwardCountToggle, SparkConfig.FORWARD_COUNT));
         items.add(check(ID_JUMP_FIRST, R.string.SparkJumpFirstToggle, SparkConfig.JUMP_FIRST));
         items.add(check(ID_DELETE_OWN_ALL, R.string.SparkDeleteOwnToggle, SparkConfig.DELETE_OWN_ALL));

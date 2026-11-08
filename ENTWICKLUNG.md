@@ -149,6 +149,9 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   `ChatActivity.sparkHideMuted` (3 Ladestellen), `SparkMutedActivity`. `ChatActionCell`: „🗑 gelöscht“.
   `SparkBot.fetch/inbox/sendRaw` + `SparkBotInboxActivity` (getUpdates). Lokale Namen pro Konto (Migration).
   Feste Vorgaben in `SparkConfig.get`: KEEP_OWN_DELETED=KEEP_DELETED, FORWARD_NO_SENDER=false, PHOTO_MANAGER/SELECT_NO_LIMIT=true.
+  Einklappen statt Ausblenden: `ChatActivity.sparkHideMuted` macht die Nachricht zur Service-Zeile
+  (`type=TYPE_DATE, contentType=1`, `MessageObject.sparkCollapsed`), Tippen → `sparkReveal` (replaceMessageObjects).
+  QR aus Galerie: `CameraScanActivity` ruft jetzt wie der Kamera-Weg `processQr` (sonst wurde Login nie angenommen).
   Achtung: Python `open(p,'w')` vor dem Lesen leert die Datei – nie `open(p,'w').write(open(p).read())`.
 
 ## Roadmap (offen)

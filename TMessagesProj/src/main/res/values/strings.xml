@@ -11758,7 +11758,7 @@
     <string name="SparkLocalName">Name nur für mich</string>
     <string name="SparkTimezonesToggle">Ortszeit von Kontakten</string>
     <string name="SparkTimezone">Zeitzone festlegen</string>
-    <string name="SparkForwardNoSenderToggle">Weiterleiten standardmäßig ohne Absender</string>
+    <string name="SparkForwardNoSenderToggle">Weiterleiten ohne Absender</string>
     <string name="SparkForwardCountToggle">Weiterleitungs-Zähler</string>
     <string name="SparkAdminsList">Admins anzeigen</string>
     <string name="SparkActiveMembers">Mitglieder &amp; Aktivität</string>

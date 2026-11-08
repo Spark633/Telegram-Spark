@@ -28,7 +28,10 @@ public class SparkChangelog {
             "Zur ersten Nachricht: springt nach oben und lässt sie kurz aufblinken",
             "Mitglieder & Aktivität: „Weiter durchsuchen“ fest oben angeheftet",
             "Person stummschalten auch über das Nachrichten-Menü; Liste der Stummgeschalteten; Nachrichten in Gruppen ausblenden",
-            "Gelöschte Beitrittsmeldungen und andere Service-Nachrichten zeigen „🗑 gelöscht“",
+            "Gelöschte Beitrittsmeldungen und andere Service-Nachrichten werden rot angezeigt",
+            "Ausgeblendete Nachrichten (stummgeschaltete Personen) wie bei Discord: „🔕 Ausgeblendete Nachricht von … · antippen“ zeigt sie an",
+            "QR-Code aus einem Screenshot (Galerie-Knopf) meldet jetzt auch Web/Desktop an",
+            "„Weiterleiten ohne Absender“ wieder als Schalter (standardmäßig an)",
             "Bot-Postfach: Nachrichten an deinen Bot ansehen und als Bot antworten",
             "Lokale Namen gelten jetzt pro Konto",
             "Einstellungen aufgeräumt: kürzere Texte, Unterpunkte auch bei ausgeschaltetem Punkt aufklappbar, Sicherung unter „Konten“"

@@ -174,7 +174,6 @@ public class SparkConfig {
         }
         // feste Vorgaben ohne eigenen Schalter
         if (KEEP_OWN_DELETED.equals(key)) return getRaw(KEEP_DELETED);
-        if (FORWARD_NO_SENDER.equals(key)) return false;
         if (PHOTO_MANAGER.equals(key) || SELECT_NO_LIMIT.equals(key)) return true;
         return getRaw(key);
     }
@@ -240,6 +239,7 @@ public class SparkConfig {
             case VOICE_TOOLS:
             case BOT_SEND:
             case MUTE_PEOPLE:
+            case FORWARD_NO_SENDER:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:
