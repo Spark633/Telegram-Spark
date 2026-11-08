@@ -2390,6 +2390,13 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             if (nameString instanceof String) {
                 nameString = ((String) nameString).replace('\n', ' ');
             }
+            // Sparkgram: verlassene/entfernte Gruppen rot mit 🚪 kennzeichnen
+            if (chat != null && nameString != null && ChatObject.isNotInChat(chat)
+                    && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_CHATS)) {
+                android.text.SpannableStringBuilder sparkName = new android.text.SpannableStringBuilder("🚪 ").append(nameString);
+                sparkName.setSpan(new android.text.style.ForegroundColorSpan(0xffe53935), 0, sparkName.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                nameString = sparkName;
+            }
             CharSequence nameStringFinal = nameString;
             if (nameLayoutEllipsizeByGradient) {
                 nameLayoutFits = nameStringFinal.length() == TextUtils.ellipsize(nameStringFinal, Theme.dialogs_namePaint[paintIndex], ellipsizeWidth, TextUtils.TruncateAt.END).length();

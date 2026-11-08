@@ -165,6 +165,8 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   Lokal anheften: `SparkPins` + `dialogComparator` (nach Server-Pins), Chat-Menü 924. Gelöschte Chats:
   `SparkDeletedChats.remember` in `deleteDialog(did, onlyHistory 0/3, revoke)`. Zwischenablage: `SparkClipboard`
   in beiden `AndroidUtilities.addToClipboard`.
+  Verlassene/entfernte Chats behalten: `MessagesController.sparkKeepChat` an 4 Stellen (2× Verlassen in
+  deleteParticipantFromChat, TL_updateChannel isNotInChat, TL_updateChat kicked), rot in `DialogCell` (isNotInChat).
 
 ## Roadmap (offen)
 

@@ -24,7 +24,7 @@ public class SparkDeletedChatsActivity extends UniversalFragment {
 
     @Override
     protected CharSequence getTitle() {
-        return "Gelöschte Chats";
+        return "Gelöschte & verlassene Chats";
     }
 
     @Override
@@ -38,7 +38,8 @@ public class SparkDeletedChatsActivity extends UniversalFragment {
         for (int i = 0; i < list.size(); i++) {
             SparkDeletedChats.Item it = list.get(i);
             String title = (it.dialogId > 0 ? "👤 " : "👥 ") + it.name + (TextUtils.isEmpty(it.username) ? "" : " (@" + it.username + ")");
-            items.add(UItem.asButton(ID_BASE + i, title, f.format(new Date(it.time * 1000L))));
+            String why = it.kind == SparkDeletedChats.KIND_KICKED ? "entfernt" : it.kind == SparkDeletedChats.KIND_LEFT ? "verlassen" : "gelöscht";
+            items.add(UItem.asButton(ID_BASE + i, title, why + " · " + f.format(new Date(it.time * 1000L))));
             if (!TextUtils.isEmpty(it.last)) items.add(UItem.asShadow("Zuletzt: " + it.last));
         }
         items.add(UItem.asShadow("Antippen öffnet den Chat (bei Gruppen nur, wenn du noch Zugriff hast). Lange drücken entfernt den Eintrag."));

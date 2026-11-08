@@ -11791,7 +11791,8 @@
     <string name="SparkUserMessagesToggle">Alle Nachrichten einer Person</string>
     <string name="SparkAlwaysDownloadsToggle">Download-Knopf immer anzeigen</string>
     <string name="SparkLocalPinsToggle">Lokal anheften (unbegrenzt)</string>
-    <string name="SparkDeletedChatsToggle">Gelöschte Chats merken</string>
+    <string name="SparkDeletedChatsToggle">Gelöschte &amp; verlassene Chats</string>
+    <string name="SparkKeepLeftToggle">Verlassene Gruppen behalten (rot)</string>
     <string name="SparkClipboardToggle">Zwischenablage automatisch leeren</string>
     <string name="SparkHeaderPeople">Personen</string>
     <string name="SparkOnlineLog">Online-Protokoll</string>

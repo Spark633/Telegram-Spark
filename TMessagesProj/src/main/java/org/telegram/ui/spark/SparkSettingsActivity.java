@@ -117,6 +117,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_CLIPBOARD = 97;
     private static final int ID_CLIPBOARD_TIME = 98;
     private static final int ID_MENU_EDIT = 99;
+    private static final int ID_KEEP_LEFT = 100;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -253,9 +254,10 @@ public class SparkSettingsActivity extends UniversalFragment {
         }
         items.add(check(ID_EXPORT, R.string.SparkExportToggle, SparkConfig.EXPORT));
         items.add(check(ID_LOCAL_PINS, R.string.SparkLocalPinsToggle, SparkConfig.LOCAL_PINS));
-        items.add(expandable(ID_DELETED_CHATS, R.string.SparkDeletedChatsToggle, SparkConfig.DELETED_CHATS, 1));
+        items.add(expandable(ID_DELETED_CHATS, R.string.SparkDeletedChatsToggle, SparkConfig.DELETED_CHATS, 2));
         if (open(SparkConfig.DELETED_CHATS)) {
-            items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Gelöschte Chats öffnen"));
+            items.add(subCheck(ID_KEEP_LEFT, R.string.SparkKeepLeftToggle, SparkConfig.KEEP_LEFT_CHATS));
+            items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Liste öffnen"));
         }
         items.add(UItem.asShadow(getString(R.string.SparkOrgInfo)));
 
@@ -423,6 +425,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_USER_MESSAGES: toggle(SparkConfig.USER_MESSAGES); break;
             case ID_ALWAYS_DOWNLOADS: toggle(SparkConfig.ALWAYS_DOWNLOADS); break;
             case ID_LOCAL_PINS: toggle(SparkConfig.LOCAL_PINS); break;
+            case ID_KEEP_LEFT: toggle(SparkConfig.KEEP_LEFT_CHATS); break;
             case ID_DELETED_CHATS: expand(SparkConfig.DELETED_CHATS); break;
             case ID_DELETED_CHATS_OPEN: presentFragment(new SparkDeletedChatsActivity()); break;
             case ID_CLIPBOARD: expand(SparkConfig.CLIPBOARD_CLEAR); break;

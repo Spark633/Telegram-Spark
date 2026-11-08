@@ -10016,6 +10016,15 @@ public class MessagesController extends BaseController implements NotificationCe
         removePromoDialog();
     }
 
+    /** Sparkgram: verlassene/entfernte Chats behalten statt loeschen (true = behalten, nicht loeschen). */
+    public boolean sparkKeepChat(long did, int kind) {
+        if (!org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_CHATS)) {
+            return false;
+        }
+        org.telegram.messenger.spark.SparkDeletedChats.remember(currentAccount, did, kind);
+        return true;
+    }
+
     public void deleteDialog(final long did, int onlyHistory) {
         deleteDialog(did, onlyHistory, false);
     }
@@ -15972,7 +15981,9 @@ public class MessagesController extends BaseController implements NotificationCe
             request = req;
         }
         if (self) {
-            deleteDialog(-chatId, 0, revoke);
+            if (!sparkKeepChat(-chatId, org.telegram.messenger.spark.SparkDeletedChats.KIND_LEFT)) { // Sparkgram
+                deleteDialog(-chatId, 0, revoke);
+            }
         }
         getConnectionsManager().sendRequest(request, (response, error) -> {
             if (error != null) {
@@ -16056,7 +16067,9 @@ public class MessagesController extends BaseController implements NotificationCe
             request = req;
         }
         if (UserObject.isUserSelf(user)) {
-            deleteDialog(-chatId, 0, revoke);
+            if (!sparkKeepChat(-chatId, org.telegram.messenger.spark.SparkDeletedChats.KIND_LEFT)) { // Sparkgram
+                deleteDialog(-chatId, 0, revoke);
+            }
         }
         getConnectionsManager().sendRequest(request, (response, error) -> {
             if (error != null) {
@@ -20401,7 +20414,9 @@ public class MessagesController extends BaseController implements NotificationCe
                             if (dialog == null && chat instanceof TLRPC.TL_channel && !chat.left) {
                                 Utilities.stageQueue.postRunnable(() -> getChannelDifference(update.channel_id, 1, 0, null));
                             } else if (ChatObject.isNotInChat(chat) && dialog != null && (promoDialog == null || promoDialog.id != dialog.id)) {
-                                deleteDialog(dialog.id, 0);
+                                if (!sparkKeepChat(dialog.id, chat instanceof TLRPC.TL_channelForbidden || chat.kicked ? org.telegram.messenger.spark.SparkDeletedChats.KIND_KICKED : org.telegram.messenger.spark.SparkDeletedChats.KIND_LEFT)) { // Sparkgram
+                                    deleteDialog(dialog.id, 0);
+                                }
                             }
                             if (chat instanceof TLRPC.TL_channelForbidden || chat.kicked) {
                                 ChatObject.Call call = getGroupCall(chat.id, false);
@@ -20439,7 +20454,7 @@ public class MessagesController extends BaseController implements NotificationCe
                                 }
                             }
                             TLRPC.Dialog dialog = dialogs_dict.get(-chat.id);
-                            if (dialog != null) {
+                            if (dialog != null && !sparkKeepChat(dialog.id, org.telegram.messenger.spark.SparkDeletedChats.KIND_KICKED)) { // Sparkgram
                                 deleteDialog(dialog.id, 0);
                             }
                         }

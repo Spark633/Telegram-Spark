@@ -31,7 +31,8 @@ public class SparkChangelog {
             "Nachrichten-Menü: nur noch „Stummschalten“; „Bereich markieren“ verständlicher beschriftet",
             "Nachrichten-Menü anpassen: Telegram- und Sparkgram-Einträge einzeln ausblenden (Darstellung)",
             "Lokal anheften: beliebig viele Chats oben halten (Chat-Menü), direkt unter den angehefteten",
-            "Gelöschte Chats: Liste der gelöschten/verlassenen Chats mit Name, Benutzername und letzter Nachricht",
+            "Gelöschte & verlassene Chats: Liste mit Grund (gelöscht/verlassen/entfernt), Name, Benutzername und letzter Nachricht",
+            "Verlassene oder entfernte Gruppen bleiben in der Chatliste (rot mit 🚪) und lassen sich mit ihren Nachrichten öffnen",
             "Zwischenablage-Schutz: Kopiertes nach 30 s – 5 min automatisch löschen (Privatsphäre)"
         ),
         new Release("0.14", "08.11.2026",

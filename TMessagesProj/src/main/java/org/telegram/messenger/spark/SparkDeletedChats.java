@@ -18,7 +18,12 @@ import java.util.ArrayList;
 /** Gelöschte bzw. verlassene Chats (pro Konto): Name, Benutzername, letzte Nachricht, Zeitpunkt. */
 public class SparkDeletedChats {
 
+    public static final int KIND_DELETED = 0;
+    public static final int KIND_LEFT = 1;
+    public static final int KIND_KICKED = 2;
+
     public static class Item {
+        public int kind;
         public long dialogId;
         public String name;
         public String username;
@@ -31,11 +36,16 @@ public class SparkDeletedChats {
     }
 
     public static void remember(int account, long dialogId) {
+        remember(account, dialogId, KIND_DELETED);
+    }
+
+    public static void remember(int account, long dialogId, int kind) {
         if (!SparkConfig.get(SparkConfig.DELETED_CHATS) || dialogId == 0) return;
         try {
             MessagesController mc = MessagesController.getInstance(account);
             Item it = new Item();
             it.dialogId = dialogId;
+            it.kind = kind;
             if (dialogId > 0) {
                 TLRPC.User u = mc.getUser(dialogId);
                 it.name = u != null ? UserObject.getUserName(u) : String.valueOf(dialogId);
@@ -73,6 +83,7 @@ public class SparkDeletedChats {
                 it.username = o.has("u") ? o.optString("u") : null;
                 it.last = o.has("l") ? o.optString("l") : null;
                 it.time = o.optLong("t");
+                it.kind = o.optInt("k");
                 list.add(it);
             }
         } catch (Exception e) {
@@ -90,6 +101,7 @@ public class SparkDeletedChats {
             if (!TextUtils.isEmpty(it.username)) o.put("u", it.username);
             if (!TextUtils.isEmpty(it.last)) o.put("l", it.last);
             o.put("t", it.time);
+            o.put("k", it.kind);
             a.put(o);
         }
         prefs(account).edit().putString("items", a.toString()).apply();

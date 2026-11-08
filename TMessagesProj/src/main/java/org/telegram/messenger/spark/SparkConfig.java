@@ -106,6 +106,8 @@ public class SparkConfig {
     public static final String LOCAL_PINS = "localPins";
     public static final String DELETED_CHATS = "deletedChats";
     public static final String CLIPBOARD_CLEAR = "clipboardClear";
+    // verlassene/entfernte Gruppen in der Chatliste behalten (rot markiert)
+    public static final String KEEP_LEFT_CHATS = "keepLeftChats";
 
     // Doppeltipp auf eine Nachricht: 0 = Telegram (Reaktion), 1 = Antworten, 2 = Kopieren, 3 = Wiederholen, 4 = Lesezeichen
     public static final String[] DOUBLE_TAP_NAMES = {"Reaktion (Telegram)", "Antworten", "Kopieren", "Wiederholen", "Lesezeichen"};
@@ -265,6 +267,7 @@ public class SparkConfig {
             case ALWAYS_DOWNLOADS:
             case LOCAL_PINS:
             case DELETED_CHATS:
+            case KEEP_LEFT_CHATS:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:
