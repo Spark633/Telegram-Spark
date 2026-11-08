@@ -629,10 +629,27 @@ public class UniversalAdapter extends AdapterWithDiffUtils {
         } else switch (viewType) {
             case VIEW_TYPE_HEADER:
             case VIEW_TYPE_BLACK_HEADER:
-            case VIEW_TYPE_LARGE_HEADER:
+            case VIEW_TYPE_LARGE_HEADER: {
                 ((HeaderCell) holder.itemView).setText(item.text);
                 ((HeaderCell) holder.itemView).setEnabled(item.enabled, true);
+                // Sparkgram: einklappbare Ueberschrift mit Pfeil rechts (runter = einblenden, hoch = einklappen)
+                android.widget.ImageView sparkArrow = holder.itemView.findViewWithTag("sparkArrow");
+                if ("sparkClickable".equals(item.object)) {
+                    if (sparkArrow == null) {
+                        sparkArrow = new android.widget.ImageView(holder.itemView.getContext());
+                        sparkArrow.setTag("sparkArrow");
+                        sparkArrow.setScaleType(android.widget.ImageView.ScaleType.CENTER);
+                        sparkArrow.setImageResource(R.drawable.arrow_more);
+                        ((HeaderCell) holder.itemView).addView(sparkArrow, LayoutHelper.createFrame(24, 24, (LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT) | Gravity.CENTER_VERTICAL, 18, 4, 18, 0));
+                    }
+                    sparkArrow.setColorFilter(new android.graphics.PorterDuffColorFilter(Theme.getColor(Theme.key_windowBackgroundWhiteGrayIcon, resourcesProvider), android.graphics.PorterDuff.Mode.SRC_IN));
+                    sparkArrow.setRotation(item.intValue == 1 ? 0 : 180);
+                    sparkArrow.setVisibility(android.view.View.VISIBLE);
+                } else if (sparkArrow != null) {
+                    sparkArrow.setVisibility(android.view.View.GONE);
+                }
                 break;
+            }
             case VIEW_TYPE_ANIMATED_HEADER:
                 HeaderCell animatedHeaderCell = (HeaderCell) holder.itemView;
                 animatedHeaderCell.setText(item.animatedText, animatedHeaderCell.id == item.id);

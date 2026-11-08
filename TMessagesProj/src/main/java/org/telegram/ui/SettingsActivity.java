@@ -708,8 +708,9 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                     && org.telegram.messenger.spark.SparkConfig.prefs().getBoolean("accountsCollapsed", false);
             if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MASTER)) {
                 // Ueberschrift mit Pfeil: runter = einblenden, hoch = einklappen
-                UItem head = UItem.asHeader(SPARK_ACCOUNTS_TOGGLE, getString(R.string.SettingsAccounts) + (sparkCollapsed ? " (" + accountNumbers.size() + ")  ▼" : "  ▲"));
+                UItem head = UItem.asHeader(SPARK_ACCOUNTS_TOGGLE, getString(R.string.SettingsAccounts) + (sparkCollapsed ? " (" + accountNumbers.size() + ")" : ""));
                 head.object = "sparkClickable";
+                head.intValue = sparkCollapsed ? 1 : 0; // Pfeil rechts: runter = einblenden, hoch = einklappen
                 items.add(head);
             } else {
                 items.add(UItem.asHeader(getString(R.string.SettingsAccounts)));
