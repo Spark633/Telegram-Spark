@@ -23,7 +23,7 @@ public class SparkChangelog {
             "Verlassene Gruppen: Verlauf bleibt beim Verlassen erhalten, Gruppe wird nicht mehr automatisch entfernt",
             "Auch ältere verlassene Gruppen aus Telegrams Speicher werden angezeigt (Hinweis in den Einstellungen)",
             "Neu: „✦ Erinnern“ im Nachrichten-Menü – Erinnerung zu einer Nachricht (30 min bis morgen früh oder eigene Zeit), kommt als geplante Nachricht in Gespeicherte mit Link",
-            "Neu: fremdsprachige Chats automatisch übersetzen (Übersetzen, abschaltbar; einmal selbst aus = bleibt aus)",
+            "Neu: fremdsprachige Chats automatisch übersetzen (einschalten unter Übersetzen; einmal selbst aus = bleibt aus)",
             "Duplikate in Gespeichertes: gleiche Fotos, Videos, Dateien, Sticker und Texte finden und aufräumen (älteste bleibt)",
             "Chat- und Profil-Menü: wieder ein Eintrag „✦ Sparkgram“, darin die Gruppen als Unterpunkte",
             "Lokal angeheftete Chats: eigenes oranges Anheft-Symbol (unterscheidbar von normal angehefteten)",

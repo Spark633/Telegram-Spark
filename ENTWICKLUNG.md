@@ -183,7 +183,7 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 
 - **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
-- **Etappe 4 Rest:** automatisch übersetzen.
+- **Etappe 4:** erledigt (automatisch übersetzen in 0.17).
 - **Etappe 7 Rest:**
   In-App-Benachrichtigungen,
   RP: Persona pro Chat, Zitieren mit Formatierung,
