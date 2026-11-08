@@ -22,6 +22,7 @@ public class SparkChangelog {
         new Release("0.21", "09.11.2026",
             "Wirst du direkt nach neuen Nachrichten entfernt, werden diese trotzdem gespeichert (vorher konnten sie verloren gehen)",
             "Melden, wenn du aus einer Gruppe entfernt wirst: Einblendung in der App und/oder Android-Benachrichtigung (einzeln abschaltbar)",
+            "Verlassene Gruppe wird nachträglich öffentlich: „Beitreten“ erscheint jetzt beim Öffnen (Telegram lieferte den neuen Benutzernamen bisher nicht mit)",
             "Vor dem Verlassen einer Gruppe wird der Verlauf (bis 10.000 Nachrichten) heruntergeladen und gesichert, danach erst verlassen (abschaltbar)"
         ),
         new Release("0.20", "08.11.2026",

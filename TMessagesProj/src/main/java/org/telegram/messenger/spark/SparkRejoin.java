@@ -44,6 +44,20 @@ public class SparkRejoin {
                 ArrayList<TLRPC.Chat> chats = ((TLRPC.messages_Chats) res).chats;
                 if (!chats.isEmpty()) {
                     mc.putChats(chats, false);
+                    // "min"-Antworten uebernimmt Telegram ohne Benutzernamen – hier selbst nachtragen
+                    for (TLRPC.Chat fresh : chats) {
+                        TLRPC.Chat cur = mc.getChat(fresh.id);
+                        if (cur == null || cur == fresh || fresh instanceof TLRPC.TL_channelForbidden) continue;
+                        cur.username = fresh.username;
+                        cur.usernames = fresh.usernames;
+                        if (fresh.username != null) cur.flags |= 64; else cur.flags &= ~64;
+                        cur.has_link = fresh.has_link;
+                        cur.join_request = fresh.join_request;
+                        cur.join_to_send = fresh.join_to_send;
+                        ArrayList<TLRPC.Chat> save = new ArrayList<>();
+                        save.add(cur);
+                        org.telegram.messenger.MessagesStorage.getInstance(account).putUsersAndChats(null, save, true, true);
+                    }
                     NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.updateInterfaces, MessagesController.UPDATE_MASK_CHAT);
                     NotificationCenter.getInstance(account).postNotificationName(NotificationCenter.dialogsNeedReload);
                 }
