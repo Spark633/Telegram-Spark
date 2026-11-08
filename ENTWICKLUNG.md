@@ -190,6 +190,6 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   Auto-Ordner. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
 - **Etappe 8 Rest:**
   Proxy-Verwaltung (+ Anleitung). (App-Sperre: hat Telegram schon – Code-Sperre.)
-- Nebenher: eigenes Firebase für Push, mehr Konten ohne Start-Nachteil, Übernahme nach `main`.
+- Nebenher: mehr Konten ohne Start-Nachteil, Übernahme nach `main`.
 - Gestrichen: Sprachnachricht→Text, „Nachricht zeichnen“, Gerätetyp anderer, „zuletzt online“ erzwingen,
   Stories ausblenden, nachträgliches „für alle löschen“ nach „nur für mich“.
