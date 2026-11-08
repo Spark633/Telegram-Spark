@@ -121,8 +121,8 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_LEFT_FOLDER = 101;
     private static final int ID_UNREAD_FIRST = 102;
     private static final int ID_HIDDEN_ACCOUNTS = 103;
-    private static final int ID_REMINDERS = 104;
-    private static final int ID_AUTO_TRANSLATE = 106;
+    private static final int ID_AUTO_FOLDERS = 104;
+    private static final int ID_PERSONA = 106;
     private static final int ID_DUPLICATES = 105;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
@@ -200,7 +200,6 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderMsgTools)));
         items.add(check(ID_MSG_DETAILS, R.string.SparkMsgDetailsToggle, SparkConfig.MSG_DETAILS));
-        items.add(UItem.asCheck(ID_REMINDERS, SparkUi.mark("Erinnern (Nachrichten-Menü)")).setChecked(SparkConfig.getRaw(SparkConfig.REMINDERS)));
         items.add(check(ID_MSG_REPEAT, R.string.SparkMsgRepeatToggle, SparkConfig.MSG_REPEAT));
         items.add(check(ID_FORWARD_TIME, R.string.SparkForwardTimeToggle, SparkConfig.FORWARD_TIME));
         items.add(check(ID_FORWARD_NO_SENDER, R.string.SparkForwardNoSenderToggle, SparkConfig.FORWARD_NO_SENDER));
@@ -247,6 +246,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asHeader("Organisation"));
         items.add(UItem.asButton(ID_STATS, R.drawable.msg_stats, "Statistiken"));
         items.add(UItem.asButton(ID_DUPLICATES, R.drawable.msg_saved, "Duplikate in Gespeichertes"));
+        items.add(UItem.asButton(ID_AUTO_FOLDERS, R.drawable.msg_folders, "Auto-Ordner"));
         items.add(expandable(ID_BOOKMARKS, R.string.SparkBookmarksToggle, SparkConfig.BOOKMARKS, 1));
         if (open(SparkConfig.BOOKMARKS)) {
             items.add(UItem.asButton(ID_BOOKMARKS_OPEN, "      Lesezeichen öffnen"));
@@ -255,6 +255,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         if (open(SparkConfig.TEMPLATES)) {
             items.add(UItem.asButton(ID_TEMPLATES_OPEN, R.drawable.msg_stories_caption, "Vorlagen verwalten"));
         }
+        items.add(UItem.asCheck(ID_PERSONA, SparkUi.mark("RP-Persona pro Chat (Chat-Menü)")).setChecked(SparkConfig.getRaw(SparkConfig.PERSONA)));
         items.add(expandable(ID_MUTE_PEOPLE, R.string.SparkMutePeopleToggle, SparkConfig.MUTE_PEOPLE, 1));
         if (open(SparkConfig.MUTE_PEOPLE)) {
             items.add(UItem.asButton(ID_MUTE_LIST, "      Stummgeschaltete (" + org.telegram.messenger.spark.SparkPeople.allMuted(currentAccount).size() + ")"));
@@ -279,7 +280,6 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asHeader(getString(R.string.SparkHeaderTranslate)));
         items.add(expandable(ID_TRANSLATE_FREE, R.string.SparkTranslateFreeToggle, SparkConfig.TRANSLATE_FREE, 2));
         items.add(check(ID_TRANSLATE_OWN, R.string.SparkTranslateOwnToggle, SparkConfig.TRANSLATE_OWN));
-        items.add(UItem.asCheck(ID_AUTO_TRANSLATE, SparkUi.mark("Fremdsprachige Chats automatisch übersetzen")).setChecked(SparkConfig.getRaw(SparkConfig.AUTO_TRANSLATE)));
         if (open(SparkConfig.TRANSLATE_FREE)) {
             items.add(UItem.asButton(ID_TRANSLATE_PROVIDER, "      " + getString(R.string.SparkTranslateProvider),
                 org.telegram.messenger.spark.SparkTranslate.provider() == org.telegram.messenger.spark.SparkTranslate.PROVIDER_DEEPL ? "DeepL" : "Google"));
@@ -478,8 +478,8 @@ public class SparkSettingsActivity extends UniversalFragment {
             }
             case ID_STATS: presentFragment(new SparkStatsActivity()); break;
             case ID_DUPLICATES: presentFragment(new SparkDuplicatesActivity()); break;
-            case ID_REMINDERS: toggle(SparkConfig.REMINDERS); break;
-            case ID_AUTO_TRANSLATE: toggle(SparkConfig.AUTO_TRANSLATE); break;
+            case ID_AUTO_FOLDERS: presentFragment(new SparkAutoFoldersActivity()); break;
+            case ID_PERSONA: toggle(SparkConfig.PERSONA); break;
             case ID_TEMPLATES: expand(SparkConfig.TEMPLATES); break;
             case ID_TEMPLATES_OPEN: presentFragment(new SparkTemplatesActivity()); break;
             case ID_MUTE_PEOPLE: expand(SparkConfig.MUTE_PEOPLE); break;

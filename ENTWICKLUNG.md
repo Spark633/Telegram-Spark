@@ -183,11 +183,10 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
 
 - **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).
 - **Etappe 2 Rest:** Admin-Funktion (mit Spark633 abstimmen).
-- **Etappe 4:** erledigt (automatisch übersetzen in 0.17).
+- **Etappe 4:** erledigt (automatisch übersetzen auf Wunsch gestrichen).
 - **Etappe 7 Rest:**
   In-App-Benachrichtigungen,
-  RP: Persona pro Chat, Zitieren mit Formatierung,
-  Auto-Ordner. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
+  Zitieren mit Formatierung (unklar, mit Spark633 klären). Persona pro Chat + Auto-Ordner: 0.17. (Backup: erledigt, ohne Datenbanken wie Sammlung/Online-Protokoll.)
 - **Etappe 8 Rest:**
   Proxy-Verwaltung (+ Anleitung). (App-Sperre: hat Telegram schon – Code-Sperre.)
 - Nebenher: mehr Konten ohne Start-Nachteil, Übernahme nach `main`.

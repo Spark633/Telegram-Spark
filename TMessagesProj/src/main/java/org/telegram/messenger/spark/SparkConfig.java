@@ -109,8 +109,8 @@ public class SparkConfig {
     // verlassene/entfernte Gruppen in der Chatliste behalten (rot markiert)
     public static final String KEEP_LEFT_CHATS = "keepLeftChats";
     public static final String LEFT_FOLDER = "leftFolder";
-    public static final String REMINDERS = "reminders";
-    public static final String AUTO_TRANSLATE = "autoTranslate";
+    public static final String AUTO_FOLDERS = "autoFolders";
+    public static final String PERSONA = "persona";
     // Sortierung: ungelesene Chats oben
     public static final String UNREAD_FIRST = "unreadFirst";
 
@@ -274,7 +274,8 @@ public class SparkConfig {
             case DELETED_CHATS:
             case KEEP_LEFT_CHATS:
             case LEFT_FOLDER:
-            case REMINDERS:
+            case AUTO_FOLDERS:
+            case PERSONA:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:

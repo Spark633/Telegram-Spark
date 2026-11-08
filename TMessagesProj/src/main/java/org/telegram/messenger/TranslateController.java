@@ -1010,11 +1010,6 @@ public class TranslateController extends BaseController {
             translatableDialogMessages.remove((Long) dialogId);
             AndroidUtilities.runOnUIThread(() -> {
                 NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.dialogIsTranslatable, dialogId);
-                // Sparkgram: fremdsprachige Chats automatisch uebersetzen (nur wenn noch nie selbst an/aus geschaltet)
-                if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.AUTO_TRANSLATE)
-                        && translatingDialogs.indexOfKey(dialogId) < 0 && isFeatureAvailable(dialogId)) {
-                    toggleTranslatingDialog(dialogId, true);
-                }
             }, 450);
         }
     }

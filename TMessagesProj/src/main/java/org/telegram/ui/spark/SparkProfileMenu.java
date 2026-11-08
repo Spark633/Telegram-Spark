@@ -51,6 +51,7 @@ public class SparkProfileMenu {
     public static final int ID_MARK_READ = 922;
     public static final int ID_EXPORT = 923;
     public static final int ID_LOCAL_PIN = 924;
+    public static final int ID_PERSONA = 925;
 
     public static boolean isSparkItem(int id) {
         return id >= ID_COPY_ID && id <= ID_SUBGROUP_BASE + 3;
@@ -179,6 +180,12 @@ public class SparkProfileMenu {
             if (SparkConfig.get(SparkConfig.TEMPLATES)) {
                 list.add(new Entry(ID_TEMPLATES, R.drawable.msg_stories_caption, label("Textvorlagen", marked)));
             }
+            if (SparkConfig.get(SparkConfig.PERSONA) && !self) {
+                long pd = userId != 0 ? userId : -chatId;
+                String pn = org.telegram.messenger.spark.SparkPersona.name(account, pd);
+                boolean pa = org.telegram.messenger.spark.SparkPersona.isActive(account, pd);
+                list.add(new Entry(ID_PERSONA, R.drawable.msg_openprofile, label(pn == null ? "Persona" : "Persona: " + pn + (pa ? "" : " (pausiert)"), marked)));
+            }
             if (SparkConfig.get(SparkConfig.BOT_SEND) && !android.text.TextUtils.isEmpty(org.telegram.messenger.spark.SparkBot.token())) {
                 list.add(new Entry(ID_BOT_SEND, R.drawable.msg_bot, label("Über Bot senden", marked)));
             }
@@ -197,7 +204,7 @@ public class SparkProfileMenu {
     // Gruppen: Infos | Persönliches & Medien | Übersetzen | Löschen & Export | Rest
     private static final int[][] ORDER = {
         {ID_COPY_ID, ID_INFO, ID_LOCAL_NAME, ID_ADMINS, ID_ACTIVE, ID_TIMEZONE, ID_ONLINE_LOG, ID_NAME_HISTORY},
-        {ID_NOTE, ID_COLLECTION, ID_TEMPLATES, ID_CHAT_STICKERS, ID_BOT_SEND},
+        {ID_NOTE, ID_COLLECTION, ID_TEMPLATES, ID_PERSONA, ID_CHAT_STICKERS, ID_BOT_SEND},
         {ID_TRANSLATE_CHAT, ID_TRANSLATE_INPUT},
         {ID_DELETE_OWN, ID_EXPORT},
     };
@@ -555,6 +562,45 @@ public class SparkProfileMenu {
         }));
     }
 
+    /** RP-Persona fuer diesen Chat festlegen, pausieren oder entfernen. */
+    private static void editPersona(BaseFragment fragment, long dialogId) {
+        final int account = fragment.getCurrentAccount();
+        final String cur = org.telegram.messenger.spark.SparkPersona.name(account, dialogId);
+        final boolean active = org.telegram.messenger.spark.SparkPersona.isActive(account, dialogId);
+        final android.widget.EditText input = new android.widget.EditText(fragment.getParentActivity());
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS);
+        input.setSingleLine(true);
+        input.setText(cur == null ? "" : cur);
+        input.setSelection(input.length());
+        input.setHint("Name der Figur, z. B. Luna");
+        input.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteBlackText));
+        input.setHintTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_windowBackgroundWhiteHintText));
+        android.widget.FrameLayout box = new android.widget.FrameLayout(fragment.getParentActivity());
+        box.addView(input, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, 0, 24, 0, 24, 0));
+        AlertDialog.Builder b = new AlertDialog.Builder(fragment.getParentActivity());
+        b.setTitle(SparkUi.mark("Persona in diesem Chat"));
+        b.setMessage("Deine Nachrichten in diesem Chat beginnen dann mit dem Namen in Fett, z. B. „Luna: Hallo“. Nur in diesem Chat, nur auf diesem Gerät gespeichert.");
+        b.setView(box);
+        b.setPositiveButton("Speichern", (d, w) -> {
+            org.telegram.messenger.spark.SparkPersona.set(account, dialogId, input.getText().toString());
+            String n = org.telegram.messenger.spark.SparkPersona.name(account, dialogId);
+            BulletinFactory.of(fragment).createSimpleBulletin(R.raw.contact_check, n == null ? "✦ Persona entfernt" : "✦ Du schreibst hier als " + n).show();
+        });
+        if (cur != null) {
+            b.setNeutralButton(active ? "Pausieren" : "Fortsetzen", (d, w) -> {
+                org.telegram.messenger.spark.SparkPersona.setActive(account, dialogId, !active);
+                BulletinFactory.of(fragment).createSimpleBulletin(R.raw.info, !active ? "✦ Persona " + cur + " wieder aktiv" : "✦ Persona pausiert").show();
+            });
+            b.setNegativeButton("Entfernen", (d, w) -> {
+                org.telegram.messenger.spark.SparkPersona.set(account, dialogId, null);
+                BulletinFactory.of(fragment).createSimpleBulletin(R.raw.info, "✦ Persona entfernt").show();
+            });
+        } else {
+            b.setNegativeButton("Abbrechen", null);
+        }
+        fragment.showDialog(b.create());
+    }
+
     /** Vorlage auswaehlen und ins Eingabefeld einfuegen. */
     private static void insertTemplate(org.telegram.ui.ChatActivity chat) {
         java.util.ArrayList<String> list = org.telegram.messenger.spark.SparkTemplates.list();
@@ -672,6 +718,9 @@ public class SparkProfileMenu {
                 BulletinFactory.of(fragment).createSimpleBulletin(R.raw.info, on ? "✦ Chat wird übersetzt (in " + tc.getDialogTranslateTo(did) + ")" : "✦ Übersetzung aus").show();
                 break;
             }
+            case ID_PERSONA:
+                editPersona(fragment, userId != 0 ? userId : -chatId);
+                break;
             case ID_TEMPLATES:
                 if (fragment instanceof org.telegram.ui.ChatActivity) {
                     insertTemplate((org.telegram.ui.ChatActivity) fragment);

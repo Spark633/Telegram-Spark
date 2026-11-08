@@ -4425,6 +4425,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
 
     public void sendMessage(SendMessageParams sendMessageParams) {
         getMessagesController().sparkGhostAfterSend(sendMessageParams.peer); // Sparkgram: Ghost-Modus
+        org.telegram.messenger.spark.SparkPersona.apply(currentAccount, sendMessageParams); // Sparkgram: RP-Persona
         final SendMessageChatArguments sendMessageChatArguments = sendMessageParams.sendMessageChatArguments != null ?
                 sendMessageParams.sendMessageChatArguments : SendMessageChatArguments.EMPTY;
         String message = sendMessageParams.message;

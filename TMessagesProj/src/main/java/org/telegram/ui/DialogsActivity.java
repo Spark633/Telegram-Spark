@@ -7041,6 +7041,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     @Override
     public void onResume() {
         super.onResume();
+        if (!onlySelect && folderId == 0) {
+            org.telegram.messenger.spark.SparkAutoFolders.applyThrottled(this); // Sparkgram: Auto-Ordner
+        }
         if (dialogStoriesCell != null) {
             dialogStoriesCell.onResume();
         }
