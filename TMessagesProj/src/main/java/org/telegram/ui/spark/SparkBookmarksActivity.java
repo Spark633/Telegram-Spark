@@ -48,7 +48,7 @@ public class SparkBookmarksActivity extends UniversalFragment {
         for (SparkBookmarks.Item it : SparkBookmarks.list(currentAccount)) {
             if (filter == null || it.tags.contains(filter)) shown.add(it);
         }
-        items.add(UItem.asButton(ID_FILTER, R.drawable.msg_folders, "Schlagwort", filter == null ? "alle" : "#" + filter));
+        items.add(UItem.asButton(ID_FILTER, R.drawable.msg_folders, "Schlagwort", filter == null ? "alle" : label(filter)));
         if (shown.isEmpty()) {
             items.add(UItem.asShadow("Noch keine Lesezeichen. Nachricht antippen → „✦ Lesezeichen“."));
             return;
@@ -57,7 +57,7 @@ public class SparkBookmarksActivity extends UniversalFragment {
         for (int i = 0; i < shown.size(); i++) {
             SparkBookmarks.Item it = shown.get(i);
             StringBuilder tags = new StringBuilder();
-            for (String t : it.tags) tags.append('#').append(t).append(' ');
+            for (String t : it.tags) tags.append(label(t)).append(' ');
             String chat = SparkNotesActivity.dialogName(currentAccount, it.dialogId);
             items.add(UItem.asButton(ID_BASE + i, (tags.length() > 0 ? tags.toString() + "· " : "") + chat, f.format(new Date(it.date * 1000L))));
             String text = TextUtils.isEmpty(it.text) ? "[Medium]" : it.text;
@@ -71,7 +71,7 @@ public class SparkBookmarksActivity extends UniversalFragment {
             ArrayList<String> tags = SparkBookmarks.allTags(currentAccount);
             String[] names = new String[tags.size() + 1];
             names[0] = "Alle";
-            for (int i = 0; i < tags.size(); i++) names[i + 1] = "#" + tags.get(i);
+            for (int i = 0; i < tags.size(); i++) names[i + 1] = label(tags.get(i));
             AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
             b.setTitle(SparkUi.mark("Schlagwort"));
             b.setItems(names, (d, w) -> {
@@ -112,14 +112,22 @@ public class SparkBookmarksActivity extends UniversalFragment {
         return true;
     }
 
+    /** Schlagwort zur Anzeige: Woerter mit "#", Emojis ohne. */
+    public static String label(String tag) {
+        for (int i = 0; i < tag.length(); i++) {
+            if (Character.isLetterOrDigit(tag.charAt(i))) return "#" + tag;
+        }
+        return tag;
+    }
+
     /** Eingabe der Schlagwoerter (mit Vorschlaegen). */
     public static void editTags(BaseFragment fragment, ArrayList<String> current, org.telegram.messenger.Utilities.Callback<ArrayList<String>> done) {
         final EditText edit = new EditText(fragment.getParentActivity());
         StringBuilder sb = new StringBuilder();
-        if (current != null) for (String t : current) sb.append('#').append(t).append(' ');
+        if (current != null) for (String t : current) sb.append(label(t)).append(' ');
         edit.setText(sb.toString().trim());
         edit.setSelection(edit.length());
-        edit.setHint("#rp #wichtig …");
+        edit.setHint("#rp #wichtig ⭐ …");
         edit.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         edit.setHintTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
         FrameLayout box = new FrameLayout(fragment.getParentActivity());
@@ -129,7 +137,7 @@ public class SparkBookmarksActivity extends UniversalFragment {
         b.setTitle(SparkUi.mark("Schlagwörter"));
         if (!known.isEmpty()) {
             StringBuilder k = new StringBuilder("Bisher: ");
-            for (int i = 0; i < Math.min(10, known.size()); i++) k.append('#').append(known.get(i)).append(' ');
+            for (int i = 0; i < Math.min(10, known.size()); i++) k.append(label(known.get(i))).append(' ');
             b.setMessage(k.toString().trim());
         }
         b.setView(box);
