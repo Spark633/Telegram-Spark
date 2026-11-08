@@ -69,7 +69,7 @@ public class SparkDuplicatesActivity extends UniversalFragment {
             return;
         }
         items.add(UItem.asButton(ID_DELETE_ALL, org.telegram.messenger.R.drawable.msg_delete, "Alle Duplikate löschen (" + extra + ")").red());
-        items.add(UItem.asShadow(scanned + " Nachrichten geprüft · " + groups.size() + " mehrfach vorhanden. Antippen = zur Nachricht, lange drücken = nur diese aufräumen."));
+        items.add(UItem.asShadow(scanned + " Nachrichten geprüft · " + groups.size() + " mehrfach vorhanden. Antippen = alle Vorkommen zeigen, lange drücken = nur diese aufräumen."));
         SimpleDateFormat f = new SimpleDateFormat("dd.MM.yy", Locale.GERMANY);
         for (int i = 0; i < groups.size(); i++) {
             Group g = groups.get(i);
@@ -91,10 +91,34 @@ public class SparkDuplicatesActivity extends UniversalFragment {
         }
         int i = item.id - ID_BASE;
         if (i < 0 || i >= groups.size()) return;
-        Bundle args = new Bundle();
-        args.putLong("user_id", getUserConfig().getClientUserId());
-        args.putInt("message_id", groups.get(i).ids.get(groups.get(i).ids.size() - 1));
-        presentFragment(new ChatActivity(args));
+        Group g = groups.get(i);
+        if (g.key.startsWith("t")) {
+            // Text: in Gespeicherte mit Suche oeffnen, dann zeigt Telegram alle Treffer
+            String q = g.key.substring(1);
+            if (q.length() > 60) q = q.substring(0, 60);
+            final String query = q;
+            Bundle args = new Bundle();
+            args.putLong("user_id", getUserConfig().getClientUserId());
+            ChatActivity chat = new ChatActivity(args);
+            presentFragment(chat);
+            AndroidUtilities.runOnUIThread(() -> chat.openSearchWithText(query), 400);
+            return;
+        }
+        // Medien: Liste aller Vorkommen zum Hinspringen
+        SimpleDateFormat f = new SimpleDateFormat("dd.MM.yy HH:mm", Locale.GERMANY);
+        CharSequence[] texts = new CharSequence[g.ids.size()];
+        for (int k = 0; k < g.ids.size(); k++) {
+            texts[k] = (k + 1) + ". " + f.format(new Date(g.dates.get(k) * 1000L)) + (k == 0 ? " (älteste, bleibt)" : "");
+        }
+        AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
+        b.setTitle(SparkUi.mark(g.ids.size() + "× " + g.preview));
+        b.setItems(texts, (d, w) -> {
+            Bundle args = new Bundle();
+            args.putLong("user_id", getUserConfig().getClientUserId());
+            args.putInt("message_id", g.ids.get(w));
+            presentFragment(new ChatActivity(args));
+        });
+        showDialog(b.create());
     }
 
     @Override

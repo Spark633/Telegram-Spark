@@ -10099,7 +10099,21 @@ public class MessagesController extends BaseController implements NotificationCe
             return false;
         }
         org.telegram.messenger.spark.SparkDeletedChats.remember(currentAccount, did, kind);
+        AndroidUtilities.runOnUIThread(() -> sparkRestoreDialog(did));
         return true;
+    }
+
+    /** Sparkgram: behaltenen Chat wieder in die Liste setzen (z. B. nach "Rueckgaengig"-Countdown). */
+    public void sparkRestoreDialog(long did) {
+        TLRPC.Dialog dialog = dialogs_dict.get(did);
+        if (dialog == null || deletingDialogs.get(did) != null) {
+            return;
+        }
+        if (!allDialogs.contains(dialog)) {
+            allDialogs.add(dialog);
+            sortDialogs(null);
+            getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
+        }
     }
 
     public void deleteDialog(final long did, int onlyHistory) {
@@ -10117,6 +10131,7 @@ public class MessagesController extends BaseController implements NotificationCe
             org.telegram.messenger.spark.SparkDeletedChats.remember(currentAccount, did, org.telegram.messenger.spark.SparkDeletedChats.KIND_DELETED);
             org.telegram.messenger.spark.SparkDeletedChats.setKept(currentAccount, did, true);
             sparkServerDeleteHistory(did, revoke, 0);
+            AndroidUtilities.runOnUIThread(() -> sparkRestoreDialog(did));
             sortDialogs(null);
             getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
             return;
@@ -22396,6 +22411,9 @@ public class MessagesController extends BaseController implements NotificationCe
             if (!apply) {
                 allDialogs.add(dialog);
                 sortDialogs(null);
+            } else if (sparkKeepLeftOn() && did != getUserConfig().getClientUserId()) {
+                // Sparkgram: verlassene/geloeschte Chats bleiben – nach dem Ausfuehren wieder einblenden
+                AndroidUtilities.runOnUIThread(() -> sparkRestoreDialog(did), 300);
             }
         }
         if (!apply) {

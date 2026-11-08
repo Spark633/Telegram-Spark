@@ -152,8 +152,14 @@ public class SparkSettingsActivity extends UniversalFragment {
             });
     }
 
+    private String sparkQuery;
+
+    private boolean searching() {
+        return sparkQuery != null && !sparkQuery.trim().isEmpty();
+    }
+
     private boolean open(String key) {
-        return expanded.contains(key);
+        return searching() || expanded.contains(key);
     }
 
     private void expand(String key) {
@@ -198,6 +204,13 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asHeader(getString(R.string.SparkHeaderMessages)));
         items.add(check(ID_KEEP_DELETED, R.string.SparkKeepDeletedToggle, SparkConfig.KEEP_DELETED));
         items.add(check(ID_EDIT_HISTORY, R.string.SparkEditHistoryToggle, SparkConfig.EDIT_HISTORY));
+        items.add(expandable(ID_DELETED_CHATS, R.string.SparkDeletedChatsToggle, SparkConfig.DELETED_CHATS, 4));
+        if (open(SparkConfig.DELETED_CHATS)) {
+            items.add(subCheck(ID_KEEP_LEFT, R.string.SparkKeepLeftToggle, SparkConfig.KEEP_LEFT_CHATS));
+            items.add(subCheck(ID_LEFT_FOLDER, R.string.SparkLeftFolderToggle, SparkConfig.LEFT_FOLDER));
+            items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Liste öffnen"));
+            items.add(UItem.asShadow("Verlassene Gruppen zeigt Sparkgram auch dann, wenn sie schon länger in Telegrams Speicher auf diesem Gerät liegen. Dabei können auch Gruppen auftauchen, die du nur über einen Link angesehen hast oder in die dich jemand ungefragt hinzugefügt hat."));
+        }
         items.add(UItem.asShadow(getString(R.string.SparkMessagesInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderMsgTools)));
@@ -265,13 +278,6 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_EXPORT, R.string.SparkExportToggle, SparkConfig.EXPORT));
         items.add(check(ID_LOCAL_PINS, R.string.SparkLocalPinsToggle, SparkConfig.LOCAL_PINS));
         items.add(check(ID_UNREAD_FIRST, R.string.SparkUnreadFirstToggle, SparkConfig.UNREAD_FIRST));
-        items.add(expandable(ID_DELETED_CHATS, R.string.SparkDeletedChatsToggle, SparkConfig.DELETED_CHATS, 4));
-        if (open(SparkConfig.DELETED_CHATS)) {
-            items.add(subCheck(ID_KEEP_LEFT, R.string.SparkKeepLeftToggle, SparkConfig.KEEP_LEFT_CHATS));
-            items.add(subCheck(ID_LEFT_FOLDER, R.string.SparkLeftFolderToggle, SparkConfig.LEFT_FOLDER));
-            items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Liste öffnen"));
-            items.add(UItem.asShadow("Verlassene Gruppen zeigt Sparkgram auch dann, wenn sie schon länger in Telegrams Speicher auf diesem Gerät liegen. Dabei können auch Gruppen auftauchen, die du nur über einen Link angesehen hast oder in die dich jemand ungefragt hinzugefügt hat."));
-        }
         items.add(UItem.asShadow(getString(R.string.SparkOrgInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderPeople)));
@@ -371,6 +377,21 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(UItem.asButton(ID_CRASH, R.drawable.msg_report, getString(R.string.SparkCrashLog)).red());
             items.add(UItem.asShadow(null));
         }
+
+        // Suche: nur passende Eintraege (Name, Beschreibung oder Wert) zeigen
+        if (searching()) {
+            String q = sparkQuery.trim().toLowerCase();
+            ArrayList<UItem> found = new ArrayList<>();
+            for (UItem it : items) {
+                if (it.id == 0) continue;
+                String t = ((it.text != null ? it.text : "") + " " + (it.subtext != null ? it.subtext : "") + " " + (it.textValue != null ? it.textValue : "")).toLowerCase();
+                if (t.contains(q)) found.add(it);
+            }
+            items.clear();
+            items.add(UItem.asHeader("Suche: „" + sparkQuery.trim() + "“"));
+            items.addAll(found);
+            items.add(UItem.asShadow(found.isEmpty() ? "Nichts gefunden." : found.size() + " Treffer"));
+        }
     }
 
     private void sparkRefreshLeftFolder() {
@@ -407,6 +428,22 @@ public class SparkSettingsActivity extends UniversalFragment {
             }
         });
         masterCell.setElevation(AndroidUtilities.dp(2));
+        // Suche oben rechts
+        org.telegram.ui.ActionBar.ActionBarMenuItem searchItem = actionBar.createMenu().addItem(0, R.drawable.outline_header_search);
+        searchItem.setIsSearchField(true).setActionBarMenuItemSearchListener(new org.telegram.ui.ActionBar.ActionBarMenuItem.ActionBarMenuItemSearchListener() {
+            @Override
+            public void onTextChanged(android.widget.EditText editText) {
+                sparkQuery = editText.getText().toString();
+                if (listView != null && listView.adapter != null) listView.adapter.update(false);
+            }
+
+            @Override
+            public void onSearchCollapse() {
+                sparkQuery = null;
+                if (listView != null && listView.adapter != null) listView.adapter.update(false);
+            }
+        });
+        searchItem.setSearchFieldHint("Einstellung suchen");
         ((android.widget.FrameLayout) view).addView(masterCell, org.telegram.ui.Components.LayoutHelper.createFrame(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, 50, android.view.Gravity.TOP));
         listView.setPadding(0, AndroidUtilities.dp(50), 0, 0);
         listView.setClipToPadding(false);

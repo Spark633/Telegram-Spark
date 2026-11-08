@@ -52,9 +52,15 @@ public class SparkProfileMenu {
     public static final int ID_EXPORT = 923;
     public static final int ID_LOCAL_PIN = 924;
     public static final int ID_PERSONA = 925;
+    // Admin (nur fuer Admins der Gruppe)
+    public static final int ID_ADMIN_TEMPLATES = 941;
+    public static final int ID_ADMIN_COUNTS = 942;
+    public static final int ID_ADMIN_LOG = 943;
+    public static final int ID_ADMIN_REQUESTS = 944;
+    public static final int ID_ADMIN_SUSPICIOUS = 945;
 
     public static boolean isSparkItem(int id) {
-        return id >= ID_COPY_ID && id <= ID_SUBGROUP_BASE + 3;
+        return id >= ID_COPY_ID && id <= 950;
     }
 
     public interface Adder {
@@ -150,6 +156,22 @@ public class SparkProfileMenu {
                 list.add(new Entry(ID_AUTHORS, R.drawable.msg_edit, label(getString(R.string.SparkKnownAuthors), marked)));
             }
         }
+        // Admin-Werkzeuge (nur Gruppen, in denen man Admin ist)
+        if (chatId != 0 && SparkConfig.get(SparkConfig.ADMIN_TOOLS)) {
+            TLRPC.Chat chat = MessagesController.getInstance(account).getChat(chatId);
+            boolean broadcast = ChatObject.isChannel(chat) && !chat.megagroup;
+            if (chat != null && !broadcast && (chat.creator || ChatObject.hasAdminRights(chat))) {
+                list.add(new Entry(ID_ADMIN_TEMPLATES, R.drawable.msg_admins, label("Admin-Vorlagen", marked)));
+                list.add(new Entry(ID_ADMIN_COUNTS, R.drawable.msg_stats, label("Verwarnungen in dieser Gruppe", marked)));
+                if (ChatObject.isChannel(chat)) {
+                    list.add(new Entry(ID_ADMIN_SUSPICIOUS, R.drawable.msg_block, label("Verdächtige & gelöschte Konten", marked)));
+                    list.add(new Entry(ID_ADMIN_LOG, R.drawable.msg_log, label("Admin-Protokoll", marked)));
+                }
+                if (ChatObject.canUserDoAdminAction(chat, ChatObject.ACTION_INVITE)) {
+                    list.add(new Entry(ID_ADMIN_REQUESTS, R.drawable.msg_requests, label("Beitrittsanfragen", marked)));
+                }
+            }
+        }
         // auch im Profil verfuegbar
         if (!self) {
             if (SparkConfig.get(SparkConfig.COLLECTION)) {
@@ -207,6 +229,7 @@ public class SparkProfileMenu {
         {ID_NOTE, ID_COLLECTION, ID_TEMPLATES, ID_PERSONA, ID_CHAT_STICKERS, ID_BOT_SEND},
         {ID_TRANSLATE_CHAT, ID_TRANSLATE_INPUT},
         {ID_DELETE_OWN, ID_EXPORT},
+        {ID_ADMIN_TEMPLATES, ID_ADMIN_COUNTS, ID_ADMIN_SUSPICIOUS, ID_ADMIN_LOG, ID_ADMIN_REQUESTS},
     };
 
     private static int rank(int id) {
@@ -228,8 +251,8 @@ public class SparkProfileMenu {
 
     // Unterpunkte: jede Gruppe als eigener Eintrag, der ihre Funktionen sammelt
     public static final int ID_SUBGROUP_BASE = 930;
-    private static final String[] GROUP_NAMES = {"Infos", "Notiz & Medien", "Übersetzen", "Löschen & Export"};
-    private static final int[] GROUP_ICONS = {R.drawable.msg_info, R.drawable.msg_saved, R.drawable.msg_translate, R.drawable.msg_download};
+    private static final String[] GROUP_NAMES = {"Infos", "Notiz & Medien", "Übersetzen", "Löschen & Export", "Admin"};
+    private static final int[] GROUP_ICONS = {R.drawable.msg_info, R.drawable.msg_saved, R.drawable.msg_translate, R.drawable.msg_download, R.drawable.msg_admins};
 
     private static void showSubGroup(BaseFragment fragment, long userId, long chatId, int group) {
         final ArrayList<Entry> list = new ArrayList<>();
@@ -237,15 +260,21 @@ public class SparkProfileMenu {
             if (groupOf(e.id) == group) list.add(e);
         }
         if (list.isEmpty()) return;
-        CharSequence[] texts = new CharSequence[list.size()];
-        int[] icons = new int[list.size()];
+        // oben ein Zurueck-Pfeil zur Sparkgram-Uebersicht
+        CharSequence[] texts = new CharSequence[list.size() + 1];
+        int[] icons = new int[list.size() + 1];
+        texts[0] = "Zurück";
+        icons[0] = R.drawable.msg_arrow_back;
         for (int i = 0; i < list.size(); i++) {
-            texts[i] = list.get(i).text;
-            icons[i] = list.get(i).icon;
+            texts[i + 1] = list.get(i).text;
+            icons[i + 1] = list.get(i).icon;
         }
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
-        builder.setTitle(SparkUi.mark(GROUP_NAMES[group]));
-        builder.setItems(texts, icons, (dialog, which) -> handle(fragment, list.get(which).id, userId, chatId));
+        builder.setTitle(SparkUi.mark("Sparkgram › " + GROUP_NAMES[group]));
+        builder.setItems(texts, icons, (dialog, which) -> {
+            if (which == 0) showGroup(fragment, userId, chatId);
+            else handle(fragment, list.get(which - 1).id, userId, chatId);
+        });
         fragment.showDialog(builder.create());
     }
 
@@ -720,6 +749,23 @@ public class SparkProfileMenu {
             }
             case ID_PERSONA:
                 editPersona(fragment, userId != 0 ? userId : -chatId);
+                break;
+            case ID_ADMIN_TEMPLATES:
+                fragment.presentFragment(new SparkAdminActivity());
+                break;
+            case ID_ADMIN_COUNTS:
+                SparkAdminActivity.showGroupCounters(fragment, chatId);
+                break;
+            case ID_ADMIN_SUSPICIOUS:
+                SparkAdminActivity.scanSuspicious(fragment, chatId);
+                break;
+            case ID_ADMIN_LOG: {
+                TLRPC.Chat c = MessagesController.getInstance(account).getChat(chatId);
+                if (c != null) fragment.presentFragment(new org.telegram.ui.ChannelAdminLogActivity(c));
+                break;
+            }
+            case ID_ADMIN_REQUESTS:
+                fragment.presentFragment(new org.telegram.ui.MemberRequestsActivity(chatId));
                 break;
             case ID_TEMPLATES:
                 if (fragment instanceof org.telegram.ui.ChatActivity) {

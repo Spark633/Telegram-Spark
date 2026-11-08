@@ -471,6 +471,7 @@ public class SparkUi {
                         int n;
                         while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
                     }
+                    org.telegram.messenger.spark.SparkFiles.record(name, uri.toString(), mime);
                 } else {
                     java.io.File dir = new java.io.File(android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS), "Sparkgram");
                     dir.mkdirs();
@@ -479,6 +480,11 @@ public class SparkUi {
                         byte[] buf = new byte[64 * 1024];
                         int n;
                         while ((n = in.read(buf)) > 0) out.write(buf, 0, n);
+                    }
+                    try {
+                        android.net.Uri fu = androidx.core.content.FileProvider.getUriForFile(ctx, org.telegram.messenger.ApplicationLoader.getApplicationId() + ".provider", dest);
+                        org.telegram.messenger.spark.SparkFiles.record(name, fu.toString(), mime);
+                    } catch (Throwable ignore) {
                     }
                 }
                 shown = "Download/Sparkgram/" + name;

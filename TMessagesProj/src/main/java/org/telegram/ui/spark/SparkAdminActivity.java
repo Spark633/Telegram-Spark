@@ -28,32 +28,50 @@ public class SparkAdminActivity extends UniversalFragment {
     private static final int ID_CONFIRM = 4;
     private static final int ID_ADD_STAGE = 5;
     private static final int ID_REMOVE = 6;
+    private static final int ID_DURATION = 7;
+    private static final int ID_TEXT = 8;
+    private static final int ID_STAGE_REMOVE = 9;
+    private static final int ID_KICK = 10;
+    private static final int ID_BAN = 11;
     private static final int ID_TEMPLATE_BASE = 1000;
     private static final int ID_STAGE_BASE = 2000;
+    private static final int ID_R_BASE = 3000;
 
     private final long templateId;
+    private final int stageIndex; // >= 0: Editor einer Stufe
     private SparkAdmin.Template template;
     private ArrayList<SparkAdmin.Template> list = new ArrayList<>();
 
     /** Liste aller Vorlagen. */
     public SparkAdminActivity() {
-        this(0);
+        this(0, -1);
     }
 
     /** Editor einer Vorlage. */
     public SparkAdminActivity(long templateId) {
+        this(templateId, -1);
+    }
+
+    /** Editor einer Stufe. */
+    public SparkAdminActivity(long templateId, int stageIndex) {
         this.templateId = templateId;
+        this.stageIndex = stageIndex;
     }
 
     private boolean isEditor() {
         return templateId != 0;
     }
 
+    private boolean isStageEditor() {
+        return templateId != 0 && stageIndex >= 0;
+    }
+
     @Override
     protected CharSequence getTitle() {
         if (isEditor()) {
             SparkAdmin.Template t = SparkAdmin.find(templateId);
-            return t != null ? t.name : "Vorlage";
+            String n = t != null ? t.name : "Vorlage";
+            return isStageEditor() ? n + " · " + (stageIndex + 1) + ". Mal" : n;
         }
         return "Admin-Vorlagen";
     }
@@ -82,6 +100,30 @@ public class SparkAdminActivity extends UniversalFragment {
             items.add(UItem.asShadow("Vorlage nicht gefunden."));
             return;
         }
+        if (isStageEditor()) {
+            if (stageIndex >= template.stages.size()) {
+                items.add(UItem.asShadow("Stufe nicht gefunden."));
+                return;
+            }
+            SparkAdmin.Stage s = template.stages.get(stageIndex);
+            items.add(UItem.asHeader("Einschränkungen (mehrere möglich)"));
+            for (int i = 0; i < SparkAdmin.R_BITS.length; i++) {
+                items.add(UItem.asCheck(ID_R_BASE + i, SparkAdmin.R_NAMES[i]).setChecked(s.remove == SparkAdmin.REMOVE_NONE && (s.restrictions & SparkAdmin.R_BITS[i]) != 0));
+            }
+            items.add(UItem.asHeader("Oder stattdessen"));
+            items.add(UItem.asCheck(ID_KICK, "Entfernen (kann nach 1 Minute wieder beitreten)").setChecked(s.remove == SparkAdmin.REMOVE_KICK));
+            items.add(UItem.asCheck(ID_BAN, "Bannen").setChecked(s.remove == SparkAdmin.REMOVE_BAN));
+            items.add(UItem.asHeader("Dauer & Text"));
+            if (s.remove != SparkAdmin.REMOVE_KICK) {
+                items.add(UItem.asButton(ID_DURATION, R.drawable.msg_recent, "Dauer", SparkAdmin.durationName(s.duration)));
+            }
+            items.add(UItem.asButton(ID_TEXT, R.drawable.msg_edit, "Text in die Gruppe", TextUtils.isEmpty(s.text) ? "kein Text" : ""));
+            items.add(UItem.asShadow(TextUtils.isEmpty(s.text) ? "Es wird kein Text gesendet." : s.text));
+            if (template.stages.size() > 1) {
+                items.add(UItem.asButton(ID_STAGE_REMOVE, R.drawable.msg_delete, "Diese Stufe löschen").red());
+            }
+            return;
+        }
         items.add(UItem.asButton(ID_NAME, R.drawable.msg_edit, "Name", template.name));
         items.add(UItem.asCheck(ID_DELETE_MSG, "Nachricht löschen").setChecked(template.deleteMessage));
         items.add(UItem.asCheck(ID_CONFIRM, "Vor dem Ausführen fragen").setChecked(template.confirm));
@@ -89,11 +131,11 @@ public class SparkAdminActivity extends UniversalFragment {
         for (int i = 0; i < template.stages.size(); i++) {
             SparkAdmin.Stage s = template.stages.get(i);
             String last = i == template.stages.size() - 1 && template.stages.size() > 1 ? " (und jedes weitere Mal)" : "";
-            items.add(UItem.asButton(ID_STAGE_BASE + i, (i + 1) + ". Mal" + last, SparkAdmin.describe(s)));
-            items.add(UItem.asShadow(TextUtils.isEmpty(s.text) ? "Kein Text in die Gruppe" : "Text: " + s.text));
+            items.add(UItem.asButton(ID_STAGE_BASE + i, (i + 1) + ". Mal" + last, ""));
+            items.add(UItem.asShadow(SparkAdmin.describe(s) + "\n" + (TextUtils.isEmpty(s.text) ? "Kein Text in die Gruppe" : "Text: " + s.text)));
         }
         items.add(UItem.asButton(ID_ADD_STAGE, R.drawable.msg_add, "Stufe hinzufügen").accent());
-        items.add(UItem.asShadow("Antippen = Stufe bearbeiten, lange drücken = Stufe löschen. Im Text wird {user} durch die Person ersetzt (als Erwähnung)."));
+        items.add(UItem.asShadow("Stufe antippen zum Bearbeiten. Im Text wird {user} durch die Person ersetzt (als Erwähnung)."));
         items.add(UItem.asButton(ID_REMOVE, R.drawable.msg_delete, "Vorlage löschen").red());
     }
 
@@ -111,6 +153,40 @@ public class SparkAdminActivity extends UniversalFragment {
             return;
         }
         if (template == null) return;
+        if (isStageEditor()) {
+            if (stageIndex >= template.stages.size()) return;
+            SparkAdmin.Stage s = template.stages.get(stageIndex);
+            int r = item.id - ID_R_BASE;
+            if (r >= 0 && r < SparkAdmin.R_BITS.length) {
+                s.remove = SparkAdmin.REMOVE_NONE;
+                s.restrictions ^= SparkAdmin.R_BITS[r];
+                saveAndUpdate();
+            } else if (item.id == ID_KICK) {
+                s.remove = s.remove == SparkAdmin.REMOVE_KICK ? SparkAdmin.REMOVE_NONE : SparkAdmin.REMOVE_KICK;
+                saveAndUpdate();
+            } else if (item.id == ID_BAN) {
+                s.remove = s.remove == SparkAdmin.REMOVE_BAN ? SparkAdmin.REMOVE_NONE : SparkAdmin.REMOVE_BAN;
+                saveAndUpdate();
+            } else if (item.id == ID_DURATION) {
+                AlertDialog.Builder c = new AlertDialog.Builder(getParentActivity());
+                c.setTitle(SparkUi.mark("Dauer"));
+                c.setItems(SparkAdmin.DURATION_NAMES, (d2, w) -> {
+                    s.duration = SparkAdmin.DURATIONS[w];
+                    saveAndUpdate();
+                });
+                showDialog(c.create());
+            } else if (item.id == ID_TEXT) {
+                editText(this, "Text in die Gruppe", s.text, "{user} restricted for … (leer = kein Text)", true, text -> {
+                    s.text = text == null ? "" : text;
+                    saveAndUpdate();
+                });
+            } else if (item.id == ID_STAGE_REMOVE) {
+                template.stages.remove(stageIndex);
+                SparkAdmin.put(template);
+                finishFragment();
+            }
+            return;
+        }
         if (item.id == ID_NAME) {
             editText(this, "Name der Vorlage", template.name, "z. B. RL-Bilder", false, text -> {
                 if (TextUtils.isEmpty(text)) return;
@@ -127,16 +203,17 @@ public class SparkAdminActivity extends UniversalFragment {
             SparkAdmin.Stage s = new SparkAdmin.Stage();
             if (!template.stages.isEmpty()) {
                 SparkAdmin.Stage prev = template.stages.get(template.stages.size() - 1);
-                s.action = prev.action;
+                s.restrictions = prev.restrictions;
+                s.remove = prev.remove;
                 s.duration = prev.duration;
                 s.text = prev.text;
             } else {
-                s.action = SparkAdmin.ACT_MUTE;
+                s.restrictions = SparkAdmin.R_MUTE;
                 s.duration = 86400;
             }
             template.stages.add(s);
-            saveAndUpdate();
-            editStage(template.stages.size() - 1);
+            SparkAdmin.put(template);
+            presentFragment(new SparkAdminActivity(template.id, template.stages.size() - 1));
         } else if (item.id == ID_REMOVE) {
             AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
             b.setTitle(SparkUi.mark("Vorlage löschen"));
@@ -149,58 +226,19 @@ public class SparkAdminActivity extends UniversalFragment {
             showDialog(b.create());
         } else {
             int i = item.id - ID_STAGE_BASE;
-            if (i >= 0 && i < template.stages.size()) editStage(i);
+            if (i >= 0 && i < template.stages.size()) presentFragment(new SparkAdminActivity(template.id, i));
         }
     }
 
     @Override
     protected boolean onLongClick(UItem item, View view, int position, float x, float y) {
-        if (!isEditor() || template == null) return false;
-        int i = item.id - ID_STAGE_BASE;
-        if (i < 0 || i >= template.stages.size()) return false;
-        if (template.stages.size() <= 1) return true; // mindestens eine Stufe
-        template.stages.remove(i);
-        saveAndUpdate();
-        return true;
+        return false;
     }
 
     private void saveAndUpdate() {
         SparkAdmin.put(template);
-        if (actionBar != null) actionBar.setTitle(template.name);
+        if (actionBar != null) actionBar.setTitle(getTitle());
         listView.adapter.update(true);
-    }
-
-    /** Stufe bearbeiten: Aktion -> Dauer -> Text. */
-    private void editStage(int index) {
-        SparkAdmin.Stage s = template.stages.get(index);
-        AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
-        b.setTitle(SparkUi.mark((index + 1) + ". Mal: Aktion"));
-        b.setItems(SparkAdmin.ACTION_NAMES, (d, action) -> {
-            s.action = action;
-            if (action == SparkAdmin.ACT_NONE || action == SparkAdmin.ACT_KICK) {
-                s.duration = 0;
-                saveAndUpdate();
-                editStageText(index);
-                return;
-            }
-            AlertDialog.Builder c = new AlertDialog.Builder(getParentActivity());
-            c.setTitle(SparkUi.mark((index + 1) + ". Mal: Dauer"));
-            c.setItems(SparkAdmin.DURATION_NAMES, (d2, w) -> {
-                s.duration = SparkAdmin.DURATIONS[w];
-                saveAndUpdate();
-                editStageText(index);
-            });
-            showDialog(c.create());
-        });
-        showDialog(b.create());
-    }
-
-    private void editStageText(int index) {
-        SparkAdmin.Stage s = template.stages.get(index);
-        editText(this, (index + 1) + ". Mal: Text in die Gruppe", s.text, "{user} restricted for … (leer = kein Text)", true, text -> {
-            s.text = text == null ? "" : text;
-            saveAndUpdate();
-        });
     }
 
     // ------------------------------------------------------------------ Im Chat: Nachricht -> "✦ Admin"
@@ -300,6 +338,52 @@ public class SparkAdminActivity extends UniversalFragment {
         }
         b.setPositiveButton("OK", null);
         fragment.showDialog(b.create());
+    }
+
+    /** Verwarnungen (Zaehler) aller Personen in einer Gruppe; antippen = Person zuruecksetzen. */
+    public static void showGroupCounters(BaseFragment fragment, long chatId) {
+        final int account = fragment.getCurrentAccount();
+        final ArrayList<SparkAdmin.Count> counts = SparkAdmin.countsForChat(account, chatId);
+        if (counts.isEmpty()) {
+            org.telegram.ui.Components.BulletinFactory.of(fragment).createSimpleBulletin(R.raw.info, "✦ In dieser Gruppe gibt es noch keine Verwarnungen").show();
+            return;
+        }
+        // nach Person zusammenfassen
+        final java.util.LinkedHashMap<Long, StringBuilder> byUser = new java.util.LinkedHashMap<>();
+        java.util.Collections.sort(counts, (a, b) -> b.count - a.count);
+        for (SparkAdmin.Count c : counts) {
+            SparkAdmin.Template t = SparkAdmin.find(c.templateId);
+            StringBuilder sb = byUser.get(c.userId);
+            if (sb == null) byUser.put(c.userId, sb = new StringBuilder());
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(t != null ? t.name : "gelöschte Vorlage").append(" ").append(c.count).append("×");
+        }
+        final ArrayList<Long> users = new ArrayList<>(byUser.keySet());
+        CharSequence[] texts = new CharSequence[users.size()];
+        for (int i = 0; i < users.size(); i++) {
+            org.telegram.tgnet.TLRPC.User u = org.telegram.messenger.MessagesController.getInstance(account).getUser(users.get(i));
+            texts[i] = (u != null ? org.telegram.messenger.UserObject.getUserName(u) : "ID " + users.get(i)) + ": " + byUser.get(users.get(i));
+        }
+        AlertDialog.Builder b = new AlertDialog.Builder(fragment.getParentActivity());
+        b.setTitle(SparkUi.mark("Verwarnungen"));
+        b.setItems(texts, (d, w) -> {
+            long uid = users.get(w);
+            AlertDialog.Builder c = new AlertDialog.Builder(fragment.getParentActivity());
+            c.setTitle(SparkUi.mark("Zurücksetzen?"));
+            c.setMessage("Alle Zähler dieser Person in dieser Gruppe auf 0 setzen?");
+            c.setPositiveButton("Zurücksetzen", (d2, w2) -> {
+                for (SparkAdmin.Count cn : counts) if (cn.userId == uid) SparkAdmin.setCount(account, chatId, uid, cn.templateId, 0);
+                org.telegram.ui.Components.BulletinFactory.of(fragment).createSimpleBulletin(R.raw.contact_check, "✦ Zurückgesetzt").show();
+            });
+            c.setNegativeButton("Abbrechen", null);
+            fragment.showDialog(c.create());
+        });
+        b.setPositiveButton("OK", null);
+        fragment.showDialog(b.create());
+    }
+
+    public static void scanSuspicious(BaseFragment fragment, long chatId) {
+        fragment.presentFragment(new SparkSuspiciousActivity(chatId));
     }
 
     public interface TextDone {

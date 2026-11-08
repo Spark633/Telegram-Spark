@@ -118,6 +118,14 @@ public class SearchDownloadsContainer extends FrameLayout implements Notificatio
         recyclerListView.setItemAnimator(defaultItemAnimator);
 
         recyclerListView.setOnItemClickListener((view, position) -> {
+            if (position >= sparkFilesStartRow && position < sparkFilesEndRow) { // Sparkgram
+                org.telegram.messenger.spark.SparkFiles.Item it = sparkFiles.get(position - sparkFilesStartRow);
+                if (!org.telegram.messenger.spark.SparkFiles.open(getContext(), it)) {
+                    org.telegram.messenger.spark.SparkFiles.remove(it.uri);
+                    update(false);
+                }
+                return;
+            }
             MessageObject messageObject = adapter.getMessage(position);
             if (messageObject == null) {
                 return;
@@ -505,7 +513,26 @@ public class SearchDownloadsContainer extends FrameLayout implements Notificatio
             recentFilesEndRow = rowCount;
 
         }
+        // Sparkgram: eigene Dateien (Exporte, Sicherungen) am Ende
+        sparkFiles.clear();
+        sparkFilesHeader = -1;
+        sparkFilesStartRow = -1;
+        sparkFilesEndRow = -1;
+        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MASTER)) {
+            for (org.telegram.messenger.spark.SparkFiles.Item it : org.telegram.messenger.spark.SparkFiles.list()) {
+                if (TextUtils.isEmpty(searchQuery) || it.name.toLowerCase().contains(searchQuery.toLowerCase())) sparkFiles.add(it);
+            }
+            if (!sparkFiles.isEmpty()) {
+                sparkFilesHeader = rowCount++;
+                sparkFilesStartRow = rowCount;
+                rowCount += sparkFiles.size();
+                sparkFilesEndRow = rowCount;
+            }
+        }
     }
+
+    private final ArrayList<org.telegram.messenger.spark.SparkFiles.Item> sparkFiles = new ArrayList<>();
+    private int sparkFilesHeader = -1, sparkFilesStartRow = -1, sparkFilesEndRow = -1;
 
     public void search(String query) {
         searchQuery = query;
@@ -520,6 +547,9 @@ public class SearchDownloadsContainer extends FrameLayout implements Notificatio
             View view;
             if (viewType == 0) {
                 view = new GraySectionCell(parent.getContext());
+            } else if (viewType == 3) {
+                view = new org.telegram.ui.Cells.TextDetailCell(parent.getContext());
+                view.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
             } else if (viewType == 1){
                 Cell sharedDocumentCell = new Cell(parent.getContext());
                 view = sharedDocumentCell;
@@ -540,6 +570,16 @@ public class SearchDownloadsContainer extends FrameLayout implements Notificatio
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             int type = holder.getItemViewType();
+            if (type == 3) {
+                org.telegram.messenger.spark.SparkFiles.Item it = sparkFiles.get(position - sparkFilesStartRow);
+                String when = new java.text.SimpleDateFormat("dd.MM.yy HH:mm", java.util.Locale.GERMANY).format(new java.util.Date(it.time));
+                ((org.telegram.ui.Cells.TextDetailCell) holder.itemView).setTextAndValue(it.name, "Download/Sparkgram · " + when, position < sparkFilesEndRow - 1);
+                return;
+            }
+            if (type == 0 && position == sparkFilesHeader) {
+                ((GraySectionCell) holder.itemView).setText("✦ Sparkgram (Exporte & Sicherungen)");
+                return;
+            }
             if (type == 0) {
                 GraySectionCell graySectionCell = (GraySectionCell) holder.itemView;
                 if (position == downloadingFilesHeader) {
@@ -594,8 +634,11 @@ public class SearchDownloadsContainer extends FrameLayout implements Notificatio
 
         @Override
         public int getItemViewType(int position) {
-            if (position == downloadingFilesHeader || position == recentFilesHeader) {
+            if (position == downloadingFilesHeader || position == recentFilesHeader || position == sparkFilesHeader) {
                 return 0;
+            }
+            if (position >= sparkFilesStartRow && position < sparkFilesEndRow) {
+                return 3;
             }
             MessageObject messageObject = getMessage(position);
             if (messageObject == null) {
@@ -623,7 +666,7 @@ public class SearchDownloadsContainer extends FrameLayout implements Notificatio
 
         @Override
         public boolean isEnabled(RecyclerView.ViewHolder holder) {
-            return holder.getItemViewType() == 1 || holder.getItemViewType() == 2;
+            return holder.getItemViewType() == 1 || holder.getItemViewType() == 2 || holder.getItemViewType() == 3;
         }
     }
 

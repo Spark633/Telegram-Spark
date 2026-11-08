@@ -33,13 +33,41 @@ public class SparkAdmin {
     public static final int ACT_BAN = 6;
 
     public static final String[] ACTION_NAMES = {"Keine Einschränkung", "Stumm (gar nichts senden)", "Keine Medien (Fotos, Videos, Dateien, Sprache)", "Keine Sticker & GIFs", "Keine Links", "Entfernen (kann wieder beitreten)", "Bannen"};
+
+    // Einschraenkungen (kombinierbar) als Bits
+    public static final int R_MUTE = 1;
+    public static final int R_MEDIA = 2;
+    public static final int R_STICKERS = 4;
+    public static final int R_LINKS = 8;
+    public static final int R_POLLS = 16;
+    public static final int R_INVITE = 32;
+    public static final int[] R_BITS = {R_MUTE, R_MEDIA, R_STICKERS, R_LINKS, R_POLLS, R_INVITE};
+    public static final String[] R_NAMES = {"Stumm (gar nichts senden)", "Keine Medien (Fotos, Videos, Dateien, Sprache)", "Keine Sticker & GIFs", "Keine Links", "Keine Umfragen", "Niemanden einladen"};
+    public static final String[] R_SHORT = {"stumm", "keine Medien", "keine Sticker/GIFs", "keine Links", "keine Umfragen", "nicht einladen"};
+
+    public static final int REMOVE_NONE = 0;
+    public static final int REMOVE_KICK = 1;
+    public static final int REMOVE_BAN = 2;
     public static final int[] DURATIONS = {3600, 86400, 7 * 86400, 30 * 86400, 90 * 86400, 0};
     public static final String[] DURATION_NAMES = {"1 Stunde", "1 Tag", "1 Woche", "1 Monat", "3 Monate", "dauerhaft"};
 
     public static class Stage {
-        public int action;
-        public int duration; // Sekunden, 0 = dauerhaft
+        public int restrictions; // R_* Bits
+        public int remove;       // REMOVE_*
+        public int duration;     // Sekunden, 0 = dauerhaft
         public String text = "";
+    }
+
+    /** Alte Einzel-Aktion (bis 0.17) in Bits umwandeln. */
+    private static void fromLegacy(Stage s, int action) {
+        switch (action) {
+            case ACT_MUTE: s.restrictions = R_MUTE; break;
+            case ACT_NO_MEDIA: s.restrictions = R_MEDIA; break;
+            case ACT_NO_STICKERS: s.restrictions = R_STICKERS; break;
+            case ACT_NO_LINKS: s.restrictions = R_LINKS; break;
+            case ACT_KICK: s.remove = REMOVE_KICK; break;
+            case ACT_BAN: s.remove = REMOVE_BAN; break;
+        }
     }
 
     public static class Template {
@@ -82,7 +110,12 @@ public class SparkAdmin {
                     for (int k = 0; k < st.length(); k++) {
                         JSONObject so = st.getJSONObject(k);
                         Stage s = new Stage();
-                        s.action = so.optInt("a");
+                        if (so.has("r") || so.has("x")) {
+                            s.restrictions = so.optInt("r");
+                            s.remove = so.optInt("x");
+                        } else {
+                            fromLegacy(s, so.optInt("a"));
+                        }
                         s.duration = so.optInt("d");
                         s.text = so.optString("t", "");
                         t.stages.add(s);
@@ -108,7 +141,8 @@ public class SparkAdmin {
                 JSONArray st = new JSONArray();
                 for (Stage s : t.stages) {
                     JSONObject so = new JSONObject();
-                    so.put("a", s.action);
+                    so.put("r", s.restrictions);
+                    so.put("x", s.remove);
                     so.put("d", s.duration);
                     so.put("t", s.text == null ? "" : s.text);
                     st.put(so);
@@ -151,7 +185,7 @@ public class SparkAdmin {
         t.id = System.currentTimeMillis();
         t.name = "Neue Vorlage";
         Stage s = new Stage();
-        s.action = ACT_MUTE;
+        s.restrictions = R_MUTE;
         s.duration = 86400;
         s.text = "{user} …";
         t.stages.add(s);
@@ -167,7 +201,7 @@ public class SparkAdmin {
         int[] d = {30 * 86400, 90 * 86400, 0};
         for (int dur : d) {
             Stage s = new Stage();
-            s.action = ACT_NO_MEDIA;
+            s.restrictions = R_MEDIA;
             s.duration = dur;
             s.text = "{user} restricted for sending RL pics.";
             t.stages.add(s);
@@ -190,6 +224,32 @@ public class SparkAdmin {
         else counts(account).edit().putInt(key(chatId, userId, templateId), value).apply();
     }
 
+    public static class Count {
+        public long userId;
+        public long templateId;
+        public int count;
+    }
+
+    /** Alle Zaehler einer Gruppe. */
+    public static ArrayList<Count> countsForChat(int account, long chatId) {
+        ArrayList<Count> list = new ArrayList<>();
+        String prefix = chatId + "_";
+        for (java.util.Map.Entry<String, ?> e : counts(account).getAll().entrySet()) {
+            if (!e.getKey().startsWith(prefix) || !(e.getValue() instanceof Integer)) continue;
+            String[] parts = e.getKey().split("_");
+            if (parts.length != 3) continue;
+            try {
+                Count c = new Count();
+                c.userId = Long.parseLong(parts[1]);
+                c.templateId = Long.parseLong(parts[2]);
+                c.count = (Integer) e.getValue();
+                if (c.count > 0) list.add(c);
+            } catch (NumberFormatException ignore) {
+            }
+        }
+        return list;
+    }
+
     /** Stufe (0-basiert), die beim naechsten Anwenden greift. */
     public static int nextStage(int account, long chatId, long userId, Template t) {
         if (t.stages.isEmpty()) return -1;
@@ -197,9 +257,17 @@ public class SparkAdmin {
     }
 
     public static String describe(Stage s) {
-        String a = s.action >= 0 && s.action < ACTION_NAMES.length ? ACTION_NAMES[s.action] : "?";
-        if (s.action == ACT_NONE || s.action == ACT_KICK) return a;
-        return a + " · " + durationName(s.duration);
+        if (s.remove == REMOVE_KICK) return "Entfernen (kann wieder beitreten)";
+        if (s.remove == REMOVE_BAN) return "Bannen · " + durationName(s.duration);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < R_BITS.length; i++) {
+            if ((s.restrictions & R_BITS[i]) != 0) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(R_SHORT[i]);
+            }
+        }
+        if (sb.length() == 0) return "Keine Einschränkung";
+        return sb + " · " + durationName(s.duration);
     }
 
     public static String durationName(int seconds) {
@@ -242,41 +310,41 @@ public class SparkAdmin {
             mc.deleteMessages(ids, null, null, dialogId, 0, true, 0);
         }
 
-        // 2. Einschraenkung
-        if (s.action != ACT_NONE) {
+        // 2. Entfernen/Bannen oder Einschraenkungen (kombiniert)
+        if (s.remove != REMOVE_NONE || s.restrictions != 0) {
+            int now = (int) (System.currentTimeMillis() / 1000);
             if (!channel) {
-                if (s.action == ACT_KICK || s.action == ACT_BAN) {
+                if (s.remove != REMOVE_NONE) {
                     mc.deleteParticipantFromChat(chatId, user);
                 } else {
-                    error = "Einschränkungen gehen nur in Supergruppen – Nachricht/Text wurden trotzdem ausgeführt";
+                    error = "Einschränkungen gehen nur in Supergruppen – Löschen/Text wurden trotzdem ausgeführt";
                 }
             } else {
                 TLRPC.TL_chatBannedRights r = new TLRPC.TL_chatBannedRights();
-                int now = (int) (System.currentTimeMillis() / 1000);
-                switch (s.action) {
-                    case ACT_MUTE:
+                if (s.remove != REMOVE_NONE) {
+                    r.view_messages = true;
+                    r.until_date = s.remove == REMOVE_KICK ? now + 60 : (s.duration == 0 ? 0 : now + s.duration);
+                } else {
+                    int m = s.restrictions;
+                    if ((m & R_MUTE) != 0) {
                         r.send_messages = r.send_media = r.send_stickers = r.send_gifs = r.send_games = r.send_inline = r.embed_links = r.send_polls = true;
                         r.send_photos = r.send_videos = r.send_roundvideos = r.send_audios = r.send_voices = r.send_docs = r.send_plain = true;
-                        break;
-                    case ACT_NO_MEDIA:
+                    }
+                    if ((m & R_MEDIA) != 0) {
                         r.send_media = r.send_photos = r.send_videos = r.send_roundvideos = r.send_audios = r.send_voices = r.send_docs = true;
-                        break;
-                    case ACT_NO_STICKERS:
+                    }
+                    if ((m & R_STICKERS) != 0) {
                         r.send_stickers = r.send_gifs = true;
-                        break;
-                    case ACT_NO_LINKS:
+                    }
+                    if ((m & R_LINKS) != 0) {
                         r.embed_links = true;
-                        break;
-                    case ACT_KICK:
-                        r.view_messages = true;
-                        break;
-                    case ACT_BAN:
-                        r.view_messages = true;
-                        break;
-                }
-                if (s.action == ACT_KICK) {
-                    r.until_date = now + 60; // nach 1 Minute kann die Person wieder beitreten
-                } else {
+                    }
+                    if ((m & R_POLLS) != 0) {
+                        r.send_polls = true;
+                    }
+                    if ((m & R_INVITE) != 0) {
+                        r.invite_users = true;
+                    }
                     r.until_date = s.duration == 0 ? 0 : now + s.duration;
                 }
                 mc.setParticipantBannedRole(chatId, user, null, r, true, fragment);
