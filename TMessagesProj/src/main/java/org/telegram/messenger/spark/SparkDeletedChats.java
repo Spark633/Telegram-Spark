@@ -57,6 +57,17 @@ public class SparkDeletedChats {
         prefs(account).edit().putStringSet("kept", set).apply();
     }
 
+    /** Einzelne Chats nur im Ordner "Verlassen" zeigen. */
+    public static synchronized boolean isOnlyInFolder(int account, long dialogId) {
+        return prefs(account).getStringSet("onlyFolder", new java.util.HashSet<>()).contains(String.valueOf(dialogId));
+    }
+
+    public static synchronized void setOnlyInFolder(int account, long dialogId, boolean only) {
+        java.util.HashSet<String> set = new java.util.HashSet<>(prefs(account).getStringSet("onlyFolder", new java.util.HashSet<>()));
+        if (only) set.add(String.valueOf(dialogId)); else set.remove(String.valueOf(dialogId));
+        prefs(account).edit().putStringSet("onlyFolder", set).apply();
+    }
+
     /** Symbol je Art: 🚪 verlassen, 🔨 entfernt, 🗑 geloescht. */
     public static String icon(int kind) {
         return kind == KIND_KICKED ? "🔨" : kind == KIND_LEFT ? "🚪" : "🗑";

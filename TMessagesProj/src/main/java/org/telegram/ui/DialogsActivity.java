@@ -713,6 +713,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private final static int remove_from_folder = 110;
     private final static int community_ungroup = 111;
     private final static int spark_local_pin = 9240; // Sparkgram
+    private final static int spark_left_only = 9241; // Sparkgram
+    private ActionBarMenuSubItem sparkLeftOnlyItem;
 
     private final static int ARCHIVE_ITEM_STATE_PINNED = 0;
     private final static int ARCHIVE_ITEM_STATE_SHOWED = 1;
@@ -4014,6 +4016,19 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     hideActionMode(false);
                 } else if (id == pin || id == read || id == delete || id == clear || id == mute || id == archive || id == block || id == archive2 || id == pin2) {
                     performSelectedDialogsAction(selectedDialogs, id, true, false);
+                } else if (id == spark_left_only) {
+                    // Sparkgram: markierte verlassene Chats nur im Ordner "Verlassen" zeigen bzw. wieder ueberall
+                    boolean anyVisible = false;
+                    for (long did : selectedDialogs) {
+                        if (!org.telegram.messenger.spark.SparkDeletedChats.isOnlyInFolder(currentAccount, did)) anyVisible = true;
+                    }
+                    for (long did : selectedDialogs) {
+                        org.telegram.messenger.spark.SparkDeletedChats.setOnlyInFolder(currentAccount, did, anyVisible);
+                    }
+                    getMessagesController().sortDialogs(null);
+                    getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
+                    BulletinFactory.of(DialogsActivity.this).createSimpleBulletin(R.raw.contact_check, anyVisible ? "✦ Nur noch im Ordner „Verlassen“" : "✦ Wieder in allen Chats sichtbar").show();
+                    hideActionMode(true);
                 } else if (id == spark_local_pin) {
                     // Sparkgram: markierte Chats lokal anheften bzw. loesen
                     boolean anyUnpinned = false;
@@ -6766,6 +6781,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LOCAL_PINS)) {
             otherItem.addSubItem(spark_local_pin, R.drawable.msg_pin, org.telegram.ui.spark.SparkUi.mark("Lokal anheften / lösen")); // Sparkgram
         }
+        sparkLeftOnlyItem = otherItem.addSubItem(spark_left_only, R.drawable.msg_folders, org.telegram.ui.spark.SparkUi.mark("Nur im Ordner „Verlassen“ an/aus")); // Sparkgram
+        sparkLeftOnlyItem.setVisibility(View.GONE);
         addToFolderItem = otherItem.addSubItem(add_to_folder, R.drawable.msg_addfolder, LocaleController.getString(R.string.FilterAddTo));
         removeFromFolderItem = otherItem.addSubItem(remove_from_folder, R.drawable.msg_removefolder, LocaleController.getString(R.string.FilterRemoveFrom));
         readItem = otherItem.addSubItem(read, R.drawable.msg_markread, LocaleController.getString(R.string.MarkAsRead));
@@ -9929,6 +9946,14 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 archiveItem.setVisibility(View.GONE);
                 archive2Item.setVisibility(View.GONE);
             }
+        }
+        if (sparkLeftOnlyItem != null) {
+            // Sparkgram: nur zeigen, wenn alle markierten Chats verlassen/geloescht (behalten) sind
+            boolean allLeft = !selectedDialogs.isEmpty() && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LEFT_FOLDER);
+            for (long did : selectedDialogs) {
+                if (!getMessagesController().sparkIsKeptLeft(did)) { allLeft = false; break; }
+            }
+            sparkLeftOnlyItem.setVisibility(allLeft ? View.VISIBLE : View.GONE);
         }
         if (pinItem != null && pin2Item != null) {
             if ((canPinCount + canUnpinCount != count) || (communityId != 0)) {

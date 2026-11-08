@@ -1298,10 +1298,19 @@ public class MessagesController extends BaseController implements NotificationCe
 
     /** Sparkgram: Chat nur im Ordner "Verlassen" zeigen (nicht in "Alle Chats" und anderen Ordnern)? */
     public boolean sparkLeftOnlyInFolder(long dialogId) {
-        if (dialogId == 0 || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LEFT_ONLY_FOLDER)
-                || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LEFT_FOLDER) || !sparkKeepLeftOn()) {
+        if (dialogId == 0 || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LEFT_FOLDER) || !sparkKeepLeftOn()) {
             return false;
         }
+        if (!org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LEFT_ONLY_FOLDER)
+                && !org.telegram.messenger.spark.SparkDeletedChats.isOnlyInFolder(currentAccount, dialogId)) {
+            return false;
+        }
+        return sparkIsKeptLeft(dialogId);
+    }
+
+    /** Sparkgram: verlassener/entfernter bzw. lokal behaltener geloeschter Chat? */
+    public boolean sparkIsKeptLeft(long dialogId) {
+        if (dialogId == 0) return false;
         if (dialogId > 0) {
             return org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, dialogId);
         }

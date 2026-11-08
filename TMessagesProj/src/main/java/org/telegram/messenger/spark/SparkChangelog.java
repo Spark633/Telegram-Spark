@@ -21,7 +21,7 @@ public class SparkChangelog {
     public static final Release[] RELEASES = {
         new Release("0.18", "08.11.2026",
             "Verlassene Gruppen und gelöschte Chats bleiben sichtbar – auch während des „Rückgängig“-Countdowns",
-            "Verlassene/gelöschte Chats auf Wunsch nur im Ordner „Verlassen“ anzeigen (Nachrichten → Gelöschte & verlassene Chats)",
+            "Verlassene/gelöschte Chats auf Wunsch nur im Ordner „Verlassen“ anzeigen – für alle (Nachrichten → Gelöschte & verlassene Chats) oder einzeln: Chat in der Übersicht markieren → ⋮ → „Nur im Ordner ‚Verlassen‘“",
             "Persona: mit [], {}, (), <>, -- oder == wird die Nachricht eingeschlossen („Luna []“ → „Luna: [Hallo]“, nur „[]“ → „[Hallo]“)",
             "Einstellungen: Suche oben rechts; „Gelöschte & verlassene Chats“ jetzt unter Nachrichten",
             "Sparkgram-Menü: Zurück-Pfeil oben in den Unterpunkten; neuer Unterpunkt „Admin …“ (nur als Admin): Vorlagen, Verwarnungen der Gruppe, verdächtige & gelöschte Konten, Admin-Protokoll, Beitrittsanfragen",
