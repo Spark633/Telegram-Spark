@@ -22,7 +22,8 @@ public class SparkChangelog {
         new Release("0.19", "08.11.2026",
             "Verlassene Gruppe wird nach dem Verlassen sofort rot angezeigt; kein „Privater Kanal“-Fenster mehr beim Öffnen",
             "Sparkgram-Menü: Zurück-Pfeil oben links neben dem Namen; „Admin …“ direkt unter „Infos …“; „Löschen & Export“ ganz unten",
-            "Duplikate: wählbar, ob beim Aufräumen die älteste oder die neueste Nachricht bleibt"
+            "Duplikate: wählbar, ob beim Aufräumen die älteste oder die neueste Nachricht bleibt",
+            "Verlassene Gruppen: „Gruppe löschen“ statt „Beitreten“, wenn Beitreten nicht geht (privat oder gesperrt); öffentliche behalten „Beitreten“. Sparkgram fragt beim Öffnen und einmal täglich bei Telegram nach dem aktuellen Stand"
         ),
         new Release("0.18", "08.11.2026",
             "Verlassene Gruppen und gelöschte Chats bleiben sichtbar – auch während des „Rückgängig“-Countdowns",

@@ -7060,6 +7060,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         super.onResume();
         if (!onlySelect && folderId == 0) {
             org.telegram.messenger.spark.SparkAutoFolders.applyThrottled(this); // Sparkgram: Auto-Ordner
+            org.telegram.messenger.spark.SparkRejoin.refreshAll(currentAccount); // Sparkgram: verlassene Gruppen pruefen
         }
         if (dialogStoriesCell != null) {
             dialogStoriesCell.onResume();

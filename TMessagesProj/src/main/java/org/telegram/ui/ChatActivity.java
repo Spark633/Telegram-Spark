@@ -2744,6 +2744,8 @@ public class ChatActivity extends BaseFragment implements
 
     private NotificationCenter.ObserversGroup observersGroup;
 
+    private boolean sparkNoRejoin; // Sparkgram
+
     @Override
     public boolean onFragmentCreate() {
         final long chatId = arguments.getLong("chat_id", 0);
@@ -8645,7 +8647,7 @@ public class ChatActivity extends BaseFragment implements
                 botUser = null;
                 updateBottomOverlay();
             } else {
-                if (ChatObject.isChannel(currentChat) && !(currentChat instanceof TLRPC.TL_channelForbidden)) {
+                if (!sparkNoRejoin && ChatObject.isChannel(currentChat) && !(currentChat instanceof TLRPC.TL_channelForbidden)) {
                     if (ChatObject.isNotInChat(currentChat)) {
                         if (currentChat.join_request) {
 //                            showDialog(new JoinGroupAlert(context, currentChat, null, this));
@@ -28274,7 +28276,13 @@ public class ChatActivity extends BaseFragment implements
         } else if (currentChat != null) {
             long requestedTime = MessagesController.getNotificationsSettings(currentAccount).getLong("dialog_join_requested_time_" + dialog_id, -1);
             boolean shouldApply = false;
-            if (ChatObject.isChannel(currentChat) && !(currentChat instanceof TLRPC.TL_channelForbidden)) {
+            sparkNoRejoin = org.telegram.messenger.spark.SparkRejoin.cantRejoin(currentChat) && !isThreadChat();
+            if (sparkNoRejoin) {
+                // Sparkgram: verlassene private/gesperrte Gruppe – Beitreten geht nicht, daher "Gruppe löschen"
+                bottomOverlayChatText.setText(LocaleController.getString(R.string.DeleteThisGroup));
+                bottomOverlayChatText.setEnabled(true);
+                showBottomOverlayProgress(false, false);
+            } else if (ChatObject.isChannel(currentChat) && !(currentChat instanceof TLRPC.TL_channelForbidden)) {
                 if (ChatObject.isNotInChat(currentChat) && !UserObject.isBotForum(currentUser) && (ChatObject.isForum(currentChat) || !isThreadChat() || currentChat.join_to_send)) {
                     if (getMessagesController().isJoiningChannel(currentChat.id)) {
                         showBottomOverlayProgress(true, false);
@@ -30260,6 +30268,9 @@ public class ChatActivity extends BaseFragment implements
     @Override
     public void onResume() {
         super.onResume();
+        if (currentChat != null && ChatObject.isNotInChat(currentChat)) {
+            org.telegram.messenger.spark.SparkRejoin.refresh(currentAccount, currentChat, 60_000L); // Sparkgram: Beitreten moeglich?
+        }
         // Sparkgram: aktive Gespraechsteilnehmer regelmaessig auf Mitgliedschaft pruefen
         if (currentChat != null) {
             final long sparkChatId = currentChat.id;
