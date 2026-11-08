@@ -508,4 +508,72 @@ public class SparkUi {
             }
         });
     }
+
+    /**
+     * Auswahl-Fenster mit eigener Titelzeile: links ein Zurueck-Pfeil (wenn onBack != null), daneben der Titel,
+     * darunter die Eintraege mit Symbol.
+     */
+    public static void showListDialog(org.telegram.ui.ActionBar.BaseFragment fragment, CharSequence title, Runnable onBack,
+                                      CharSequence[] texts, int[] icons, org.telegram.messenger.Utilities.Callback<Integer> onClick) {
+        android.content.Context ctx = fragment.getParentActivity();
+        if (ctx == null) return;
+        final org.telegram.ui.ActionBar.AlertDialog[] holder = new org.telegram.ui.ActionBar.AlertDialog[1];
+        android.widget.LinearLayout root = new android.widget.LinearLayout(ctx);
+        root.setOrientation(android.widget.LinearLayout.VERTICAL);
+
+        android.widget.LinearLayout head = new android.widget.LinearLayout(ctx);
+        head.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+        head.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        if (onBack != null) {
+            android.widget.ImageView back = new android.widget.ImageView(ctx);
+            back.setImageResource(org.telegram.messenger.R.drawable.ic_ab_back);
+            back.setColorFilter(new android.graphics.PorterDuffColorFilter(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_dialogTextBlack), android.graphics.PorterDuff.Mode.SRC_IN));
+            back.setScaleType(android.widget.ImageView.ScaleType.CENTER);
+            back.setBackground(org.telegram.ui.ActionBar.Theme.createSelectorDrawable(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_listSelector), 1));
+            back.setOnClickListener(v -> {
+                if (holder[0] != null) holder[0].dismiss();
+                onBack.run();
+            });
+            head.addView(back, org.telegram.ui.Components.LayoutHelper.createLinear(48, 48, 0, 0, 4, 0));
+        }
+        android.widget.TextView t = new android.widget.TextView(ctx);
+        t.setText(title);
+        t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 20);
+        t.setTypeface(AndroidUtilities.bold());
+        t.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_dialogTextBlack));
+        t.setSingleLine(true);
+        t.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        head.addView(t, org.telegram.ui.Components.LayoutHelper.createLinear(0, org.telegram.ui.Components.LayoutHelper.WRAP_CONTENT, 1f, onBack != null ? 0 : 12, 0, 12, 0));
+        root.addView(head, org.telegram.ui.Components.LayoutHelper.createLinear(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, 56, 12, 4, 12, 4));
+
+        for (int i = 0; i < texts.length; i++) {
+            final int which = i;
+            android.widget.TextView row = new android.widget.TextView(ctx);
+            row.setText(texts[i]);
+            row.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 16);
+            row.setTextColor(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_dialogTextBlack));
+            row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            row.setPadding(AndroidUtilities.dp(24), 0, AndroidUtilities.dp(24), 0);
+            row.setSingleLine(true);
+            row.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            if (icons != null && i < icons.length && icons[i] != 0) {
+                android.graphics.drawable.Drawable d = ctx.getResources().getDrawable(icons[i]).mutate();
+                d.setColorFilter(new android.graphics.PorterDuffColorFilter(org.telegram.ui.ActionBar.Theme.getColor(org.telegram.ui.ActionBar.Theme.key_dialogIcon), android.graphics.PorterDuff.Mode.SRC_IN));
+                row.setCompoundDrawablesWithIntrinsicBounds(d, null, null, null);
+                row.setCompoundDrawablePadding(AndroidUtilities.dp(20));
+            }
+            row.setBackground(org.telegram.ui.ActionBar.Theme.getSelectorDrawable(false));
+            row.setOnClickListener(v -> {
+                if (holder[0] != null) holder[0].dismiss();
+                onClick.run(which);
+            });
+            root.addView(row, org.telegram.ui.Components.LayoutHelper.createLinear(org.telegram.ui.Components.LayoutHelper.MATCH_PARENT, 48));
+        }
+        android.widget.ScrollView scroll = new android.widget.ScrollView(ctx);
+        scroll.addView(root);
+        org.telegram.ui.ActionBar.AlertDialog.Builder b = new org.telegram.ui.ActionBar.AlertDialog.Builder(ctx);
+        b.setView(scroll);
+        holder[0] = b.create();
+        fragment.showDialog(holder[0]);
+    }
 }

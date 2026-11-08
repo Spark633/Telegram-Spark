@@ -24,6 +24,17 @@ public class SparkDuplicatesActivity extends UniversalFragment {
 
     private static final int ID_SCAN = 1;
     private static final int ID_DELETE_ALL = 2;
+    private static final int ID_KEEP = 3;
+
+    /** true = die neueste Nachricht bleibt, false = die aelteste. */
+    private static boolean keepNewest() {
+        return org.telegram.messenger.spark.SparkConfig.prefs().getBoolean("dupKeepNewest", false);
+    }
+
+    /** IDs, die geloescht werden (alle ausser der behaltenen). */
+    private static ArrayList<Integer> toDelete(Group g) {
+        return keepNewest() ? new ArrayList<>(g.ids.subList(0, g.ids.size() - 1)) : new ArrayList<>(g.ids.subList(1, g.ids.size()));
+    }
     private static final int ID_BASE = 1000;
     private static final int MAX_MESSAGES = 10000;
 
@@ -58,8 +69,9 @@ public class SparkDuplicatesActivity extends UniversalFragment {
             return;
         }
         items.add(UItem.asButton(ID_SCAN, org.telegram.messenger.R.drawable.msg_search, done ? "Erneut durchsuchen" : "Jetzt durchsuchen"));
+        items.add(UItem.asButton(ID_KEEP, org.telegram.messenger.R.drawable.msg_retry, "Beim Aufräumen behalten", keepNewest() ? "neueste" : "älteste"));
         if (!done) {
-            items.add(UItem.asShadow("Findet gleiche Fotos, Videos, Dateien, Sticker und gleiche Texte in deinen Gespeicherten Nachrichten. Beim Aufräumen bleibt jeweils die älteste erhalten."));
+            items.add(UItem.asShadow("Findet gleiche Fotos, Videos, Dateien, Sticker und gleiche Texte in deinen Gespeicherten Nachrichten. Beim Aufräumen bleibt jeweils die " + (keepNewest() ? "neueste" : "älteste") + " erhalten."));
             return;
         }
         int extra = 0;
@@ -83,9 +95,14 @@ public class SparkDuplicatesActivity extends UniversalFragment {
             startScan();
             return;
         }
+        if (item.id == ID_KEEP) {
+            org.telegram.messenger.spark.SparkConfig.prefs().edit().putBoolean("dupKeepNewest", !keepNewest()).apply();
+            listView.adapter.update(true);
+            return;
+        }
         if (item.id == ID_DELETE_ALL) {
             ArrayList<Integer> del = new ArrayList<>();
-            for (Group g : groups) del.addAll(g.ids.subList(1, g.ids.size()));
+            for (Group g : groups) del.addAll(toDelete(g));
             confirmDelete(del, null);
             return;
         }
@@ -108,7 +125,7 @@ public class SparkDuplicatesActivity extends UniversalFragment {
         SimpleDateFormat f = new SimpleDateFormat("dd.MM.yy HH:mm", Locale.GERMANY);
         CharSequence[] texts = new CharSequence[g.ids.size()];
         for (int k = 0; k < g.ids.size(); k++) {
-            texts[k] = (k + 1) + ". " + f.format(new Date(g.dates.get(k) * 1000L)) + (k == 0 ? " (älteste, bleibt)" : "");
+            texts[k] = (k + 1) + ". " + f.format(new Date(g.dates.get(k) * 1000L)) + ((keepNewest() ? k == g.ids.size() - 1 : k == 0) ? " (bleibt)" : "");
         }
         AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
         b.setTitle(SparkUi.mark(g.ids.size() + "× " + g.preview));
@@ -126,7 +143,7 @@ public class SparkDuplicatesActivity extends UniversalFragment {
         int i = item.id - ID_BASE;
         if (i < 0 || i >= groups.size()) return false;
         Group g = groups.get(i);
-        confirmDelete(new ArrayList<>(g.ids.subList(1, g.ids.size())), g);
+        confirmDelete(toDelete(g), g);
         return true;
     }
 
@@ -134,7 +151,7 @@ public class SparkDuplicatesActivity extends UniversalFragment {
         if (ids.isEmpty()) return;
         AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
         b.setTitle(SparkUi.mark("Duplikate löschen"));
-        b.setMessage(ids.size() + " doppelte Nachricht(en) aus Gespeichertes löschen? Die jeweils älteste bleibt erhalten.");
+        b.setMessage(ids.size() + " doppelte Nachricht(en) aus Gespeichertes löschen? Die jeweils " + (keepNewest() ? "neueste" : "älteste") + " bleibt erhalten.");
         b.setPositiveButton("Löschen", (d, w) -> {
             long self = getUserConfig().getClientUserId();
             for (int k = 0; k < ids.size(); k += 100) {

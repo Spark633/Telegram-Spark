@@ -23168,6 +23168,9 @@ public class ChatActivity extends BaseFragment implements
                 if (getParentActivity() == null || closeChatDialog != null) {
                     return;
                 }
+                if (MessagesController.sparkKeepLeftOn() && (ChatObject.isNotInChat(currentChat) || reason == 0)) {
+                    return; // Sparkgram: verlassene private Gruppe bleibt lesbar
+                }
                 AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity(), themeDelegate);
                 builder.setTitle(LocaleController.getString(R.string.AppName));
                 Map<String, Integer> colorsReplacement = new HashMap<>();
@@ -28072,6 +28075,9 @@ public class ChatActivity extends BaseFragment implements
     @Override
     protected void onDialogDismiss(Dialog dialog) {
         if (closeChatDialog != null && dialog == closeChatDialog) {
+            if (MessagesController.sparkKeepLeftOn()) {
+                return; // Sparkgram: nicht loeschen/schliessen
+            }
             getMessagesController().deleteDialog(dialog_id, 0);
             if (parentLayout != null && !parentLayout.getFragmentStack().isEmpty() && parentLayout.getFragmentStack().get(parentLayout.getFragmentStack().size() - 1) != this) {
                 BaseFragment fragment = parentLayout.getFragmentStack().get(parentLayout.getFragmentStack().size() - 1);

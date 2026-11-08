@@ -236,14 +236,17 @@ public class SparkProfileMenu {
         int r = 0;
         for (int g = 0; g < ORDER.length; g++) {
             for (int i = 0; i < ORDER[g].length; i++) {
-                if (ORDER[g][i] == id) return g * 100 + i;
+                if (ORDER[g][i] == id) return (g == 3 ? 5000 : g * 100) + i; // "Löschen & Export" ganz unten
             }
         }
         return 1000 + id; // Rest
     }
 
     private static int groupOf(int id) {
-        return rank(id) / 100;
+        for (int g = 0; g < ORDER.length; g++) {
+            for (int x : ORDER[g]) if (x == id) return g;
+        }
+        return 99; // keine Gruppe
     }
 
     /** Pseudo-ID fuer eine Trennlinie im Menue (derzeit ungenutzt). */
@@ -260,22 +263,15 @@ public class SparkProfileMenu {
             if (groupOf(e.id) == group) list.add(e);
         }
         if (list.isEmpty()) return;
-        // oben ein Zurueck-Pfeil zur Sparkgram-Uebersicht
-        CharSequence[] texts = new CharSequence[list.size() + 1];
-        int[] icons = new int[list.size() + 1];
-        texts[0] = "";
-        icons[0] = R.drawable.msg_arrow_back;
+        // Titelzeile mit Zurueck-Pfeil links neben dem Namen
+        CharSequence[] texts = new CharSequence[list.size()];
+        int[] icons = new int[list.size()];
         for (int i = 0; i < list.size(); i++) {
-            texts[i + 1] = list.get(i).text;
-            icons[i + 1] = list.get(i).icon;
+            texts[i] = list.get(i).text;
+            icons[i] = list.get(i).icon;
         }
-        AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity());
-        builder.setTitle(SparkUi.mark(GROUP_NAMES[group]));
-        builder.setItems(texts, icons, (dialog, which) -> {
-            if (which == 0) showGroup(fragment, userId, chatId);
-            else handle(fragment, list.get(which - 1).id, userId, chatId);
-        });
-        fragment.showDialog(builder.create());
+        SparkUi.showListDialog(fragment, SparkUi.mark(GROUP_NAMES[group]), () -> showGroup(fragment, userId, chatId), texts, icons,
+            which -> handle(fragment, list.get(which).id, userId, chatId));
     }
 
     private static CharSequence label(String text, boolean marked) {

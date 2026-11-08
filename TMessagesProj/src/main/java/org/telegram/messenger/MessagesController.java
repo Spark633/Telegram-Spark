@@ -10125,6 +10125,7 @@ public class MessagesController extends BaseController implements NotificationCe
         }
         org.telegram.messenger.spark.SparkDeletedChats.remember(currentAccount, did, kind);
         AndroidUtilities.runOnUIThread(() -> sparkRestoreDialog(did));
+        AndroidUtilities.runOnUIThread(() -> sparkRestoreDialog(did), 1500); // nach der Server-Antwort rot anzeigen
         return true;
     }
 
@@ -10148,9 +10149,10 @@ public class MessagesController extends BaseController implements NotificationCe
         }
         if (!allDialogs.contains(dialog)) {
             allDialogs.add(dialog);
-            sortDialogs(null);
-            getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
         }
+        sortDialogs(null);
+        getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
+        getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME);
     }
 
     public void deleteDialog(final long did, int onlyHistory) {
