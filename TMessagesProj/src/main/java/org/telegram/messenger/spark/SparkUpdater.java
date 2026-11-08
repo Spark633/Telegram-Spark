@@ -37,6 +37,9 @@ public class SparkUpdater {
         public long apkSize;
         public String publishedAt;
 
+        /** true, wenn GitHub nicht erreichbar war und nur der feste Link bekannt ist. */
+        public boolean unknown;
+
         public boolean isNewer() {
             return commit != null && !commit.isEmpty() && !commit.equals(BuildConfig.SPARK_COMMIT);
         }
@@ -102,6 +105,12 @@ public class SparkUpdater {
             } catch (Exception e) {
                 FileLog.e(e);
                 error = e.getMessage();
+                // GitHub-Schnittstelle nicht erreichbar: fester Download-Link als Ausweg
+                release = new Release();
+                release.channel = channel;
+                release.unknown = true;
+                release.apkName = "Sparkgram-" + channel + ".apk";
+                release.apkUrl = "https://github.com/" + REPO + "/releases/download/build-" + channel + "/Sparkgram-" + channel + ".apk";
             }
             final Release r = release;
             final String err = error;
@@ -109,7 +118,22 @@ public class SparkUpdater {
         });
     }
 
+    /** Mit bis zu 3 Versuchen bei Server-Fehlern (5xx). */
     private static String httpGet(String url) throws Exception {
+        Exception last = null;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            try {
+                return httpGetOnce(url);
+            } catch (Exception e) {
+                last = e;
+                if (e.getMessage() == null || !e.getMessage().contains(" 5")) break;
+                try { Thread.sleep(1500L * (attempt + 1)); } catch (InterruptedException ignore) {}
+            }
+        }
+        throw last;
+    }
+
+    private static String httpGetOnce(String url) throws Exception {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setRequestProperty("User-Agent", "Sparkgram-Updater");
         c.setRequestProperty("Accept", "application/vnd.github+json");

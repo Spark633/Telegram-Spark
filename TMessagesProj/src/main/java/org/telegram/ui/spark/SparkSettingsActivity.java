@@ -110,6 +110,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_BOOKMARKS = 90;
     private static final int ID_BOOKMARKS_OPEN = 91;
     private static final int ID_USER_MESSAGES = 92;
+    private static final int ID_ALWAYS_DOWNLOADS = 93;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
     private static final int ID_HIDE_WALLET = 36;
@@ -310,6 +311,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(subCheck(ID_CHAT_MENU_GROUPED, R.string.SparkMenuGroupedToggle, SparkConfig.CHAT_MENU_GROUPED));
         }
         items.add(check(ID_MARKER, R.string.SparkMarkerToggle, SparkConfig.SPARK_MARKER));
+        items.add(check(ID_ALWAYS_DOWNLOADS, R.string.SparkAlwaysDownloadsToggle, SparkConfig.ALWAYS_DOWNLOADS));
         items.add(UItem.asShadow(getString(R.string.SparkLookInfo)));
 
         // Ohne Hauptschalter: alles bis hier ausgrauen
@@ -403,6 +405,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_BOT_SEND: expand(SparkConfig.BOT_SEND); break;
             case ID_BOT_INBOX: presentFragment(new SparkBotInboxActivity()); break;
             case ID_USER_MESSAGES: toggle(SparkConfig.USER_MESSAGES); break;
+            case ID_ALWAYS_DOWNLOADS: toggle(SparkConfig.ALWAYS_DOWNLOADS); break;
             case ID_BOOKMARKS: expand(SparkConfig.BOOKMARKS); break;
             case ID_BOOKMARKS_OPEN: presentFragment(new SparkBookmarksActivity()); break;
             case ID_DOUBLE_TAP: {
@@ -557,6 +560,15 @@ public class SparkSettingsActivity extends UniversalFragment {
             }
             if (release == null) {
                 BulletinFactory.of(this).createErrorBulletin(LocaleController.formatString(R.string.SparkError, String.valueOf(error))).show();
+                return;
+            }
+            if (release.unknown) {
+                AlertDialog.Builder ub = new AlertDialog.Builder(getParentActivity());
+                ub.setTitle(SparkUi.mark("Update"));
+                ub.setMessage("GitHub ist gerade nicht erreichbar (" + error + "), deshalb weiß ich nicht, ob es eine neuere Version gibt.\n\nNeueste Version trotzdem herunterladen?");
+                ub.setPositiveButton("Herunterladen", (d, w) -> downloadUpdate(release));
+                ub.setNegativeButton(getString(R.string.Cancel), null);
+                showDialog(ub.create());
                 return;
             }
             if (!release.isNewer()) {

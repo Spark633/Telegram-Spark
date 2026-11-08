@@ -19403,10 +19403,22 @@ public class ChatActivity extends BaseFragment implements
 
     /** Sparkgram: eingeklappte Nachricht wieder anzeigen. */
     private void sparkReveal(MessageObject collapsed) {
-        sparkRevealed.add(collapsed.getId());
-        MessageObject fresh = new MessageObject(currentAccount, collapsed.messageOwner, true, true);
+        // alle direkt aufeinanderfolgenden eingeklappten Nachrichten mit aufdecken
+        ArrayList<MessageObject> group = new ArrayList<>();
+        int idx = messages.indexOf(collapsed);
+        if (idx < 0) {
+            group.add(collapsed);
+        } else {
+            int from = idx, to = idx;
+            while (from - 1 >= 0 && messages.get(from - 1).sparkCollapsed) from--;
+            while (to + 1 < messages.size() && messages.get(to + 1).sparkCollapsed) to++;
+            for (int i = from; i <= to; i++) group.add(messages.get(i));
+        }
         ArrayList<MessageObject> list = new ArrayList<>();
-        list.add(fresh);
+        for (MessageObject c : group) {
+            sparkRevealed.add(c.getId());
+            list.add(new MessageObject(currentAccount, c.messageOwner, true, true));
+        }
         replaceMessageObjects(list, 0, false);
     }
 
@@ -31457,7 +31469,7 @@ public class ChatActivity extends BaseFragment implements
                 }
                 if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_PEOPLE) && !selectedObject.isOutOwner() && selectedObject.getFromChatId() > 0 && dialog_id < 0) {
                     boolean m = org.telegram.messenger.spark.SparkPeople.isMuted(currentAccount, selectedObject.getFromChatId());
-                    items.add(org.telegram.ui.spark.SparkUi.mark(m ? "Person wieder laut" : "Person stummschalten"));
+                    items.add(org.telegram.ui.spark.SparkUi.mark(m ? "Stummschaltung aufheben" : "Stummschalten"));
                     options.add(OPTION_SPARK_MUTE);
                     icons.add(m ? R.drawable.msg_unmute : R.drawable.msg_mute);
                 }

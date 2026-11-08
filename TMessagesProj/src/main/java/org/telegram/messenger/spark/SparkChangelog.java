@@ -19,6 +19,17 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.15", "08.11.2026",
+            "Schlagwort-Benachrichtigung: zeigt klar Chat und Absender, antippen springt direkt zur Nachricht",
+            "Update: bei GitHub-Störung (z. B. 503) automatische Wiederholung, sonst Download über den festen Link",
+            "Download-Knopf in der Chatübersicht immer anzeigen (abschaltbar)",
+            "Export: Service-Nachrichten mit echtem Text (z. B. „X ist beigetreten“)",
+            "Ghost-Modus: nach dem Senden erst nach ca. 7 s offline; als gelesen nur Privatchats, nicht Gruppen",
+            "Gelöschte Service-Nachrichten: rote Blase statt roter Schrift",
+            "Ausgeblendete Nachrichten: Antippen deckt alle direkt aufeinanderfolgenden auf",
+            "Zur ersten Nachricht: hebt die erste echte Nachricht hervor",
+            "Nachrichten-Menü: nur noch „Stummschalten“; „Bereich markieren“ verständlicher beschriftet"
+        ),
         new Release("0.14", "08.11.2026",
             "Export, Sicherung und Medien speichern funktionieren jetzt (Ordner Download/Sparkgram, mit Bestätigung)",
             "Update in der App: lädt die feste APK, zeigt Fortschritt in %, fragt nach der Installations-Erlaubnis und meldet Fehler",
@@ -35,7 +46,6 @@ public class SparkChangelog {
             "Doppeltipp auf eine Nachricht wählbar: Reaktion, Antworten, Kopieren, Wiederholen oder Lesezeichen",
             "Lesezeichen mit Schlagwörtern: Nachricht antippen → „✦ Lesezeichen“, Liste mit Filter, antippen springt zur Nachricht",
             "„Alle Nachrichten dieser Person“ im Nachrichten-Menü in Gruppen",
-            "Schlagwort-Benachrichtigung: zeigt klar Chat und Absender, antippen springt direkt zur Nachricht",
             "Bot-Postfach: Nachrichten an deinen Bot ansehen und als Bot antworten",
             "Lokale Namen gelten jetzt pro Konto",
             "Einstellungen aufgeräumt: kürzere Texte, Unterpunkte auch bei ausgeschaltetem Punkt aufklappbar, Sicherung unter „Konten“"

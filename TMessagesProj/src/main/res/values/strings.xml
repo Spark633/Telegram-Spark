@@ -11769,7 +11769,7 @@
     <string name="SparkKeywordsOpen">Schlagwörter und Treffer</string>
     <string name="SparkKeywordsInfo">Benachrichtigt bei deinen Schlagwörtern – auch in stummen Chats.</string>
     <string name="SparkSelectNoLimitToggle">Bis zu 1000 Nachrichten markieren (Weiterleiten/Löschen ohne 100er-Grenze)</string>
-    <string name="SparkSelectRangeToggle">Bereich markieren</string>
+    <string name="SparkSelectRangeToggle">Bereich markieren (2. Nachricht lange drücken)</string>
     <string name="SparkCollectionToggle">Sammlung</string>
     <string name="SparkStickerToolsToggle">Sticker-Werkzeuge</string>
     <string name="SparkVoiceToolsToggle">Sprachnachrichten speichern</string>
@@ -11785,10 +11785,11 @@
     <string name="SparkGhostRead">Keine Lesebestätigung senden</string>
     <string name="SparkGhostTyping">Kein „schreibt …“ senden</string>
     <string name="SparkGhostOffline">Nicht online erscheinen</string>
-    <string name="SparkGhostInfo">Nach dem Senden bist du sofort wieder offline, der Chat gilt als gelesen.</string>
+    <string name="SparkGhostInfo">Nach dem Senden bist du nach ein paar Sekunden wieder offline. Privatchats gelten dann als gelesen, Gruppen nicht.</string>
     <string name="SparkMuteHide">Nachrichten ausblenden</string>
     <string name="SparkBookmarksToggle">Lesezeichen</string>
     <string name="SparkUserMessagesToggle">Alle Nachrichten einer Person</string>
+    <string name="SparkAlwaysDownloadsToggle">Download-Knopf immer anzeigen</string>
     <string name="SparkHeaderPeople">Personen</string>
     <string name="SparkOnlineLog">Online-Protokoll</string>
     <string name="SparkOnlineLogToggle">Online-Protokoll aufzeichnen</string>

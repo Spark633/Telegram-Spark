@@ -157,6 +157,10 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   (`openSearchWithText("")` + `searchUserButton` + `searchUserMessages`, wie `checkInstantSearch`).
   Achtung: Python `open(p,'w')` vor dem Lesen leert die Datei – nie `open(p,'w').write(open(p).read())`.
 
+- 0.15 (in Arbeit): Updater-Wiederholung + `Release.unknown` (fester Link), `ALWAYS_DOWNLOADS`
+  (`DialogsActivity.updateProxyButton`), Export `serviceText` via MessageObject, Ghost 7 s/12 s + nur Privatchats lesen,
+  `ChatActionCell.sparkDeletedRed` (rote Blase in drawBackground), `sparkReveal` deckt Folge auf.
+
 ## Roadmap (offen)
 
 - **Etappe 3 Rest:** Bild-Link kopieren (unklar, was genau gemeint ist).

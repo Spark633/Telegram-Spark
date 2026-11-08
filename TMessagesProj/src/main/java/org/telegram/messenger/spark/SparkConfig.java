@@ -100,6 +100,8 @@ public class SparkConfig {
     // Lesezeichen mit Schlagwoertern, Nachrichten einer Person
     public static final String BOOKMARKS = "bookmarks";
     public static final String USER_MESSAGES = "userMessages";
+    // Download-Knopf in der Chatuebersicht immer anzeigen
+    public static final String ALWAYS_DOWNLOADS = "alwaysDownloads";
 
     // Doppeltipp auf eine Nachricht: 0 = Telegram (Reaktion), 1 = Antworten, 2 = Kopieren, 3 = Wiederholen, 4 = Lesezeichen
     public static final String[] DOUBLE_TAP_NAMES = {"Reaktion (Telegram)", "Antworten", "Kopieren", "Wiederholen", "Lesezeichen"};
@@ -256,6 +258,7 @@ public class SparkConfig {
             case FORWARD_NO_SENDER:
             case BOOKMARKS:
             case USER_MESSAGES:
+            case ALWAYS_DOWNLOADS:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:

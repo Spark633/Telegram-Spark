@@ -14588,7 +14588,7 @@ public class MessagesController extends BaseController implements NotificationCe
         }
         AndroidUtilities.runOnUIThread(() -> {
             if (org.telegram.messenger.spark.SparkConfig.ghost(org.telegram.messenger.spark.SparkConfig.GHOST_OFFLINE)) {
-                for (int delay : new int[]{1500, 5000}) {
+                for (int delay : new int[]{7000, 12000}) { // nach ca. 7 s offline (wie gewuenscht 5-10 s)
                     AndroidUtilities.runOnUIThread(() -> {
                         TL_account.updateStatus req = new TL_account.updateStatus();
                         req.offline = true;
@@ -14598,7 +14598,8 @@ public class MessagesController extends BaseController implements NotificationCe
                     }, delay);
                 }
             }
-            if (org.telegram.messenger.spark.SparkConfig.ghost(org.telegram.messenger.spark.SparkConfig.GHOST_READ) && dialogId != 0 && !DialogObject.isEncryptedDialog(dialogId)) {
+            // nur Privatchats als gelesen melden – in Gruppen bleibt alles ungelesen
+            if (org.telegram.messenger.spark.SparkConfig.ghost(org.telegram.messenger.spark.SparkConfig.GHOST_READ) && dialogId > 0 && !DialogObject.isEncryptedDialog(dialogId)) {
                 TLRPC.InputPeer peer = getInputPeer(dialogId);
                 TLObject req;
                 if (peer instanceof TLRPC.TL_inputPeerChannel) {

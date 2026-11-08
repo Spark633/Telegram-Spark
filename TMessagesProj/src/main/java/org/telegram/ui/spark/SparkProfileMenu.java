@@ -464,9 +464,13 @@ public class SparkProfileMenu {
                 TLRPC.messages_Messages m = (TLRPC.messages_Messages) res;
                 chat.getMessagesController().putUsers(m.users, false);
                 chat.getMessagesController().putChats(m.chats, false);
+                int firstReal = 0;
                 for (TLRPC.Message msg : m.messages) {
                     if (msg.id > 0 && (first == 0 || msg.id < first)) first = msg.id;
+                    // erste echte Nachricht (Service-Nachrichten blinken bei Telegram nicht)
+                    if (msg.id > 0 && !(msg instanceof TLRPC.TL_messageService) && (firstReal == 0 || msg.id < firstReal)) firstReal = msg.id;
                 }
+                if (firstReal != 0) first = firstReal;
             }
             if (first == 0) {
                 BulletinFactory.of(chat).createErrorBulletin("Erste Nachricht nicht gefunden" + (err != null ? " (" + err.text + ")" : "")).show();

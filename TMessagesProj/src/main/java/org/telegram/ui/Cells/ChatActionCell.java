@@ -2215,6 +2215,9 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
 
     private ColoredImageSpan upgradeIconSpan;
 
+    private boolean sparkDeletedRed; // Sparkgram
+    private Paint sparkRedPaint; // Sparkgram
+
     private void buildLayout() {
         giftRectEmpty = false;
 
@@ -2285,9 +2288,9 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
         if (currentMessageObject != null && currentMessageObject.getId() > 0 && text != null && text.length() > 0
                 && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_DELETED)
                 && org.telegram.messenger.spark.SparkMessageStore.get(currentAccount).isDeleted(currentMessageObject.getDialogId(), currentMessageObject.getId())) {
-            SpannableStringBuilder red = new SpannableStringBuilder(text);
-            red.setSpan(new android.text.style.ForegroundColorSpan(0xffff6b6b), 0, red.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            text = red; // nur rot markieren
+            sparkDeletedRed = true; // Blase rot (siehe drawBackground)
+        } else {
+            sparkDeletedRed = false;
         }
         createLayout(text, previousWidth);
         if (birthdayLayout != null) {
@@ -3549,6 +3552,14 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
             }
             backgroundPaint = overrideBackgroundPaint;
             textPaint = overrideTextPaint;
+        }
+        // Sparkgram: geloeschte Service-Nachricht -> rote Blase
+        if (sparkDeletedRed) {
+            if (sparkRedPaint == null) {
+                sparkRedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                sparkRedPaint.setColor(0xd0d32f2f);
+            }
+            backgroundPaint = sparkRedPaint;
         }
         if (invalidatePath) {
             invalidatePath = false;

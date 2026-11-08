@@ -206,6 +206,17 @@ public class SparkExport {
             return c != null ? c.title : "ID " + id;
         }
 
+        /** Text einer Service-Nachricht ("X ist beigetreten" usw.) wie im Chat. */
+        private String serviceText(TLRPC.Message m) {
+            try {
+                MessageObject mo = new MessageObject(account, m, false, false);
+                if (mo.messageText != null && mo.messageText.length() > 0) return mo.messageText.toString();
+            } catch (Throwable e) {
+                FileLog.e(e);
+            }
+            return "Service-Nachricht";
+        }
+
         private String media(TLRPC.Message m) {
             if (m.media == null || m.media instanceof TLRPC.TL_messageMediaEmpty) return null;
             if (m.media instanceof TLRPC.TL_messageMediaPhoto) return "[Foto]";
@@ -322,6 +333,7 @@ public class SparkExport {
             float h = 18;
             if (spaceLeft() < h + 6) newPage();
             android.graphics.Canvas c = pdfPage.getCanvas();
+            text = TextUtils.ellipsize(text, pCenter, PAGE_W - 2 * MARGIN - 16, TextUtils.TruncateAt.END).toString();
             float w = pCenter.measureText(text) + 16;
             float x = (PAGE_W - w) / 2f;
             android.graphics.Paint pill = new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
@@ -499,7 +511,7 @@ public class SparkExport {
                     lastDay = d;
                 }
                 if (m instanceof TLRPC.TL_messageService) {
-                    drawCenter(time.format(new Date(m.date * 1000L)) + " · Service-Nachricht");
+                    drawCenter(time.format(new Date(m.date * 1000L)) + " · " + serviceText(m));
                     continue;
                 }
                 drawBubble(m, group, time);
@@ -528,7 +540,7 @@ public class SparkExport {
                     lastDay = d;
                 }
                 if (m instanceof TLRPC.TL_messageService) {
-                    w.write("<div class=\"d\">" + time.format(new Date(m.date * 1000L)) + " · Service-Nachricht</div>");
+                    w.write("<div class=\"d\">" + time.format(new Date(m.date * 1000L)) + " · " + esc(serviceText(m)) + "</div>");
                     continue;
                 }
                 w.write("<div class=\"m" + (m.out ? " me" : "") + "\"><span class=\"t\">" + time.format(new Date(m.date * 1000L)) + (m.edit_date != 0 ? " ✏️" : "") + "</span>");
