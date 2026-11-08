@@ -530,6 +530,8 @@ public class FiltersSetupActivity extends BaseFragment implements NotificationCe
 
     @Override
     public boolean onFragmentCreate() {
+        getMessagesController().sparkFilterSuppress++; // Sparkgram: lokaler Ordner hier nicht bearbeitbar
+        getMessagesController().sparkRemoveLeftFilter();
         updateRows(false);
         getMessagesController().loadRemoteFilters(true);
         getNotificationCenter().addObserver(this, NotificationCenter.dialogFiltersUpdated);
@@ -614,6 +616,9 @@ public class FiltersSetupActivity extends BaseFragment implements NotificationCe
 
     @Override
     public void onFragmentDestroy() {
+        getMessagesController().sparkFilterSuppress = Math.max(0, getMessagesController().sparkFilterSuppress - 1); // Sparkgram
+        getMessagesController().sparkEnsureLeftFilter();
+        getNotificationCenter().postNotificationName(NotificationCenter.dialogFiltersUpdated);
         getNotificationCenter().removeObserver(this, NotificationCenter.dialogFiltersUpdated);
         getNotificationCenter().removeObserver(this, NotificationCenter.suggestedFiltersLoaded);
         if (orderChanged) {
@@ -623,6 +628,7 @@ public class FiltersSetupActivity extends BaseFragment implements NotificationCe
             ArrayList<MessagesController.DialogFilter> filters = getMessagesController().getDialogFilters();
             for (int a = 0, N = filters.size(); a < N; a++) {
                 MessagesController.DialogFilter filter = filters.get(a);
+                if (filter instanceof MessagesController.SparkLeftFilter) continue; // Sparkgram: nur lokal
                 req.order.add(filter.id);
             }
             getConnectionsManager().sendRequest(req, (response, error) -> {

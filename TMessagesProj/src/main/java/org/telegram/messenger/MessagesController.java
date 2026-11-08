@@ -1279,6 +1279,46 @@ public class MessagesController extends BaseController implements NotificationCe
     public static int DIALOG_FILTER_FLAG_CHATLIST = 0x00000200;
     public static int DIALOG_FILTER_FLAG_CHATLIST_ADMIN = 0x00000400;
 
+    // Sparkgram: lokaler Ordner "Verlassen" (nur auf dem Geraet, wird nie an Telegram gesendet)
+    public static final int SPARK_LEFT_FILTER_ID = 1999999;
+
+    public static class SparkLeftFilter extends DialogFilter {
+        @Override
+        public boolean includesDialog(AccountInstance accountInstance, long dialogId, TLRPC.Dialog d) {
+            if (dialogId >= 0) return false;
+            TLRPC.Chat chat = accountInstance.getMessagesController().getChat(-dialogId);
+            return chat != null && ChatObject.isNotInChat(chat);
+        }
+    }
+
+    private SparkLeftFilter sparkLeftFilter;
+    public int sparkFilterSuppress; // >0 solange die Ordnerverwaltung offen ist
+
+    /** Ordner "Verlassen" je nach Einstellung hinzufuegen/entfernen (immer am Ende). */
+    public void sparkEnsureLeftFilter() {
+        boolean want = org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_CHATS)
+            && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.LEFT_FOLDER)
+            && sparkFilterSuppress <= 0;
+        sparkRemoveLeftFilter();
+        if (!want) return;
+        if (sparkLeftFilter == null) {
+            sparkLeftFilter = new SparkLeftFilter();
+            sparkLeftFilter.id = SPARK_LEFT_FILTER_ID;
+            sparkLeftFilter.name = "🚪 Verlassen";
+            sparkLeftFilter.flags = 0;
+        }
+        sparkLeftFilter.order = dialogFilters.size();
+        dialogFilters.add(sparkLeftFilter);
+        dialogFiltersById.put(SPARK_LEFT_FILTER_ID, sparkLeftFilter);
+    }
+
+    public void sparkRemoveLeftFilter() {
+        for (int i = dialogFilters.size() - 1; i >= 0; i--) {
+            if (dialogFilters.get(i) instanceof SparkLeftFilter) dialogFilters.remove(i);
+        }
+        dialogFiltersById.remove(SPARK_LEFT_FILTER_ID);
+    }
+
     public static class DialogFilter {
         public int id;
         public String name;
@@ -2252,6 +2292,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         }
                         return 0;
                     });
+                    sparkEnsureLeftFilter(); // Sparkgram
                     putUsers(users, true);
                     putChats(chats, true);
                     dialogFiltersLoaded = true;

@@ -11793,6 +11793,7 @@
     <string name="SparkLocalPinsToggle">Lokal anheften (unbegrenzt)</string>
     <string name="SparkDeletedChatsToggle">Gelöschte &amp; verlassene Chats</string>
     <string name="SparkKeepLeftToggle">Verlassene Gruppen behalten (rot)</string>
+    <string name="SparkLeftFolderToggle">Ordner „Verlassen“ in der Chatliste</string>
     <string name="SparkClipboardToggle">Zwischenablage automatisch leeren</string>
     <string name="SparkHeaderPeople">Personen</string>
     <string name="SparkOnlineLog">Online-Protokoll</string>

@@ -1689,6 +1689,7 @@ public class FilterTabsView extends FrameLayout {
             ArrayList<MessagesController.DialogFilter> filters = MessagesController.getInstance(UserConfig.selectedAccount).getDialogFilters();
             for (int a = 0, N = filters.size(); a < N; a++) {
                 MessagesController.DialogFilter filter = filters.get(a);
+                if (filter instanceof MessagesController.SparkLeftFilter) continue; // Sparkgram: nur lokal
                 if (filter.isDefault()) {
                     req.order.add(0);
                 } else {

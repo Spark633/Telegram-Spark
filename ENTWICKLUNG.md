@@ -167,6 +167,9 @@ Wird bei jeder größeren Änderung mitgepflegt, damit der Stand jederzeit nachv
   in beiden `AndroidUtilities.addToClipboard`.
   Verlassene/entfernte Chats behalten: `MessagesController.sparkKeepChat` an 4 Stellen (2× Verlassen in
   deleteParticipantFromChat, TL_updateChannel isNotInChat, TL_updateChat kicked), rot in `DialogCell` (isNotInChat).
+  Lokaler Ordner: `MessagesController.SparkLeftFilter` (id 1999999, includesDialog = isNotInChat), `sparkEnsureLeftFilter`
+  nach `processLoadedDialogFilters`; nie an den Server: ausgelassen in `FilterTabsView`- und `FiltersSetupActivity`-Reihenfolge,
+  in der Ordnerverwaltung entfernt (`sparkFilterSuppress`), kein Bearbeiten-Menü am Tab.
 
 ## Roadmap (offen)
 

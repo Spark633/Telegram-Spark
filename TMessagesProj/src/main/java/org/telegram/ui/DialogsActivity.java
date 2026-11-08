@@ -3708,6 +3708,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         }
                     }
 
+                    if (dialogFilter instanceof MessagesController.SparkLeftFilter) {
+                        return false; // Sparkgram: lokaler Ordner hat kein Bearbeiten-Menue
+                    }
                     boolean defaultTab = dialogFilter == null;
                     boolean hasUnread = false, hasShare = false;
                     boolean muteAll = false;
