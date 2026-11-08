@@ -248,9 +248,8 @@ public class SparkSettingsActivity extends UniversalFragment {
         if (open(SparkConfig.TEMPLATES)) {
             items.add(UItem.asButton(ID_TEMPLATES_OPEN, R.drawable.msg_stories_caption, "Vorlagen verwalten"));
         }
-        items.add(expandable(ID_MUTE_PEOPLE, R.string.SparkMutePeopleToggle, SparkConfig.MUTE_PEOPLE, 2));
+        items.add(expandable(ID_MUTE_PEOPLE, R.string.SparkMutePeopleToggle, SparkConfig.MUTE_PEOPLE, 1));
         if (open(SparkConfig.MUTE_PEOPLE)) {
-            items.add(subCheck(ID_MUTE_HIDE, R.string.SparkMuteHide, SparkConfig.MUTE_HIDE));
             items.add(UItem.asButton(ID_MUTE_LIST, "      Stummgeschaltete (" + org.telegram.messenger.spark.SparkPeople.allMuted(currentAccount).size() + ")"));
         }
         items.add(check(ID_EXPORT, R.string.SparkExportToggle, SparkConfig.EXPORT));

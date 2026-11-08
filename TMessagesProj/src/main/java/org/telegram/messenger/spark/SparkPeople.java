@@ -55,4 +55,15 @@ public class SparkPeople {
             return new ArrayList<>(muted(account));
         }
     }
+
+    // pro Person: Nachrichten in Gruppen zusaetzlich einklappen
+    public static boolean isHidden(int account, long userId) {
+        return userId != 0 && prefs(account).getStringSet("hidden", new HashSet<>()).contains(String.valueOf(userId)) && isMuted(account, userId);
+    }
+
+    public static void setHidden(int account, long userId, boolean hide) {
+        HashSet<String> set = new HashSet<>(prefs(account).getStringSet("hidden", new HashSet<>()));
+        if (hide) set.add(String.valueOf(userId)); else set.remove(String.valueOf(userId));
+        prefs(account).edit().putStringSet("hidden", set).apply();
+    }
 }

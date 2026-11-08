@@ -37,7 +37,7 @@ public class SparkDeletedChatsActivity extends UniversalFragment {
         SimpleDateFormat f = new SimpleDateFormat("dd.MM.yy HH:mm", Locale.GERMANY);
         for (int i = 0; i < list.size(); i++) {
             SparkDeletedChats.Item it = list.get(i);
-            String title = (it.dialogId > 0 ? "👤 " : "👥 ") + it.name + (TextUtils.isEmpty(it.username) ? "" : " (@" + it.username + ")");
+            String title = SparkDeletedChats.icon(it.kind) + " " + it.name + (TextUtils.isEmpty(it.username) ? "" : " (@" + it.username + ")");
             String why = it.kind == SparkDeletedChats.KIND_KICKED ? "entfernt" : it.kind == SparkDeletedChats.KIND_LEFT ? "verlassen" : "gelöscht";
             items.add(UItem.asButton(ID_BASE + i, title, why + " · " + f.format(new Date(it.time * 1000L))));
             if (!TextUtils.isEmpty(it.last)) items.add(UItem.asShadow("Zuletzt: " + it.last));

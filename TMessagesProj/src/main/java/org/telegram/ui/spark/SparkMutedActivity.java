@@ -32,9 +32,10 @@ public class SparkMutedActivity extends UniversalFragment {
         }
         for (int i = 0; i < ids.size(); i++) {
             TLRPC.User u = getMessagesController().getUser(ids.get(i));
-            items.add(UItem.asButton(ID_BASE + i, u != null ? UserObject.getUserName(u) : "ID " + ids.get(i), "🔕"));
+            boolean hid = SparkPeople.isHidden(currentAccount, ids.get(i));
+            items.add(UItem.asButton(ID_BASE + i, u != null ? UserObject.getUserName(u) : "ID " + ids.get(i), hid ? "🔕 eingeklappt" : "🔕"));
         }
-        items.add(UItem.asShadow("Antippen = wieder laut."));
+        items.add(UItem.asShadow("Antippen = einklappen ändern oder wieder laut."));
     }
 
     @Override
@@ -42,14 +43,18 @@ public class SparkMutedActivity extends UniversalFragment {
         int i = item.id - ID_BASE;
         if (i < 0 || i >= ids.size()) return;
         long id = ids.get(i);
+        boolean hid = SparkPeople.isHidden(currentAccount, id);
         AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
         b.setTitle(item.text);
-        b.setMessage("Stummschaltung aufheben?");
-        b.setPositiveButton("Aufheben", (d, w) -> {
-            SparkPeople.setMuted(currentAccount, id, false);
+        b.setItems(new CharSequence[]{hid ? "Nachrichten nicht mehr einklappen" : "Nachrichten einklappen", "Wieder laut"}, (d, w) -> {
+            if (w == 0) {
+                SparkPeople.setHidden(currentAccount, id, !hid);
+            } else {
+                SparkPeople.setMuted(currentAccount, id, false);
+                SparkPeople.setHidden(currentAccount, id, false);
+            }
             listView.adapter.update(true);
         });
-        b.setNegativeButton("Abbrechen", null);
         showDialog(b.create());
     }
 

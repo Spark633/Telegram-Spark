@@ -31,6 +31,37 @@ public class SparkDeletedChats {
         public long time;
     }
 
+    // Schneller Zugriff fuer die Chatliste: dialogId -> Art (pro Konto)
+    private static final java.util.HashMap<Integer, java.util.HashMap<Long, Integer>> kindCache = new java.util.HashMap<>();
+
+    /** Art (KIND_*) eines erfassten Chats oder -1. */
+    public static synchronized int kindOf(int account, long dialogId) {
+        java.util.HashMap<Long, Integer> m = kindCache.get(account);
+        if (m == null) {
+            m = new java.util.HashMap<>();
+            for (Item it : list(account)) if (!m.containsKey(it.dialogId)) m.put(it.dialogId, it.kind);
+            kindCache.put(account, m);
+        }
+        Integer k = m.get(dialogId);
+        return k == null ? -1 : k;
+    }
+
+    /** Geloeschte Privatchats, die lokal behalten werden (im Ordner "Verlassen"). */
+    public static synchronized boolean isKept(int account, long dialogId) {
+        return prefs(account).getStringSet("kept", new java.util.HashSet<>()).contains(String.valueOf(dialogId));
+    }
+
+    public static synchronized void setKept(int account, long dialogId, boolean kept) {
+        java.util.HashSet<String> set = new java.util.HashSet<>(prefs(account).getStringSet("kept", new java.util.HashSet<>()));
+        if (kept) set.add(String.valueOf(dialogId)); else set.remove(String.valueOf(dialogId));
+        prefs(account).edit().putStringSet("kept", set).apply();
+    }
+
+    /** Symbol je Art: 🚪 verlassen, 🔨 entfernt, 🗑 geloescht. */
+    public static String icon(int kind) {
+        return kind == KIND_KICKED ? "🔨" : kind == KIND_LEFT ? "🚪" : "🗑";
+    }
+
     private static SharedPreferences prefs(int account) {
         return ApplicationLoader.applicationContext.getSharedPreferences("sparkgram_deleted_chats_" + account, Context.MODE_PRIVATE);
     }
@@ -93,6 +124,9 @@ public class SparkDeletedChats {
     }
 
     private static void save(int account, ArrayList<Item> list) throws Exception {
+        synchronized (SparkDeletedChats.class) {
+            kindCache.remove(account);
+        }
         JSONArray a = new JSONArray();
         for (Item it : list) {
             JSONObject o = new JSONObject();

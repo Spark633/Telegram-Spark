@@ -2390,10 +2390,19 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
             if (nameString instanceof String) {
                 nameString = ((String) nameString).replace('\n', ' ');
             }
-            // Sparkgram: verlassene/entfernte Gruppen rot mit 🚪 kennzeichnen
-            if (chat != null && nameString != null && ChatObject.isNotInChat(chat)
-                    && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_CHATS)) {
-                android.text.SpannableStringBuilder sparkName = new android.text.SpannableStringBuilder("🚪 ").append(nameString);
+            // Sparkgram: verlassene (🚪), entfernte (🔨) und geloeschte (🗑) Chats rot kennzeichnen
+            String sparkIcon = null;
+            if (nameString != null && org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_CHATS)) {
+                if (chat != null && ChatObject.isNotInChat(chat)) {
+                    int k = org.telegram.messenger.spark.SparkDeletedChats.kindOf(currentAccount, currentDialogId);
+                    if (k < 0) k = chat.kicked || chat instanceof TLRPC.TL_channelForbidden || chat instanceof TLRPC.TL_chatForbidden ? org.telegram.messenger.spark.SparkDeletedChats.KIND_KICKED : org.telegram.messenger.spark.SparkDeletedChats.KIND_LEFT;
+                    sparkIcon = org.telegram.messenger.spark.SparkDeletedChats.icon(k);
+                } else if (chat == null && currentDialogId > 0 && org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, currentDialogId)) {
+                    sparkIcon = "🗑";
+                }
+            }
+            if (sparkIcon != null) {
+                android.text.SpannableStringBuilder sparkName = new android.text.SpannableStringBuilder(sparkIcon + " ").append(nameString);
                 sparkName.setSpan(new android.text.style.ForegroundColorSpan(0xffe53935), 0, sparkName.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 nameString = sparkName;
             }

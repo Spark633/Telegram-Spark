@@ -38,6 +38,7 @@ public class DownloadProgressIcon extends View implements NotificationCenter.Not
     boolean hasUnviewedDownloads;
     int currentColor;
     private boolean wasDrawn;
+    private boolean sparkAnimating = true; // Sparkgram
 
     public DownloadProgressIcon(int currentAccount, Context context) {
         super(context);
@@ -75,6 +76,17 @@ public class DownloadProgressIcon extends View implements NotificationCenter.Not
         super.onDraw(canvas);
         if (getAlpha() == 0) {
             return;
+        }
+        // Sparkgram: nur animieren, solange wirklich etwas herunterlaedt
+        boolean sparkActive = !currentListeners.isEmpty();
+        if (sparkActive != sparkAnimating) {
+            sparkAnimating = sparkActive;
+            if (sparkActive) {
+                downloadDrawable.start();
+            } else {
+                downloadDrawable.stop();
+                downloadDrawable.setCurrentFrame(0, false);
+            }
         }
 
         if (currentColor != Theme.getColor(Theme.key_actionBarDefaultIcon)) {

@@ -1285,7 +1285,10 @@ public class MessagesController extends BaseController implements NotificationCe
     public static class SparkLeftFilter extends DialogFilter {
         @Override
         public boolean includesDialog(AccountInstance accountInstance, long dialogId, TLRPC.Dialog d) {
-            if (dialogId >= 0) return false;
+            if (dialogId > 0) {
+                return org.telegram.messenger.spark.SparkDeletedChats.isKept(accountInstance.getCurrentAccount(), dialogId);
+            }
+            if (dialogId == 0) return false;
             TLRPC.Chat chat = accountInstance.getMessagesController().getChat(-dialogId);
             return chat != null && ChatObject.isNotInChat(chat);
         }
@@ -2168,7 +2171,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 TLRPC.Message message = pinnedDialogs.messages.get(a);
                 if (message.peer_id.channel_id != 0) {
                     TLRPC.Chat chat = chatsDict.get(message.peer_id.channel_id);
-                    if (chat != null && chat.left && (promoDialogId == 0 || promoDialogId != -chat.id)) {
+                    if (chat != null && chat.left && !sparkKeepLeftOn() && (promoDialogId == 0 || promoDialogId != -chat.id)) {
                         continue;
                     }
                 } else if (message.peer_id.chat_id != 0) {
@@ -2222,7 +2225,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (DialogObject.isChannel(d)) {
                     TLRPC.Chat chat = chatsDict.get(-d.id);
                     if (chat != null) {
-                        if (chat.left && (promoDialogId == 0 || promoDialogId != d.id)) {
+                        if (chat.left && !sparkKeepLeftOn() && (promoDialogId == 0 || promoDialogId != d.id)) {
                             continue;
                         }
                     }
@@ -10057,6 +10060,28 @@ public class MessagesController extends BaseController implements NotificationCe
         removePromoDialog();
     }
 
+    /** Sparkgram: Verlauf eines Privatchats nur auf dem Server loeschen (lokal bleibt er sichtbar). */
+    private void sparkServerDeleteHistory(long did, boolean revoke, int round) {
+        TLRPC.TL_messages_deleteHistory req = new TLRPC.TL_messages_deleteHistory();
+        req.peer = getInputPeer(did);
+        req.max_id = 0;
+        req.revoke = revoke;
+        getConnectionsManager().sendRequest(req, (response, error) -> {
+            if (response instanceof TLRPC.TL_messages_affectedHistory) {
+                TLRPC.TL_messages_affectedHistory res = (TLRPC.TL_messages_affectedHistory) response;
+                processNewDifferenceParams(-1, res.pts, -1, res.pts_count);
+                if (res.offset > 0 && round < 50) {
+                    sparkServerDeleteHistory(did, revoke, round + 1);
+                }
+            }
+        });
+    }
+
+    /** Sparkgram: sollen verlassene/entfernte Chats in der Liste bleiben? */
+    public static boolean sparkKeepLeftOn() {
+        return org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_CHATS);
+    }
+
     /** Sparkgram: verlassene/entfernte Chats behalten statt loeschen (true = behalten, nicht loeschen). */
     public boolean sparkKeepChat(long did, int kind) {
         if (!org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.KEEP_LEFT_CHATS)) {
@@ -10071,6 +10096,22 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void deleteDialog(final long did, int onlyHistory, boolean revoke) {
+        // Sparkgram: geloeschte Privatchats lokal behalten (Ordner "Verlassen"), zweites Loeschen = endgueltig
+        if (onlyHistory == 3 && org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, did)) {
+            return; // automatisches Aufraeumen leerer Chats verhindern
+        }
+        if (onlyHistory == 0 && did > 0 && sparkKeepLeftOn() && !org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, did)
+                && did != getUserConfig().getClientUserId() && !DialogObject.isEncryptedDialog(did)) {
+            org.telegram.messenger.spark.SparkDeletedChats.remember(currentAccount, did, org.telegram.messenger.spark.SparkDeletedChats.KIND_DELETED);
+            org.telegram.messenger.spark.SparkDeletedChats.setKept(currentAccount, did, true);
+            sparkServerDeleteHistory(did, revoke, 0);
+            sortDialogs(null);
+            getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
+            return;
+        }
+        if (onlyHistory == 0) {
+            org.telegram.messenger.spark.SparkDeletedChats.setKept(currentAccount, did, false);
+        }
         if (onlyHistory == 0 || onlyHistory == 3) {
             org.telegram.messenger.spark.SparkDeletedChats.remember(currentAccount, did); // Sparkgram: Gelöschte Chats
         }
@@ -12986,7 +13027,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
                 if (message.peer_id.channel_id != 0) {
                     TLRPC.Chat chat = chatsDict.get(message.peer_id.channel_id);
-                    if (chat != null && chat.left) {
+                    if (chat != null && chat.left && !sparkKeepLeftOn()) {
                         continue;
                     }
                 } else if (message.peer_id.chat_id != 0) {
@@ -13029,9 +13070,10 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (DialogObject.isChannel(d)) {
                     TLRPC.Chat chat = chatsDict.get(-d.id);
                     if (chat != null && chat.left) {
-                        continue;
+                        if (!sparkKeepLeftOn()) continue; // Sparkgram: verlassene behalten (ohne Updates)
+                    } else {
+                        channelsPts.put(-d.id, d.pts);
                     }
-                    channelsPts.put(-d.id, d.pts);
                 } else if (DialogObject.isChatDialog(d.id)) {
                     TLRPC.Chat chat = chatsDict.get(-d.id);
                     if (chat != null && chat.migrated_to != null) {
@@ -13462,7 +13504,7 @@ public class MessagesController extends BaseController implements NotificationCe
                 }
                 if (message.peer_id.channel_id != 0) {
                     TLRPC.Chat chat = chatsDict.get(message.peer_id.channel_id);
-                    if (chat != null && chat.left && (promoDialogId == 0 || promoDialogId != -chat.id)) {
+                    if (chat != null && chat.left && !sparkKeepLeftOn() && (promoDialogId == 0 || promoDialogId != -chat.id)) {
                         continue;
                     }
                 } else if (message.peer_id.chat_id != 0) {
@@ -13579,14 +13621,14 @@ public class MessagesController extends BaseController implements NotificationCe
                         if (!chat.megagroup) {
                             allowCheck = false;
                         }
-                        if (ChatObject.isNotInChat(chat) && (promoDialogId == 0 || promoDialogId != d.id)) {
+                        if (ChatObject.isNotInChat(chat) && !sparkKeepLeftOn() && (promoDialogId == 0 || promoDialogId != d.id)) {
                             continue;
                         }
                     }
                     channelsPts.put(-d.id, d.pts);
                 } else if (DialogObject.isChatDialog(d.id)) {
                     TLRPC.Chat chat = chatsDict.get(-d.id);
-                    if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat))) {
+                    if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat) && !sparkKeepLeftOn())) {
                         continue;
                     }
                 }
@@ -14152,12 +14194,12 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (promoDialogId == 0 || promoDialogId != message.dialog_id) {
                     if (message.peer_id != null && message.peer_id.channel_id != 0) {
                         TLRPC.Chat chat = chatsDict.get(message.peer_id.channel_id);
-                        if (chat != null && ChatObject.isNotInChat(chat)) {
+                        if (chat != null && ChatObject.isNotInChat(chat) && !sparkKeepLeftOn()) {
                             continue;
                         }
                     } else if (message.peer_id != null && message.peer_id.chat_id != 0) {
                         TLRPC.Chat chat = chatsDict.get(message.peer_id.chat_id);
-                        if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat))) {
+                        if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat) && !sparkKeepLeftOn())) {
                             continue;
                         }
                     }
@@ -14180,12 +14222,12 @@ public class MessagesController extends BaseController implements NotificationCe
                 if (promoDialogId == 0 || promoDialogId != d.id) {
                     if (DialogObject.isChannel(d)) {
                         TLRPC.Chat chat = chatsDict.get(-d.id);
-                        if (chat != null && ChatObject.isNotInChat(chat)) {
+                        if (chat != null && ChatObject.isNotInChat(chat) && !sparkKeepLeftOn()) {
                             continue;
                         }
                     } else if (DialogObject.isChatDialog(d.id)) {
                         TLRPC.Chat chat = chatsDict.get(-d.id);
-                        if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat))) {
+                        if (chat != null && (chat.migrated_to != null || ChatObject.isNotInChat(chat) && !sparkKeepLeftOn())) {
                             continue;
                         }
                     }
@@ -17526,7 +17568,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     TLRPC.Message message = res.messages.get(a);
                     if (message.peer_id.channel_id != 0) {
                         TLRPC.Chat chat = chatsDict.get(message.peer_id.channel_id);
-                        if (chat != null && chat.left) {
+                        if (chat != null && chat.left && !sparkKeepLeftOn()) {
                             continue;
                         }
                     } else if (message.peer_id.chat_id != 0) {
@@ -17553,7 +17595,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     DialogObject.initDialog(d);
                     if (DialogObject.isChannel(d)) {
                         TLRPC.Chat chat = chatsDict.get(-d.id);
-                        if (chat != null && chat.left) {
+                        if (chat != null && chat.left && !sparkKeepLeftOn()) {
                             continue;
                         }
                     } else if (DialogObject.isChatDialog(d.id)) {

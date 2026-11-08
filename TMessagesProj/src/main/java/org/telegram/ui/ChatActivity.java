@@ -19346,8 +19346,7 @@ public class ChatActivity extends BaseFragment implements
     private boolean sparkHideMuted(MessageObject obj) {
         if (obj == null || dialog_id >= 0 || obj.isOutOwner() || obj.messageOwner == null || obj.messageOwner.action != null
                 || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_PEOPLE)
-                || !org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_HIDE)
-                || !org.telegram.messenger.spark.SparkPeople.isMuted(currentAccount, obj.getFromChatId())
+                || !org.telegram.messenger.spark.SparkPeople.isHidden(currentAccount, obj.getFromChatId())
                 || sparkRevealed.contains(obj.getId())) {
             return false;
         }
@@ -33892,13 +33891,23 @@ public class ChatActivity extends BaseFragment implements
                 break;
             }
             case OPTION_SPARK_MUTE: {
-                long uid = selectedObject.getFromChatId();
-                boolean m = !org.telegram.messenger.spark.SparkPeople.isMuted(currentAccount, uid);
-                org.telegram.messenger.spark.SparkPeople.setMuted(currentAccount, uid, m);
+                final long uid = selectedObject.getFromChatId();
                 TLRPC.User mu = getMessagesController().getUser(uid);
-                String nm = mu != null ? UserObject.getUserName(mu) : "Person";
-                BulletinFactory.of(this).createSimpleBulletin(m ? R.raw.ic_mute : R.raw.ic_unmute,
-                    m ? "✦ " + nm + " stummgeschaltet" + (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.MUTE_HIDE) ? " – Nachrichten werden ausgeblendet" : "") : "✦ " + nm + " wieder laut").show();
+                final String nm = mu != null ? UserObject.getUserName(mu) : "Person";
+                if (org.telegram.messenger.spark.SparkPeople.isMuted(currentAccount, uid)) {
+                    org.telegram.messenger.spark.SparkPeople.setMuted(currentAccount, uid, false);
+                    org.telegram.messenger.spark.SparkPeople.setHidden(currentAccount, uid, false);
+                    BulletinFactory.of(this).createSimpleBulletin(R.raw.ic_unmute, "✦ " + nm + " wieder laut").show();
+                    break;
+                }
+                AlertDialog.Builder mb = new AlertDialog.Builder(getParentActivity(), themeDelegate);
+                mb.setTitle(org.telegram.ui.spark.SparkUi.mark(nm + " stummschalten"));
+                mb.setItems(new CharSequence[]{"Nur Benachrichtigungen aus", "Auch Nachrichten einklappen"}, (d, w) -> {
+                    org.telegram.messenger.spark.SparkPeople.setMuted(currentAccount, uid, true);
+                    org.telegram.messenger.spark.SparkPeople.setHidden(currentAccount, uid, w == 1);
+                    BulletinFactory.of(this).createSimpleBulletin(R.raw.ic_mute, "✦ " + nm + " stummgeschaltet" + (w == 1 ? " – neue Nachrichten werden eingeklappt" : "")).show();
+                });
+                showDialog(mb.create());
                 break;
             }
             case OPTION_SPARK_MEDIA: {
