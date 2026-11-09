@@ -22,7 +22,8 @@ public class SparkChangelog {
         new Release("0.22", "09.11.2026",
             "Verlassen: Name in der Chatliste wird sofort rot (auch während „Rückgängig“ und wenn man aus dem Chat heraus verlässt), ohne erst den Ordner zu öffnen",
             "Selbst verlassene private Gruppen zeigen nicht mehr fälschlich „Gesperrt“",
-            "Sparkgram → Infos zeigt bei verlassenen Gruppen das Ergebnis der Beitreten-Prüfung"
+            "Sparkgram → Infos zeigt bei verlassenen Gruppen das Ergebnis der Beitreten-Prüfung",
+            "Verlassene kleine Gruppen werden jetzt auch geprüft: wurde daraus eine öffentliche Supergruppe, steht unten „Beitreten“ (tritt der neuen Gruppe bei und öffnet sie)"
         ),
         new Release("0.21", "09.11.2026",
             "Wirst du direkt nach neuen Nachrichten entfernt, werden diese trotzdem gespeichert (vorher konnten sie verloren gehen)",
