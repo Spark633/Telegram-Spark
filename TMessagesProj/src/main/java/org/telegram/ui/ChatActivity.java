@@ -30305,7 +30305,7 @@ public class ChatActivity extends BaseFragment implements
     public void onResume() {
         super.onResume();
         if (currentChat != null && ChatObject.isNotInChat(currentChat)) {
-            org.telegram.messenger.spark.SparkRejoin.refresh(currentAccount, currentChat, 60_000L); // Sparkgram: Beitreten moeglich?
+            org.telegram.messenger.spark.SparkRejoin.refresh(currentAccount, currentChat, 10_000L); // Sparkgram: Beitreten moeglich?
         }
         // Sparkgram: aktive Gespraechsteilnehmer regelmaessig auf Mitgliedschaft pruefen
         if (currentChat != null) {
