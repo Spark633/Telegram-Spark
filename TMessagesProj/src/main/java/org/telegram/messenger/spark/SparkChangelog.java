@@ -19,6 +19,11 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.24", "09.11.2026",
+            "Sparkgram-Einstellungen übersichtlicher: Startseite mit Bereichen (Profil & Personen, Nachrichten, Gruppen, Medien & Bot, Privatsphäre, Organisation, Übersetzen, Darstellung), Konten und Updates unten; die Suche findet weiterhin alles",
+            "„Gelöschte & verlassene Chats“ jetzt unter Gruppen",
+            "Entfernt-Einblendung oben wird zuverlässig angezeigt"
+        ),
         new Release("0.23", "09.11.2026",
             "„Beitreten“ bei umgewandelten öffentlichen Gruppen jetzt blau wie bei anderen öffentlichen Gruppen",
             "Entfernt-Meldung: Einblendung oben im Bildschirm, länger sichtbar (10 s) oder auf Wunsch bis zum Wegklicken; zeigt das Konto bei mehreren Konten",

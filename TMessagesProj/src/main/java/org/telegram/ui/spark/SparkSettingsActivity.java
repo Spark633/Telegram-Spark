@@ -138,7 +138,75 @@ public class SparkSettingsActivity extends UniversalFragment {
 
     @Override
     protected CharSequence getTitle() {
-        return getString(R.string.SparkSettings);
+        return page == 0 ? getString(R.string.SparkSettings) : PAGE_NAMES[page];
+    }
+
+    // ---------------------------------------------------------------- Unterseiten (Wunsch Spark633)
+    private final int page; // 0 = Uebersicht
+    private static final int ID_PAGE_BASE = 9000;
+    private static final String[] PAGE_NAMES = {"", "Profil & Personen", "Nachrichten", "Gruppen", "Medien & Bot", "Privatsphäre", "Organisation", "Übersetzen", "Darstellung"};
+    private static final String[] PAGE_INFO = {"", "Profil-Werkzeuge, Personen, Notizen", "Werkzeuge, gelöschte Nachrichten, Vor dem Senden fragen, Schlagwort-Alarm",
+        "Admins, Admin-Vorlagen, gelöschte & verlassene Chats", "Medien, Bot", "Ghost-Modus, Zwischenablage, Ausblenden", "Lesezeichen, Vorlagen, Statistiken, Duplikate, Auto-Ordner …",
+        "Google/DeepL, Eingabe übersetzen", "Chat-Menü, ✦-Markierung, Download-Knopf, Nachrichten-Menü"};
+    private static final int[] PAGE_ICONS = {0, R.drawable.msg_contacts, R.drawable.msg_discussion, R.drawable.msg_groups, R.drawable.msg_photos,
+        R.drawable.msg_secret, R.drawable.msg_folders, R.drawable.msg_translate, R.drawable.msg_theme};
+
+    public SparkSettingsActivity() {
+        this(0);
+    }
+
+    public SparkSettingsActivity(int page) {
+        this.page = page;
+    }
+
+    /** Ueberschrift -> Seite, in der gewuenschten Reihenfolge. */
+    private String[][] pageSections() {
+        return new String[][]{
+            {},
+            {getString(R.string.SparkHeaderProfile), getString(R.string.SparkHeaderPeople), getString(R.string.SparkNotes)},
+            {getString(R.string.SparkHeaderMsgTools), getString(R.string.SparkHeaderMessages), getString(R.string.SparkHeaderConfirm), getString(R.string.SparkKeywords)},
+            {getString(R.string.SparkHeaderGroups)},
+            {"Medien", "Bot"},
+            {"Privatsphäre", getString(R.string.SparkHeaderHide)},
+            {"Organisation"},
+            {getString(R.string.SparkHeaderTranslate)},
+            {getString(R.string.SparkHeaderLook)},
+        };
+    }
+
+    /** Liste in Bloecke (je Ueberschrift) zerlegen und nach Seite zusammensetzen. */
+    private void arrangePages(ArrayList<UItem> items) {
+        ArrayList<UItem> pre = new ArrayList<>();
+        java.util.LinkedHashMap<String, ArrayList<UItem>> blocks = new java.util.LinkedHashMap<>();
+        ArrayList<UItem> cur = pre;
+        for (UItem it : items) {
+            if (it.viewType == org.telegram.ui.Components.UniversalAdapter.VIEW_TYPE_HEADER && it.text != null) {
+                cur = new ArrayList<>();
+                blocks.put(it.text.toString(), cur);
+            }
+            cur.add(it);
+        }
+        items.clear();
+        String[][] sections = pageSections();
+        if (page == 0) {
+            items.addAll(pre);
+            items.add(UItem.asHeader("Funktionen"));
+            for (int p = 1; p < PAGE_NAMES.length; p++) {
+                items.add(UItem.asButton(ID_PAGE_BASE + p, PAGE_ICONS[p], PAGE_NAMES[p], ""));
+            }
+            items.add(UItem.asShadow("Tippe auf einen Bereich. Mit der Lupe oben findest du jede einzelne Einstellung."));
+            java.util.HashSet<String> used = new java.util.HashSet<>();
+            for (String[] sec : sections) java.util.Collections.addAll(used, sec);
+            // alles, was keiner Seite zugeordnet ist (Konten, Updates …), bleibt unten auf der Uebersicht
+            for (java.util.Map.Entry<String, ArrayList<UItem>> e : blocks.entrySet()) {
+                if (!used.contains(e.getKey())) items.addAll(e.getValue());
+            }
+        } else {
+            for (String h : sections[page]) {
+                ArrayList<UItem> b = blocks.get(h);
+                if (b != null) items.addAll(b);
+            }
+        }
     }
 
     private static UItem check(int id, int text, String key) {
@@ -210,25 +278,6 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asHeader(getString(R.string.SparkHeaderMessages)));
         items.add(check(ID_KEEP_DELETED, R.string.SparkKeepDeletedToggle, SparkConfig.KEEP_DELETED));
         items.add(check(ID_EDIT_HISTORY, R.string.SparkEditHistoryToggle, SparkConfig.EDIT_HISTORY));
-        items.add(expandable(ID_DELETED_CHATS, R.string.SparkDeletedChatsToggle, SparkConfig.DELETED_CHATS, 4));
-        if (open(SparkConfig.DELETED_CHATS)) {
-            items.add(subCheck(ID_KEEP_LEFT, R.string.SparkKeepLeftToggle, SparkConfig.KEEP_LEFT_CHATS));
-            items.add(subCheck(ID_LEFT_FOLDER, R.string.SparkLeftFolderToggle, SparkConfig.LEFT_FOLDER));
-            if (SparkConfig.getRaw(SparkConfig.LEFT_FOLDER)) {
-                items.add(UItem.asCheck(ID_LEFT_ONLY_FOLDER, "      Nur im Ordner „Verlassen“ anzeigen").setChecked(SparkConfig.getRaw(SparkConfig.LEFT_ONLY_FOLDER)));
-            }
-            items.add(UItem.asCheck(ID_LEAVE_BACKUP, "      Vor dem Verlassen Verlauf sichern").setChecked(SparkConfig.getRaw(SparkConfig.LEAVE_BACKUP)));
-            items.add(UItem.asCheck(ID_KICK_NOTIFY, "      Melden, wenn ich entfernt werde").setChecked(SparkConfig.getRaw(SparkConfig.KICK_NOTIFY)));
-            if (SparkConfig.getRaw(SparkConfig.KICK_NOTIFY)) {
-                items.add(UItem.asCheck(ID_KICK_INAPP, "            als Einblendung oben in der App").setChecked(SparkConfig.prefs().getBoolean("kickNotifyInApp", true)));
-                if (SparkConfig.prefs().getBoolean("kickNotifyInApp", true)) {
-                    items.add(UItem.asCheck(ID_KICK_STICKY, "                  bleibt, bis ich sie wegklicke").setChecked(SparkConfig.prefs().getBoolean("kickNotifySticky", false)));
-                }
-                items.add(UItem.asCheck(ID_KICK_SYSTEM, "            als Android-Benachrichtigung").setChecked(SparkConfig.prefs().getBoolean("kickNotifySystem", true)));
-            }
-            items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Liste öffnen"));
-            items.add(UItem.asShadow("Verlassene Gruppen zeigt Sparkgram auch dann, wenn sie schon länger in Telegrams Speicher auf diesem Gerät liegen. Dabei können auch Gruppen auftauchen, die du nur über einen Link angesehen hast oder in die dich jemand ungefragt hinzugefügt hat."));
-        }
         items.add(UItem.asShadow(getString(R.string.SparkMessagesInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderMsgTools)));
@@ -343,6 +392,25 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(subCheck(ID_MEMBER_HINT, R.string.SparkMemberHintToggle, SparkConfig.MEMBER_CHECK_HINT));
             items.add(UItem.asButton(ID_MEMBER_INTERVAL, "      " + getString(R.string.SparkMemberInterval), (org.telegram.messenger.spark.SparkMembership.intervalMs() / 1000) + " s"));
         }
+        items.add(expandable(ID_DELETED_CHATS, R.string.SparkDeletedChatsToggle, SparkConfig.DELETED_CHATS, 4));
+        if (open(SparkConfig.DELETED_CHATS)) {
+            items.add(subCheck(ID_KEEP_LEFT, R.string.SparkKeepLeftToggle, SparkConfig.KEEP_LEFT_CHATS));
+            items.add(subCheck(ID_LEFT_FOLDER, R.string.SparkLeftFolderToggle, SparkConfig.LEFT_FOLDER));
+            if (SparkConfig.getRaw(SparkConfig.LEFT_FOLDER)) {
+                items.add(UItem.asCheck(ID_LEFT_ONLY_FOLDER, "      Nur im Ordner „Verlassen“ anzeigen").setChecked(SparkConfig.getRaw(SparkConfig.LEFT_ONLY_FOLDER)));
+            }
+            items.add(UItem.asCheck(ID_LEAVE_BACKUP, "      Vor dem Verlassen Verlauf sichern").setChecked(SparkConfig.getRaw(SparkConfig.LEAVE_BACKUP)));
+            items.add(UItem.asCheck(ID_KICK_NOTIFY, "      Melden, wenn ich entfernt werde").setChecked(SparkConfig.getRaw(SparkConfig.KICK_NOTIFY)));
+            if (SparkConfig.getRaw(SparkConfig.KICK_NOTIFY)) {
+                items.add(UItem.asCheck(ID_KICK_INAPP, "            als Einblendung oben in der App").setChecked(SparkConfig.prefs().getBoolean("kickNotifyInApp", true)));
+                if (SparkConfig.prefs().getBoolean("kickNotifyInApp", true)) {
+                    items.add(UItem.asCheck(ID_KICK_STICKY, "                  bleibt, bis ich sie wegklicke").setChecked(SparkConfig.prefs().getBoolean("kickNotifySticky", false)));
+                }
+                items.add(UItem.asCheck(ID_KICK_SYSTEM, "            als Android-Benachrichtigung").setChecked(SparkConfig.prefs().getBoolean("kickNotifySystem", true)));
+            }
+            items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Liste öffnen"));
+            items.add(UItem.asShadow("Verlassene Gruppen zeigt Sparkgram auch dann, wenn sie schon länger in Telegrams Speicher auf diesem Gerät liegen. Dabei können auch Gruppen auftauchen, die du nur über einen Link angesehen hast oder in die dich jemand ungefragt hinzugefügt hat."));
+        }
         items.add(UItem.asShadow(getString(R.string.SparkMemberInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkNotes)));
@@ -409,6 +477,8 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(UItem.asHeader("Suche: „" + sparkQuery.trim() + "“"));
             items.addAll(found);
             items.add(UItem.asShadow(found.isEmpty() ? "Nichts gefunden." : found.size() + " Treffer"));
+        } else {
+            arrangePages(items);
         }
     }
 
@@ -433,6 +503,9 @@ public class SparkSettingsActivity extends UniversalFragment {
         org.telegram.tgnet.TLRPC.User me = getUserConfig().getCurrentUser();
         if (me != null) {
             actionBar.setSubtitle("Konto: " + org.telegram.messenger.UserObject.getUserName(me));
+        }
+        if (page != 0) {
+            return view; // Unterseite: ohne Hauptschalter und Suche
         }
         // Hauptschalter oben fest angeheftet, bleibt beim Scrollen sichtbar
         masterCell = new org.telegram.ui.Cells.TextCheckCell(context);
@@ -470,6 +543,10 @@ public class SparkSettingsActivity extends UniversalFragment {
 
     @Override
     protected void onClick(UItem item, View view, int position, float x, float y) {
+        if (item.id > ID_PAGE_BASE && item.id < ID_PAGE_BASE + PAGE_NAMES.length) {
+            presentFragment(new SparkSettingsActivity(item.id - ID_PAGE_BASE));
+            return;
+        }
         if (!item.enabled) {
             return;
         }
