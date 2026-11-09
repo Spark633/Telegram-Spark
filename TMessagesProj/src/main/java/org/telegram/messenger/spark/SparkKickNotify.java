@@ -26,6 +26,17 @@ public class SparkKickNotify {
         return System.currentTimeMillis() - t < 3600_000L;
     }
 
+    /** Name des Kontos (nur wenn mehrere Konten angemeldet sind). */
+    static String accountName(int account) {
+        int n = 0;
+        for (int a = 0; a < org.telegram.messenger.UserConfig.MAX_ACCOUNT_COUNT; a++) {
+            if (org.telegram.messenger.UserConfig.getInstance(a).isClientActivated()) n++;
+        }
+        if (n < 2) return null;
+        org.telegram.tgnet.TLRPC.User u = org.telegram.messenger.UserConfig.getInstance(account).getCurrentUser();
+        return u != null ? org.telegram.messenger.UserObject.getUserName(u) : null;
+    }
+
     public static void onKicked(int account, long dialogId) {
         if (!SparkConfig.get(SparkConfig.KICK_NOTIFY)) return;
         SparkConfig.prefs().edit().putLong("kickNotifiedAt_" + account + "_" + dialogId, System.currentTimeMillis()).apply();
@@ -34,14 +45,22 @@ public class SparkKickNotify {
         if (SparkConfig.prefs().getBoolean("kickNotifyInApp", true)) {
             AndroidUtilities.runOnUIThread(() -> {
                 try {
-                    org.telegram.ui.ActionBar.BaseFragment f = LaunchActivity.getLastFragment();
-                    if (f != null && f.getParentActivity() != null) {
-                        org.telegram.ui.Components.BulletinFactory.of(f).createSimpleBulletin(R.raw.ic_ban, "🔨 Du wurdest aus „" + name + "“ entfernt", "Öffnen", () -> {
+                    if (LaunchActivity.instance == null) return;
+                    String acc = accountName(account);
+                    CharSequence text = "🔨 Du wurdest aus „" + name + "“ entfernt" + (acc != null ? "\nKonto: " + acc : "");
+                    boolean sticky = SparkConfig.prefs().getBoolean("kickNotifySticky", false);
+                    org.telegram.ui.spark.SparkTopBanner.show(LaunchActivity.instance, text, () -> {
+                        if (org.telegram.messenger.UserConfig.selectedAccount != account) {
+                            LaunchActivity.instance.switchToAccount(account, true);
+                        }
+                        AndroidUtilities.runOnUIThread(() -> {
+                            org.telegram.ui.ActionBar.BaseFragment f = LaunchActivity.getLastFragment();
+                            if (f == null) return;
                             android.os.Bundle args = new android.os.Bundle();
                             args.putLong("chat_id", -dialogId);
                             f.presentFragment(new org.telegram.ui.ChatActivity(args));
-                        }).show();
-                    }
+                        }, 300);
+                    }, sticky);
                 } catch (Throwable e) {
                     FileLog.e(e);
                 }
@@ -64,9 +83,10 @@ public class SparkKickNotify {
                 PendingIntent pi = PendingIntent.getActivity(ctx, (int) (System.currentTimeMillis() & 0xffff), intent,
                     PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
                 NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL_ID)
-                    .setSmallIcon(R.drawable.notification)
+                    .setSmallIcon(R.drawable.spark_notification)
                     .setContentTitle("✦ " + name)
                     .setContentText("🔨 Du wurdest aus der Gruppe entfernt")
+                    .setSubText(accountName(account) != null ? "Konto: " + accountName(account) : null)
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setDefaults(NotificationCompat.DEFAULT_ALL)

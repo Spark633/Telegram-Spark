@@ -130,6 +130,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_KICK_NOTIFY = 111;
     private static final int ID_KICK_INAPP = 112;
     private static final int ID_KICK_SYSTEM = 113;
+    private static final int ID_KICK_STICKY = 114;
     private static final int ID_DUPLICATES = 105;
     private static final int ID_HIDE_STARS = 34;
     private static final int ID_HIDE_BUSINESS = 35;
@@ -219,7 +220,10 @@ public class SparkSettingsActivity extends UniversalFragment {
             items.add(UItem.asCheck(ID_LEAVE_BACKUP, "      Vor dem Verlassen Verlauf sichern").setChecked(SparkConfig.getRaw(SparkConfig.LEAVE_BACKUP)));
             items.add(UItem.asCheck(ID_KICK_NOTIFY, "      Melden, wenn ich entfernt werde").setChecked(SparkConfig.getRaw(SparkConfig.KICK_NOTIFY)));
             if (SparkConfig.getRaw(SparkConfig.KICK_NOTIFY)) {
-                items.add(UItem.asCheck(ID_KICK_INAPP, "            als Einblendung in der App").setChecked(SparkConfig.prefs().getBoolean("kickNotifyInApp", true)));
+                items.add(UItem.asCheck(ID_KICK_INAPP, "            als Einblendung oben in der App").setChecked(SparkConfig.prefs().getBoolean("kickNotifyInApp", true)));
+                if (SparkConfig.prefs().getBoolean("kickNotifyInApp", true)) {
+                    items.add(UItem.asCheck(ID_KICK_STICKY, "                  bleibt, bis ich sie wegklicke").setChecked(SparkConfig.prefs().getBoolean("kickNotifySticky", false)));
+                }
                 items.add(UItem.asCheck(ID_KICK_SYSTEM, "            als Android-Benachrichtigung").setChecked(SparkConfig.prefs().getBoolean("kickNotifySystem", true)));
             }
             items.add(UItem.asButton(ID_DELETED_CHATS_OPEN, "      Liste öffnen"));
@@ -541,9 +545,11 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_LEAVE_BACKUP: toggle(SparkConfig.LEAVE_BACKUP); break;
             case ID_KICK_NOTIFY: toggle(SparkConfig.KICK_NOTIFY); break;
             case ID_KICK_INAPP:
-            case ID_KICK_SYSTEM: {
-                String k = item.id == ID_KICK_INAPP ? "kickNotifyInApp" : "kickNotifySystem";
-                SparkConfig.prefs().edit().putBoolean(k, !SparkConfig.prefs().getBoolean(k, true)).apply();
+            case ID_KICK_SYSTEM:
+            case ID_KICK_STICKY: {
+                String k = item.id == ID_KICK_INAPP ? "kickNotifyInApp" : item.id == ID_KICK_SYSTEM ? "kickNotifySystem" : "kickNotifySticky";
+                boolean def = item.id != ID_KICK_STICKY;
+                SparkConfig.prefs().edit().putBoolean(k, !SparkConfig.prefs().getBoolean(k, def)).apply();
                 listView.adapter.update(true);
                 break;
             }

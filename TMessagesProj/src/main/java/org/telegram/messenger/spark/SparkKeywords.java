@@ -201,7 +201,7 @@ public class SparkKeywords {
             String what = "Schlagwort „" + h.keyword + "“";
             String sender = dm ? "" : senderName + ": ";
             NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL_ID)
-                .setSmallIcon(R.drawable.notification)
+                .setSmallIcon(R.drawable.spark_notification)
                 .setContentTitle(where)
                 .setSubText(what)
                 .setContentText(sender + h.text)

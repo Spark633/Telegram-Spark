@@ -28365,6 +28365,7 @@ public class ChatActivity extends BaseFragment implements
                 // Sparkgram: kleine Gruppe wurde (oeffentliche) Supergruppe – dort beitreten
                 bottomOverlayChatText.setText(LocaleController.getString(R.string.GroupJoinNoCaps));
                 bottomOverlayChatText.setEnabled(true);
+                accentTextButton = true; // blau wie bei oeffentlichen Gruppen
             } else if (!isThreadChat()) {
                 bottomOverlayChatText.setText(LocaleController.getString(R.string.DeleteThisGroup));
                 bottomOverlayChatText.setEnabled(true);

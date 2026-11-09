@@ -19,6 +19,12 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.23", "09.11.2026",
+            "„Beitreten“ bei umgewandelten öffentlichen Gruppen jetzt blau wie bei anderen öffentlichen Gruppen",
+            "Entfernt-Meldung: Einblendung oben im Bildschirm, länger sichtbar (10 s) oder auf Wunsch bis zum Wegklicken; zeigt das Konto bei mehreren Konten",
+            "Android-Benachrichtigung „entfernt“ zeigt, welches Konto gemeint ist",
+            "Benachrichtigungen haben jetzt das Sparkgram-Symbol (Flieger mit Funken) statt des Telegram-Logos"
+        ),
         new Release("0.22", "09.11.2026",
             "Verlassen: Name in der Chatliste wird sofort rot (auch während „Rückgängig“ und wenn man aus dem Chat heraus verlässt), ohne erst den Ordner zu öffnen",
             "Selbst verlassene private Gruppen zeigen nicht mehr fälschlich „Gesperrt“",
