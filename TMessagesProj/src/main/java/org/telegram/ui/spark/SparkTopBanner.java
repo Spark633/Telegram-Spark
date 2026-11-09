@@ -22,9 +22,11 @@ public class SparkTopBanner {
 
     public static void show(Activity activity, CharSequence text, Runnable onClick, boolean sticky) {
         if (activity == null || activity.isFinishing()) return;
-        View decor = activity.getWindow().getDecorView();
-        if (!(decor instanceof ViewGroup)) return;
-        final ViewGroup root = (ViewGroup) decor;
+        // in den Inhaltsbereich der App legen (liegt sicher ueber Telegrams Oberflaeche)
+        View content = activity.findViewById(android.R.id.content);
+        if (!(content instanceof FrameLayout)) content = activity.getWindow().getDecorView();
+        if (!(content instanceof ViewGroup)) return;
+        final ViewGroup root = (ViewGroup) content;
 
         LinearLayout box = new LinearLayout(activity);
         box.setOrientation(LinearLayout.HORIZONTAL);
@@ -53,6 +55,8 @@ public class SparkTopBanner {
         lp.leftMargin = lp.rightMargin = AndroidUtilities.dp(12);
         lp.topMargin = AndroidUtilities.statusBarHeight + AndroidUtilities.dp(8);
         root.addView(box, lp);
+        box.bringToFront();
+        box.setTranslationZ(AndroidUtilities.dp(16));
 
         final Runnable[] hide = new Runnable[1];
         hide[0] = () -> box.animate().translationY(-AndroidUtilities.dp(160)).alpha(0f).setDuration(220)
