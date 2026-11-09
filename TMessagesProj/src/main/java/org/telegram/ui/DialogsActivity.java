@@ -7058,6 +7058,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     @Override
     public void onResume() {
         super.onResume();
+        // Sparkgram: Namen (rot/🚪) neu zeichnen – Aenderungen waehrend die Liste pausiert war kamen sonst nicht an
+        AndroidUtilities.runOnUIThread(() -> updateVisibleRows(MessagesController.UPDATE_MASK_CHAT | MessagesController.UPDATE_MASK_NAME | MessagesController.UPDATE_MASK_CHAT_NAME), 100);
         if (!onlySelect && folderId == 0) {
             org.telegram.messenger.spark.SparkAutoFolders.applyThrottled(this); // Sparkgram: Auto-Ordner
             org.telegram.messenger.spark.SparkRejoin.refreshAll(currentAccount); // Sparkgram: verlassene Gruppen pruefen

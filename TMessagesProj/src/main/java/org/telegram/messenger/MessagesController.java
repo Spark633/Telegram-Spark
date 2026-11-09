@@ -10163,6 +10163,7 @@ public class MessagesController extends BaseController implements NotificationCe
         sortDialogs(null);
         getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload);
         getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME);
+            AndroidUtilities.runOnUIThread(() -> getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME), 800); // nochmal, falls die Liste gerade gesperrt war
     }
 
     public void deleteDialog(final long did, int onlyHistory) {
@@ -22492,6 +22493,7 @@ public class MessagesController extends BaseController implements NotificationCe
             sparkPendingLeave.add(did);
             getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload, true);
             getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME);
+            AndroidUtilities.runOnUIThread(() -> getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME), 800); // nochmal, falls die Liste gerade gesperrt war
             return;
         } else {
             deletingDialogs.put(did, dialog);
@@ -22508,6 +22510,7 @@ public class MessagesController extends BaseController implements NotificationCe
         if (!clean && sparkPendingLeave.remove(did)) {
             getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload, true);
             getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME);
+            AndroidUtilities.runOnUIThread(() -> getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME), 800); // nochmal, falls die Liste gerade gesperrt war
         }
         TLRPC.Dialog dialog = dialogs_dict.get(did);
         if (dialog == null) {
