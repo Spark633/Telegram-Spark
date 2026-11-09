@@ -22,6 +22,7 @@ public class SparkChangelog {
         new Release("0.25", "09.11.2026",
             "Verlassen: Chat bleibt rot und im Ordner „Verlassen“, bis das Verlassen (inkl. Verlauf sichern) wirklich fertig ist",
             "Aus privaten Gruppen entfernt: wird jetzt auch über Telegrams „privat“-Meldung erkannt (Einblendung/Benachrichtigung, rot, Ordner)",
+            "„Vor dem Verlassen Verlauf sichern“ ist jetzt standardmäßig aus (Verlassen geht sofort; bei Bedarf unter Gruppen einschalten)",
             "Suche in den Einstellungen zeigt die Kategorie (z. B. „Gruppen › Gelöschte & verlassene Chats“)",
             "Updates → Diagnose-Protokoll: zeigt, was beim Verlassen/Entfernen passiert ist (zum Kopieren für die Fehlersuche)"
         ),

@@ -282,7 +282,6 @@ public class SparkConfig {
             case PERSONA:
             case ADMIN_TOOLS:
             case KICK_NOTIFY:
-            case LEAVE_BACKUP:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:
