@@ -11301,7 +11301,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void updateVisibleRows(int mask, boolean animated) {
-        if ((dialogsListFrozen && (mask & MessagesController.UPDATE_MASK_REORDER) == 0) || isPaused) {
+        // Sparkgram: Namens-Aktualisierungen (rot/🚪) auch bei gesperrter Liste durchlassen
+        if ((dialogsListFrozen && (mask & MessagesController.UPDATE_MASK_REORDER) == 0 && (mask & MessagesController.UPDATE_MASK_CHAT_NAME) == 0) || isPaused) {
             return;
         }
         for (int c = 0; c < 3; c++) {

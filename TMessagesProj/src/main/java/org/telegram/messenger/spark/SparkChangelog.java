@@ -23,7 +23,10 @@ public class SparkChangelog {
             "„Beitreten“ bei umgewandelten öffentlichen Gruppen jetzt blau wie bei anderen öffentlichen Gruppen",
             "Entfernt-Meldung: Einblendung oben im Bildschirm, länger sichtbar (10 s) oder auf Wunsch bis zum Wegklicken; zeigt das Konto bei mehreren Konten",
             "Android-Benachrichtigung „entfernt“ zeigt, welches Konto gemeint ist",
-            "Benachrichtigungen haben jetzt das Sparkgram-Symbol (Flieger mit Funken) statt des Telegram-Logos"
+            "Benachrichtigungen haben jetzt das Sparkgram-Symbol (Flieger mit Funken) statt des Telegram-Logos",
+            "Verlassen: roter Name auch während der Rückgängig-Animation (die Liste ignorierte die Aktualisierung)",
+            "Entfernt-Meldung wird nicht mehr eine Stunde lang unterdrückt (nur doppelte Meldungen innerhalb 30 s)",
+            "Umgewandelte Gruppe, der du schon beigetreten bist: unten „Zur neuen Gruppe“"
         ),
         new Release("0.22", "09.11.2026",
             "Verlassen: Name in der Chatliste wird sofort rot (auch während „Rückgängig“ und wenn man aus dem Chat heraus verlässt), ohne erst den Ordner zu öffnen",

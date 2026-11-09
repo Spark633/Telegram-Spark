@@ -2750,8 +2750,9 @@ public class ChatActivity extends BaseFragment implements
     private TLRPC.Chat sparkJoinTarget() {
         if (currentChat == null || ChatObject.isChannel(currentChat) || !ChatObject.isNotInChat(currentChat) || !MessagesController.sparkKeepLeftOn()) return null;
         TLRPC.Chat t = org.telegram.messenger.spark.SparkRejoin.migratedTarget(currentAccount, currentChat);
-        if (t == null || t instanceof TLRPC.TL_channelForbidden || !ChatObject.isPublic(t) || !ChatObject.isNotInChat(t)) return null;
-        return t;
+        if (t == null || t instanceof TLRPC.TL_channelForbidden) return null;
+        if (!ChatObject.isNotInChat(t)) return t;           // schon drin: "Zur neuen Gruppe"
+        return ChatObject.isPublic(t) ? t : null;          // oeffentlich: "Beitreten"
     }
 
     @Override
@@ -8701,12 +8702,17 @@ public class ChatActivity extends BaseFragment implements
                 } else if (sparkJoinTarget() != null) {
                     // Sparkgram: der umgewandelten (oeffentlichen) Supergruppe beitreten und sie oeffnen
                     final TLRPC.Chat target = sparkJoinTarget();
-                    showBottomOverlayProgress(true, true);
-                    getMessagesController().addUserToChat(target.id, getUserConfig().getCurrentUser(), 0, null, ChatActivity.this, () -> {
+                    final Runnable open = () -> {
                         Bundle a = new Bundle();
                         a.putLong("chat_id", target.id);
-                        presentFragment(new ChatActivity(a), true);
-                    });
+                        presentFragment(new ChatActivity(a));
+                    };
+                    if (!ChatObject.isNotInChat(target)) {
+                        open.run();
+                    } else {
+                        showBottomOverlayProgress(true, true);
+                        getMessagesController().addUserToChat(target.id, getUserConfig().getCurrentUser(), 0, null, ChatActivity.this, open);
+                    }
                 } else {
                     boolean canDeleteHistory = chatInfo != null && chatInfo.can_delete_channel;
                     AlertsCreator.createClearOrDeleteDialogAlert(ChatActivity.this, false, currentChat, currentUser, currentEncryptedChat != null, true, false, canDeleteHistory, (param) -> {
@@ -28362,8 +28368,8 @@ public class ChatActivity extends BaseFragment implements
                 bottomOverlayChatText.setTextInfo(LocaleController.getString(R.string.ForumReplyToMessagesInTopic));
                 bottomOverlayChatText.setEnabled(false);
             } else if (!isThreadChat() && sparkJoinTarget() != null) {
-                // Sparkgram: kleine Gruppe wurde (oeffentliche) Supergruppe – dort beitreten
-                bottomOverlayChatText.setText(LocaleController.getString(R.string.GroupJoinNoCaps));
+                // Sparkgram: kleine Gruppe wurde (oeffentliche) Supergruppe – dort beitreten bzw. hinwechseln
+                bottomOverlayChatText.setText(ChatObject.isNotInChat(sparkJoinTarget()) ? LocaleController.getString(R.string.GroupJoinNoCaps) : "ZUR NEUEN GRUPPE");
                 bottomOverlayChatText.setEnabled(true);
                 accentTextButton = true; // blau wie bei oeffentlichen Gruppen
             } else if (!isThreadChat()) {

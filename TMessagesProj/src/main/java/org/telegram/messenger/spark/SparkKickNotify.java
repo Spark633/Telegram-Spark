@@ -20,10 +20,10 @@ public class SparkKickNotify {
 
     private static final String CHANNEL_ID = "sparkgram_kicked";
 
-    /** Pro Gruppe hoechstens einmal pro Stunde melden (Telegram schickt die Aenderung manchmal mehrfach). */
+    /** Pro Gruppe hoechstens einmal pro 30 Sekunden melden (Telegram schickt die Aenderung manchmal mehrfach). */
     public static boolean wasNotified(int account, long dialogId) {
         long t = SparkConfig.prefs().getLong("kickNotifiedAt_" + account + "_" + dialogId, 0);
-        return System.currentTimeMillis() - t < 3600_000L;
+        return System.currentTimeMillis() - t < 30_000L; // nur doppelte Meldungen derselben Aenderung unterdruecken
     }
 
     /** Name des Kontos (nur wenn mehrere Konten angemeldet sind). */
