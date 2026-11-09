@@ -34,10 +34,12 @@ public class SparkLeaveBackup {
         TLRPC.Chat chat = MessagesController.getInstance(account).getChat(chatId);
         if (chat == null) return false;
         running.add(key);
+        SparkLog.log("Verlauf sichern vor Verlassen: " + chatId);
         bulletin("✦ Verlauf wird vor dem Verlassen gesichert …");
         load(account, chatId, 0, 0, () -> {
             running.remove(key);
             passing.add(key);
+            SparkLog.log("Verlauf gesichert, verlasse jetzt: " + chatId);
             AndroidUtilities.runOnUIThread(then);
         });
         return true;

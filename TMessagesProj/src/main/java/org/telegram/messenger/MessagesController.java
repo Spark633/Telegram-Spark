@@ -1285,6 +1285,9 @@ public class MessagesController extends BaseController implements NotificationCe
     public static class SparkLeftFilter extends DialogFilter {
         @Override
         public boolean includesDialog(AccountInstance accountInstance, long dialogId, TLRPC.Dialog d) {
+            if (accountInstance.getMessagesController().sparkPendingLeave.contains(dialogId)) {
+                return true; // gerade beim Verlassen/Loeschen
+            }
             if (dialogId > 0) {
                 return org.telegram.messenger.spark.SparkDeletedChats.isKept(accountInstance.getCurrentAccount(), dialogId);
             }
@@ -1311,6 +1314,7 @@ public class MessagesController extends BaseController implements NotificationCe
     /** Sparkgram: verlassener/entfernter bzw. lokal behaltener geloeschter Chat? */
     public boolean sparkIsKeptLeft(long dialogId) {
         if (dialogId == 0) return false;
+        if (sparkPendingLeave.contains(dialogId)) return true; // gerade beim Verlassen
         if (dialogId > 0) {
             return org.telegram.messenger.spark.SparkDeletedChats.isKept(currentAccount, dialogId);
         }
@@ -10123,6 +10127,10 @@ public class MessagesController extends BaseController implements NotificationCe
     public final java.util.HashSet<Long> sparkSelfLeft = new java.util.HashSet<>();
 
     public boolean sparkKeepChat(long did, int kind) {
+        org.telegram.messenger.spark.SparkLog.log("Chat " + did + " " + (kind == org.telegram.messenger.spark.SparkDeletedChats.KIND_KICKED ? "entfernt/gesperrt" : "verlassen") + " erkannt" + (sparkSelfLeft.contains(did) ? " (selbst verlassen)" : ""));
+        if (did > 0 || ChatObject.isNotInChat(getChat(-did))) {
+            sparkPendingLeave.remove(did); // erst entfernen, wenn wirklich draussen
+        }
         if (kind == org.telegram.messenger.spark.SparkDeletedChats.KIND_KICKED && sparkSelfLeft.contains(did)) {
             kind = org.telegram.messenger.spark.SparkDeletedChats.KIND_LEFT; // selbst verlassen, nicht entfernt
         }
@@ -17157,6 +17165,18 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     private void checkChannelError(String text, long channelId) {
+        org.telegram.messenger.spark.SparkLog.log("Kanal " + channelId + ": Fehler " + text);
+        if (("CHANNEL_PRIVATE".equals(text) || "CHANNEL_INVALID".equals(text)) && sparkKeepLeftOn()) {
+            // Sparkgram: so erfaehrt die App oft, dass man aus einer privaten Gruppe entfernt wurde
+            TLRPC.Chat c = getChat(channelId);
+            if (c != null && !ChatObject.isNotInChat(c) && dialogs_dict.get(-channelId) != null) {
+                c.left = true;
+                ArrayList<TLRPC.Chat> save = new ArrayList<>();
+                save.add(c);
+                getMessagesStorage().putUsersAndChats(null, save, true, true);
+                sparkKeepChat(-channelId, sparkSelfLeft.contains(-channelId) ? org.telegram.messenger.spark.SparkDeletedChats.KIND_LEFT : org.telegram.messenger.spark.SparkDeletedChats.KIND_KICKED);
+            }
+        }
         switch (text) {
             case "CHANNEL_PRIVATE":
                 getNotificationCenter().postNotificationName(NotificationCenter.chatInfoCantLoad, channelId, 0);
@@ -20617,6 +20637,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         TL_update.TL_updateChannel update = (TL_update.TL_updateChannel) baseUpdate;
                         TLRPC.Dialog dialog = dialogs_dict.get(-update.channel_id);
                         TLRPC.Chat chat = getChat(update.channel_id);
+                        org.telegram.messenger.spark.SparkLog.log("updateChannel " + update.channel_id + (chat == null ? " (unbekannt)" : (chat instanceof TLRPC.TL_channelForbidden ? " gesperrt" : chat.left ? " verlassen" : chat.kicked ? " entfernt" : " Mitglied")));
                         if (chat != null) {
                             if (dialog == null && chat instanceof TLRPC.TL_channel && !chat.left) {
                                 Utilities.stageQueue.postRunnable(() -> getChannelDifference(update.channel_id, 1, 0, null));
@@ -22491,6 +22512,7 @@ public class MessagesController extends BaseController implements NotificationCe
         } else if (sparkStaysAfterDelete(did)) {
             // Sparkgram: Chat bleibt sichtbar und wird waehrend des Countdowns schon rot angezeigt
             sparkPendingLeave.add(did);
+            org.telegram.messenger.spark.SparkLog.log("Countdown " + did + " gestartet (rot markiert)");
             getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload, true);
             getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME);
             AndroidUtilities.runOnUIThread(() -> getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME), 800); // nochmal, falls die Liste gerade gesperrt war
@@ -22507,7 +22529,11 @@ public class MessagesController extends BaseController implements NotificationCe
     public final java.util.HashSet<Long> sparkPendingLeave = new java.util.HashSet<>();
 
     public void removeDialogAction(long did, boolean clean, boolean apply) {
-        if (!clean && sparkPendingLeave.remove(did)) {
+        if (!clean && sparkPendingLeave.contains(did)) {
+            org.telegram.messenger.spark.SparkLog.log("Countdown " + did + (apply ? " abgelaufen -> wird verlassen" : " rueckgaengig"));
+        }
+        // Sparkgram: rot bleibt bis zum tatsaechlichen Verlassen; nur "Rueckgaengig" nimmt es zurueck
+        if (!clean && !apply && sparkPendingLeave.remove(did)) {
             getNotificationCenter().postNotificationName(NotificationCenter.dialogsNeedReload, true);
             getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME);
             AndroidUtilities.runOnUIThread(() -> getNotificationCenter().postNotificationName(NotificationCenter.updateInterfaces, UPDATE_MASK_CHAT | UPDATE_MASK_NAME | UPDATE_MASK_CHAT_NAME), 800); // nochmal, falls die Liste gerade gesperrt war

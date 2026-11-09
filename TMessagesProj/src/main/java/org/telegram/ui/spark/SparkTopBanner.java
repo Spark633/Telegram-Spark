@@ -21,7 +21,11 @@ import org.telegram.ui.Components.LayoutHelper;
 public class SparkTopBanner {
 
     public static void show(Activity activity, CharSequence text, Runnable onClick, boolean sticky) {
-        if (activity == null || activity.isFinishing()) return;
+        if (activity == null || activity.isFinishing()) {
+            org.telegram.messenger.spark.SparkLog.log("Leiste oben: keine Activity");
+            return;
+        }
+        org.telegram.messenger.spark.SparkLog.log("Leiste oben angezeigt");
         // in den Inhaltsbereich der App legen (liegt sicher ueber Telegrams Oberflaeche)
         View content = activity.findViewById(android.R.id.content);
         if (!(content instanceof FrameLayout)) content = activity.getWindow().getDecorView();

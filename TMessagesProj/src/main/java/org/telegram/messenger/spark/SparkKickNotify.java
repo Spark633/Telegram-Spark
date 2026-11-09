@@ -38,6 +38,7 @@ public class SparkKickNotify {
     }
 
     public static void onKicked(int account, long dialogId) {
+        SparkLog.log("Meldung entfernt fuer " + dialogId + (SparkConfig.get(SparkConfig.KICK_NOTIFY) ? "" : " (abgeschaltet)"));
         if (!SparkConfig.get(SparkConfig.KICK_NOTIFY)) return;
         SparkConfig.prefs().edit().putLong("kickNotifiedAt_" + account + "_" + dialogId, System.currentTimeMillis()).apply();
         final String name = org.telegram.ui.spark.SparkNotesActivity.dialogName(account, dialogId);

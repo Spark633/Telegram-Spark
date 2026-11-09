@@ -19,6 +19,12 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.25", "09.11.2026",
+            "Verlassen: Chat bleibt rot und im Ordner „Verlassen“, bis das Verlassen (inkl. Verlauf sichern) wirklich fertig ist",
+            "Aus privaten Gruppen entfernt: wird jetzt auch über Telegrams „privat“-Meldung erkannt (Einblendung/Benachrichtigung, rot, Ordner)",
+            "Suche in den Einstellungen zeigt die Kategorie (z. B. „Gruppen › Gelöschte & verlassene Chats“)",
+            "Updates → Diagnose-Protokoll: zeigt, was beim Verlassen/Entfernen passiert ist (zum Kopieren für die Fehlersuche)"
+        ),
         new Release("0.24", "09.11.2026",
             "Sparkgram-Einstellungen übersichtlicher: Startseite mit Bereichen (Profil & Personen, Nachrichten, Gruppen, Medien & Bot, Privatsphäre, Organisation, Übersetzen, Darstellung), Konten und Updates unten; die Suche findet weiterhin alles",
             "„Gelöschte & verlassene Chats“ jetzt unter Gruppen",

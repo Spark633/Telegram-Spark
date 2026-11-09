@@ -144,6 +144,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     // ---------------------------------------------------------------- Unterseiten (Wunsch Spark633)
     private final int page; // 0 = Uebersicht
     private static final int ID_PAGE_BASE = 9000;
+    private static final int ID_DIAG_LOG = 115;
     private static final String[] PAGE_NAMES = {"", "Profil & Personen", "Nachrichten", "Gruppen", "Medien & Bot", "Privatsphäre", "Organisation", "Übersetzen", "Darstellung"};
     private static final String[] PAGE_INFO = {"", "Profil-Werkzeuge, Personen, Notizen", "Werkzeuge, gelöschte Nachrichten, Vor dem Senden fragen, Schlagwort-Alarm",
         "Admins, Admin-Vorlagen, gelöschte & verlassene Chats", "Medien, Bot", "Ghost-Modus, Zwischenablage, Ausblenden", "Lesezeichen, Vorlagen, Statistiken, Duplikate, Auto-Ordner …",
@@ -457,6 +458,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asButton(ID_CHANGELOG, R.drawable.msg_stories_caption, "Was ist neu?"));
         items.add(UItem.asCheck(ID_WHATS_NEW_HINT, "Nach Updates „Was ist neu?“ zeigen").setChecked(SparkConfig.getRaw(SparkConfig.WHATS_NEW_HINT)));
         items.add(UItem.asButton(ID_REPO, R.drawable.msg_link2, getString(R.string.SparkRepo)));
+        items.add(UItem.asButton(ID_DIAG_LOG, R.drawable.msg_log, "Diagnose-Protokoll"));
         items.add(UItem.asShadow(getString(R.string.SparkUpdateInfo)));
 
         if (SparkCrashLog.read(getContext()) != null) {
@@ -467,16 +469,34 @@ public class SparkSettingsActivity extends UniversalFragment {
         // Suche: nur passende Eintraege (Name, Beschreibung oder Wert) zeigen
         if (searching()) {
             String q = sparkQuery.trim().toLowerCase();
-            ArrayList<UItem> found = new ArrayList<>();
+            // Ueberschrift -> Bereich (fuer die Anzeige der Kategorie)
+            java.util.HashMap<String, String> area = new java.util.HashMap<>();
+            String[][] secs = pageSections();
+            for (int p = 1; p < secs.length; p++) for (String h : secs[p]) area.put(h, PAGE_NAMES[p]);
+            java.util.LinkedHashMap<String, ArrayList<UItem>> found = new java.util.LinkedHashMap<>();
+            String curHeader = "";
+            int count = 0;
             for (UItem it : items) {
+                if (it.viewType == org.telegram.ui.Components.UniversalAdapter.VIEW_TYPE_HEADER && it.text != null) {
+                    curHeader = it.text.toString();
+                    continue;
+                }
                 if (it.id == 0) continue;
                 String t = ((it.text != null ? it.text : "") + " " + (it.subtext != null ? it.subtext : "") + " " + (it.textValue != null ? it.textValue : "")).toLowerCase();
-                if (t.contains(q)) found.add(it);
+                if (!t.contains(q)) continue;
+                String cat = area.containsKey(curHeader) ? area.get(curHeader) + " › " + curHeader : curHeader;
+                if (area.containsKey(curHeader) && area.get(curHeader).equals(curHeader)) cat = curHeader;
+                ArrayList<UItem> list = found.get(cat);
+                if (list == null) found.put(cat, list = new ArrayList<>());
+                list.add(it);
+                count++;
             }
             items.clear();
-            items.add(UItem.asHeader("Suche: „" + sparkQuery.trim() + "“"));
-            items.addAll(found);
-            items.add(UItem.asShadow(found.isEmpty() ? "Nichts gefunden." : found.size() + " Treffer"));
+            for (java.util.Map.Entry<String, ArrayList<UItem>> e : found.entrySet()) {
+                items.add(UItem.asHeader(e.getKey()));
+                items.addAll(e.getValue());
+            }
+            items.add(UItem.asShadow(count == 0 ? "Nichts gefunden zu „" + sparkQuery.trim() + "“." : count + " Treffer zu „" + sparkQuery.trim() + "“"));
         } else {
             arrangePages(items);
         }
@@ -729,6 +749,19 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_NOTES_LIST: presentFragment(new SparkNotesActivity()); break;
             case ID_UPDATE_CHECK: checkForUpdate(); break;
             case ID_REPO: Browser.openUrl(getParentActivity(), SparkUpdater.REPO_URL); break;
+            case ID_DIAG_LOG: {
+                AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
+                b.setTitle(SparkUi.mark("Diagnose-Protokoll"));
+                b.setMessage(org.telegram.messenger.spark.SparkLog.all());
+                b.setPositiveButton("Kopieren", (d, w) -> {
+                    AndroidUtilities.addToClipboard(org.telegram.messenger.spark.SparkLog.all());
+                    BulletinFactory.of(this).createCopyBulletin("Protokoll kopiert").show();
+                });
+                b.setNeutralButton("Leeren", (d, w) -> org.telegram.messenger.spark.SparkLog.clear());
+                b.setNegativeButton("Schließen", null);
+                showDialog(b.create());
+                break;
+            }
             case ID_VERSION: {
                 String c = org.telegram.messenger.BuildConfig.SPARK_COMMIT;
                 final String text = "Sparkgram-Version: " + org.telegram.messenger.BuildConfig.SPARK_VERSION
