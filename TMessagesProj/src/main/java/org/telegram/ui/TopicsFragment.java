@@ -2229,6 +2229,8 @@ public class TopicsFragment extends BaseFragment implements NotificationCenter.N
             updateChatInfo(true);
         }, e -> {
             if (e != null && "INVITE_REQUEST_SENT".equals(e.text)) {
+                TLRPC.Chat sparkC = getMessagesController().getChat(chatId);
+                org.telegram.messenger.spark.SparkJoinRequests.add(currentAccount, chatId, sparkC != null ? sparkC.title : null, null); // Sparkgram
                 SharedPreferences preferences = MessagesController.getNotificationsSettings(currentAccount);
                 preferences.edit().putLong("dialog_join_requested_time_" + -chatId, System.currentTimeMillis()).commit();
                 JoinGroupAlert.showBulletin(getContext(), this, ChatObject.isChannelAndNotMegaGroup(getCurrentChat()));

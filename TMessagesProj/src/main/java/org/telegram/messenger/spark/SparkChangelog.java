@@ -19,6 +19,9 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.26", "11.11.2026",
+            "Neuer Knopf in der Chatliste (neben dem Download-Knopf): Beitrittsanfragen – zeigt deine gestellten Anfragen mit Stand (offen / angenommen / Link abgelaufen)"
+        ),
         new Release("0.25", "09.11.2026",
             "Verlassen: Chat bleibt rot und im Ordner „Verlassen“, bis das Verlassen (inkl. Verlauf sichern) wirklich fertig ist",
             "Aus privaten Gruppen entfernt: wird jetzt auch über Telegrams „privat“-Meldung erkannt (Einblendung/Benachrichtigung, rot, Ordner)",

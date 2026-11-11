@@ -220,6 +220,7 @@ public class JoinGroupAlert extends BottomSheet {
                             this::dismiss,
                             err -> {
                                 if (err != null && "INVITE_REQUEST_SENT".equals(err.text)) {
+                                    org.telegram.messenger.spark.SparkJoinRequests.add(currentAccount, currentChat.id, currentChat.title, null); // Sparkgram
                                     setOnDismissListener(di -> showBulletin(getContext(), fragment, bulletinFactory, isChannel));
                                 }
                                 dismiss();
@@ -252,6 +253,8 @@ public class JoinGroupAlert extends BottomSheet {
                             }
                             if (error != null) {
                                 if ("INVITE_REQUEST_SENT".equals(error.text)) {
+                                    org.telegram.messenger.spark.SparkJoinRequests.add(currentAccount, chatInvite != null && chatInvite.chat != null ? chatInvite.chat.id : (currentChat != null ? currentChat.id : 0),
+                                        chatInvite != null ? chatInvite.title : (currentChat != null ? currentChat.title : null), hash); // Sparkgram
                                     setOnDismissListener(di -> showBulletin(getContext(), fragment, bulletinFactory, isChannel));
                                 } else {
                                     AlertsCreator.processError(currentAccount, error, fragment, request);

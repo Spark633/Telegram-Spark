@@ -115,6 +115,7 @@ public class SparkConfig {
     public static final String LEFT_ONLY_FOLDER = "leftOnlyFolder";
     public static final String KICK_NOTIFY = "kickNotify";
     public static final String LEAVE_BACKUP = "leaveBackup";
+    public static final String JOIN_REQUESTS = "joinRequests";
     // Sortierung: ungelesene Chats oben
     public static final String UNREAD_FIRST = "unreadFirst";
 
@@ -282,6 +283,7 @@ public class SparkConfig {
             case PERSONA:
             case ADMIN_TOOLS:
             case KICK_NOTIFY:
+            case JOIN_REQUESTS:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:

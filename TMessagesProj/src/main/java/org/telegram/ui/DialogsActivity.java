@@ -501,6 +501,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private ViewPage[] viewPages;
     private ActionBarMenuItem passcodeItem;
     private ActionBarMenuItem downloadsItem;
+    private ActionBarMenuItem sparkRequestsItem; // Sparkgram
     private DownloadProgressIcon downloadProgressIcon;
     private boolean downloadsItemVisible;
     public ActionBarMenuItem searchItem;
@@ -3273,6 +3274,10 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             passcodeItem = menu.addItem(1, R.drawable.outline_header_lock_24);
             passcodeItem.setContentDescription(getString(R.string.AccDescrPasscodeLock));
 
+            // Sparkgram: Knopf "Beitrittsanfragen" links neben dem Download-Knopf
+            sparkRequestsItem = menu.addItem(9242, R.drawable.msg_requests);
+            sparkRequestsItem.setContentDescription("Beitrittsanfragen");
+            sparkRequestsItem.setVisibility(org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.JOIN_REQUESTS) ? View.VISIBLE : View.GONE);
             downloadsItem = menu.addItem(3, new ColorDrawable(Color.TRANSPARENT));
             downloadsItem.addView(downloadProgressIcon = new DownloadProgressIcon(currentAccount, context));
             downloadsItem.setContentDescription(getString(R.string.DownloadsTabs));
@@ -3913,6 +3918,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     ((LaunchActivity) getParentActivity()).showPasscodeActivity(false, true, position[0] + passcodeItem.getMeasuredWidth() / 2, position[1] + passcodeItem.getMeasuredHeight() / 2, () -> passcodeItem.setAlpha(1.0f), () -> passcodeItem.setAlpha(0.0f));
                     getNotificationsController().showNotifications();
                     checkUi_itemPasscodeVisibility();
+                } else if (id == 9242) {
+                    presentFragment(new org.telegram.ui.spark.SparkJoinRequestsActivity()); // Sparkgram
                 } else if (id == 3) {
                     showSearch(true, true, true);
                     fragmentSearchFieldWatcher.toggleSearch(true);
@@ -7058,6 +7065,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     @Override
     public void onResume() {
         super.onResume();
+        if (sparkRequestsItem != null) {
+            sparkRequestsItem.setVisibility(org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.JOIN_REQUESTS) ? View.VISIBLE : View.GONE);
+        }
         // Sparkgram: Namen (rot/🚪) neu zeichnen – Aenderungen waehrend die Liste pausiert war kamen sonst nicht an
         AndroidUtilities.runOnUIThread(() -> updateVisibleRows(MessagesController.UPDATE_MASK_CHAT | MessagesController.UPDATE_MASK_NAME | MessagesController.UPDATE_MASK_CHAT_NAME), 100);
         if (!onlySelect && folderId == 0) {

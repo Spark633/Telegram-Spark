@@ -7039,6 +7039,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         }, err -> {
             result[0] = false;
             if (err != null && "INVITE_REQUEST_SENT".equals(err.text)) {
+                if (currentChat != null) org.telegram.messenger.spark.SparkJoinRequests.add(currentAccount, currentChat.id, currentChat.title, null); // Sparkgram
                 SharedPreferences preferences = MessagesController.getNotificationsSettings(currentAccount);
                 preferences.edit().putLong("dialog_join_requested_time_" + dialogId, System.currentTimeMillis()).commit();
                 JoinGroupAlert.showBulletin(getContext(), ProfileActivity.this, ChatObject.isChannel(currentChat) && !currentChat.megagroup);

@@ -145,6 +145,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private final int page; // 0 = Uebersicht
     private static final int ID_PAGE_BASE = 9000;
     private static final int ID_DIAG_LOG = 115;
+    private static final int ID_JOIN_REQUESTS = 116;
     private static final String[] PAGE_NAMES = {"", "Profil & Personen", "Nachrichten", "Gruppen", "Medien & Bot", "Privatsphäre", "Organisation", "Übersetzen", "Darstellung"};
     private static final String[] PAGE_INFO = {"", "Profil-Werkzeuge, Personen, Notizen", "Werkzeuge, gelöschte Nachrichten, Vor dem Senden fragen, Schlagwort-Alarm",
         "Admins, Admin-Vorlagen, gelöschte & verlassene Chats", "Medien, Bot", "Ghost-Modus, Zwischenablage, Ausblenden", "Lesezeichen, Vorlagen, Statistiken, Duplikate, Auto-Ordner …",
@@ -382,6 +383,7 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderGroups)));
         items.add(check(ID_GROUP_ADMINS, R.string.SparkAdminsList, SparkConfig.GROUP_ADMINS));
+        items.add(UItem.asCheck(ID_JOIN_REQUESTS, SparkUi.mark("Knopf „Beitrittsanfragen“ in der Chatliste")).setChecked(SparkConfig.getRaw(SparkConfig.JOIN_REQUESTS)));
         items.add(expandable(ID_ADMIN_TOOLS, R.string.SparkAdminToolsToggle, SparkConfig.ADMIN_TOOLS, 1));
         if (open(SparkConfig.ADMIN_TOOLS)) {
             items.add(UItem.asButton(ID_ADMIN_TEMPLATES, R.drawable.msg_admins, "Admin-Vorlagen verwalten"));
@@ -640,6 +642,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_PERSONA: toggle(SparkConfig.PERSONA); break;
             case ID_ADMIN_TOOLS: expand(SparkConfig.ADMIN_TOOLS); break;
             case ID_LEAVE_BACKUP: toggle(SparkConfig.LEAVE_BACKUP); break;
+            case ID_JOIN_REQUESTS: toggle(SparkConfig.JOIN_REQUESTS); break;
             case ID_KICK_NOTIFY: toggle(SparkConfig.KICK_NOTIFY); break;
             case ID_KICK_INAPP:
             case ID_KICK_SYSTEM:

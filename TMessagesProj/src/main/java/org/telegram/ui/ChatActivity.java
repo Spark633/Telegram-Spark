@@ -8675,6 +8675,7 @@ public class ChatActivity extends BaseFragment implements
                                     SharedPreferences preferences = MessagesController.getNotificationsSettings(currentAccount);
                                     preferences.edit().putLong("dialog_join_requested_time_" + dialog_id, System.currentTimeMillis()).commit();
                                     if (err != null && "INVITE_REQUEST_SENT".equals(err.text)) {
+                                        org.telegram.messenger.spark.SparkJoinRequests.add(currentAccount, currentChat.id, currentChat.title, null); // Sparkgram
                                         JoinGroupAlert.showBulletin(context, this, ChatObject.isChannel(currentChat) && !currentChat.megagroup);
                                     }
                                     showBottomOverlayProgress(false, true);
