@@ -146,6 +146,10 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_PAGE_BASE = 9000;
     private static final int ID_DIAG_LOG = 115;
     private static final int ID_JOIN_REQUESTS = 116;
+    private static final int ID_JOIN_NOTIFY = 117;
+    private static final int ID_JOIN_INAPP = 118;
+    private static final int ID_JOIN_STICKY = 119;
+    private static final int ID_JOIN_SYSTEM = 120;
     private static final String[] PAGE_NAMES = {"", "Profil & Personen", "Nachrichten", "Gruppen", "Medien & Bot", "Privatsphäre", "Organisation", "Übersetzen", "Darstellung"};
     private static final String[] PAGE_INFO = {"", "Profil-Werkzeuge, Personen, Notizen", "Werkzeuge, gelöschte Nachrichten, Vor dem Senden fragen, Schlagwort-Alarm",
         "Admins, Admin-Vorlagen, gelöschte & verlassene Chats", "Medien, Bot", "Ghost-Modus, Zwischenablage, Ausblenden", "Lesezeichen, Vorlagen, Statistiken, Duplikate, Auto-Ordner …",
@@ -384,6 +388,14 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(UItem.asHeader(getString(R.string.SparkHeaderGroups)));
         items.add(check(ID_GROUP_ADMINS, R.string.SparkAdminsList, SparkConfig.GROUP_ADMINS));
         items.add(UItem.asCheck(ID_JOIN_REQUESTS, SparkUi.mark("Knopf „Beitrittsanfragen“ in der Chatliste")).setChecked(SparkConfig.getRaw(SparkConfig.JOIN_REQUESTS)));
+        items.add(UItem.asCheck(ID_JOIN_NOTIFY, "      Melden, wenn eine Anfrage angenommen wird").setChecked(SparkConfig.getRaw(SparkConfig.JOIN_NOTIFY)));
+        if (SparkConfig.getRaw(SparkConfig.JOIN_NOTIFY)) {
+            items.add(UItem.asCheck(ID_JOIN_INAPP, "            als Einblendung oben in der App").setChecked(SparkConfig.prefs().getBoolean("joinNotifyInApp", true)));
+            if (SparkConfig.prefs().getBoolean("joinNotifyInApp", true)) {
+                items.add(UItem.asCheck(ID_JOIN_STICKY, "                  bleibt, bis ich sie wegklicke").setChecked(SparkConfig.prefs().getBoolean("joinNotifySticky", false)));
+            }
+            items.add(UItem.asCheck(ID_JOIN_SYSTEM, "            als Android-Benachrichtigung").setChecked(SparkConfig.prefs().getBoolean("joinNotifySystem", true)));
+        }
         items.add(expandable(ID_ADMIN_TOOLS, R.string.SparkAdminToolsToggle, SparkConfig.ADMIN_TOOLS, 1));
         if (open(SparkConfig.ADMIN_TOOLS)) {
             items.add(UItem.asButton(ID_ADMIN_TEMPLATES, R.drawable.msg_admins, "Admin-Vorlagen verwalten"));
@@ -643,6 +655,16 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_ADMIN_TOOLS: expand(SparkConfig.ADMIN_TOOLS); break;
             case ID_LEAVE_BACKUP: toggle(SparkConfig.LEAVE_BACKUP); break;
             case ID_JOIN_REQUESTS: toggle(SparkConfig.JOIN_REQUESTS); break;
+            case ID_JOIN_NOTIFY: toggle(SparkConfig.JOIN_NOTIFY); break;
+            case ID_JOIN_INAPP:
+            case ID_JOIN_STICKY:
+            case ID_JOIN_SYSTEM: {
+                String k = item.id == ID_JOIN_INAPP ? "joinNotifyInApp" : item.id == ID_JOIN_SYSTEM ? "joinNotifySystem" : "joinNotifySticky";
+                boolean def = item.id != ID_JOIN_STICKY;
+                SparkConfig.prefs().edit().putBoolean(k, !SparkConfig.prefs().getBoolean(k, def)).apply();
+                listView.adapter.update(true);
+                break;
+            }
             case ID_KICK_NOTIFY: toggle(SparkConfig.KICK_NOTIFY); break;
             case ID_KICK_INAPP:
             case ID_KICK_SYSTEM:

@@ -42,14 +42,30 @@ public class SparkKickNotify {
         if (!SparkConfig.get(SparkConfig.KICK_NOTIFY)) return;
         SparkConfig.prefs().edit().putLong("kickNotifiedAt_" + account + "_" + dialogId, System.currentTimeMillis()).apply();
         final String name = org.telegram.ui.spark.SparkNotesActivity.dialogName(account, dialogId);
+        notifyEvent(account, dialogId, "🔨 Du wurdest aus „" + name + "“ entfernt", name, "🔨 Du wurdest aus der Gruppe entfernt",
+            "kickNotify", CHANNEL_ID, "Sparkgram: aus Gruppe entfernt");
+    }
+
+    /** Beitrittsanfrage angenommen. */
+    public static void onJoinAccepted(int account, long dialogId, String title) {
+        SparkLog.log("Beitrittsanfrage angenommen: " + dialogId + (SparkConfig.get(SparkConfig.JOIN_NOTIFY) ? "" : " (Meldung abgeschaltet)"));
+        if (!SparkConfig.get(SparkConfig.JOIN_NOTIFY)) return;
+        String name = title != null && !title.isEmpty() ? title : org.telegram.ui.spark.SparkNotesActivity.dialogName(account, dialogId);
+        notifyEvent(account, dialogId, "✅ Beitrittsanfrage angenommen: „" + name + "“", name, "✅ Deine Beitrittsanfrage wurde angenommen",
+            "joinNotify", "sparkgram_join_accepted", "Sparkgram: Beitrittsanfrage angenommen");
+    }
+
+    /** Leiste oben und/oder Android-Benachrichtigung; Schalter: <prefix>InApp, <prefix>System, <prefix>Sticky. */
+    private static void notifyEvent(int account, long dialogId, String bannerText, String name, String sysText,
+                                    String prefix, String channelId, String channelName) {
         // Einblendung in der App
-        if (SparkConfig.prefs().getBoolean("kickNotifyInApp", true)) {
+        if (SparkConfig.prefs().getBoolean(prefix + "InApp", true)) {
             AndroidUtilities.runOnUIThread(() -> {
                 try {
                     if (LaunchActivity.instance == null) return;
                     String acc = accountName(account);
-                    CharSequence text = "🔨 Du wurdest aus „" + name + "“ entfernt" + (acc != null ? "\nKonto: " + acc : "");
-                    boolean sticky = SparkConfig.prefs().getBoolean("kickNotifySticky", false);
+                    CharSequence text = bannerText + (acc != null ? "\nKonto: " + acc : "");
+                    boolean sticky = SparkConfig.prefs().getBoolean(prefix + "Sticky", false);
                     org.telegram.ui.spark.SparkTopBanner.show(LaunchActivity.instance, text, () -> {
                         if (org.telegram.messenger.UserConfig.selectedAccount != account) {
                             LaunchActivity.instance.switchToAccount(account, true);
@@ -68,12 +84,12 @@ public class SparkKickNotify {
             });
         }
         // Android-Benachrichtigung
-        if (SparkConfig.prefs().getBoolean("kickNotifySystem", true)) {
+        if (SparkConfig.prefs().getBoolean(prefix + "System", true)) {
             try {
                 Context ctx = ApplicationLoader.applicationContext;
                 NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
-                if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(CHANNEL_ID) == null) {
-                    NotificationChannel ch = new NotificationChannel(CHANNEL_ID, "Sparkgram: aus Gruppe entfernt", NotificationManager.IMPORTANCE_HIGH);
+                if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(channelId) == null) {
+                    NotificationChannel ch = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
                     nm.createNotificationChannel(ch);
                 }
                 Intent intent = new Intent(ctx, LaunchActivity.class);
@@ -83,16 +99,16 @@ public class SparkKickNotify {
                 intent.putExtra("currentAccount", account);
                 PendingIntent pi = PendingIntent.getActivity(ctx, (int) (System.currentTimeMillis() & 0xffff), intent,
                     PendingIntent.FLAG_UPDATE_CURRENT | (Build.VERSION.SDK_INT >= 23 ? PendingIntent.FLAG_IMMUTABLE : 0));
-                NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, CHANNEL_ID)
+                NotificationCompat.Builder b = new NotificationCompat.Builder(ctx, channelId)
                     .setSmallIcon(R.drawable.spark_notification)
                     .setContentTitle("✦ " + name)
-                    .setContentText("🔨 Du wurdest aus der Gruppe entfernt")
+                    .setContentText(sysText)
                     .setSubText(accountName(account) != null ? "Konto: " + accountName(account) : null)
                     .setAutoCancel(true)
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setDefaults(NotificationCompat.DEFAULT_ALL)
                     .setContentIntent(pi);
-                nm.notify(CHANNEL_ID.hashCode() + (int) (dialogId % 100000), b.build());
+                nm.notify(channelId.hashCode() + (int) (dialogId % 100000), b.build());
             } catch (Throwable e) {
                 FileLog.e(e);
             }

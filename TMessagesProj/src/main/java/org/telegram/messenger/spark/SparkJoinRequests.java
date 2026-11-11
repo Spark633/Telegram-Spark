@@ -85,6 +85,22 @@ public class SparkJoinRequests {
         SparkLog.log("Beitrittsanfrage gestellt: " + (title != null ? title : chatId));
     }
 
+    /** Wird aufgerufen, wenn man (wieder) Mitglied einer Gruppe ist: offene Anfrage -> angenommen + Meldung. */
+    public static void checkAccepted(int account, org.telegram.tgnet.TLRPC.Chat chat) {
+        if (chat == null || org.telegram.messenger.ChatObject.isNotInChat(chat)) return;
+        ArrayList<Item> list = list(account);
+        for (Item it : list) {
+            boolean match = it.chatId == chat.id || it.chatId == 0 && it.title != null && it.title.equals(chat.title);
+            if (match && (it.status == null || it.status.startsWith("⏳"))) {
+                it.status = "✅ angenommen";
+                it.chatId = chat.id;
+                save(account, list);
+                SparkKickNotify.onJoinAccepted(account, -chat.id, chat.title);
+                return;
+            }
+        }
+    }
+
     public static void setStatus(int account, int index, String status, long chatId) {
         ArrayList<Item> list = list(account);
         if (index < 0 || index >= list.size()) return;

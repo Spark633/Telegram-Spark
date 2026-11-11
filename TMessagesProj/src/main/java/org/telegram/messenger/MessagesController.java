@@ -20637,6 +20637,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         TL_update.TL_updateChannel update = (TL_update.TL_updateChannel) baseUpdate;
                         TLRPC.Dialog dialog = dialogs_dict.get(-update.channel_id);
                         TLRPC.Chat chat = getChat(update.channel_id);
+                        org.telegram.messenger.spark.SparkJoinRequests.checkAccepted(currentAccount, chat); // Sparkgram: Anfrage angenommen?
                         org.telegram.messenger.spark.SparkLog.log("updateChannel " + update.channel_id + (chat == null ? " (unbekannt)" : (chat instanceof TLRPC.TL_channelForbidden ? " gesperrt" : chat.left ? " verlassen" : chat.kicked ? " entfernt" : " Mitglied")));
                         if (chat != null) {
                             if (dialog == null && chat instanceof TLRPC.TL_channel && !chat.left) {
@@ -20667,6 +20668,7 @@ public class MessagesController extends BaseController implements NotificationCe
                     } else if (baseUpdate instanceof TL_update.TL_updateChat) {
                         TL_update.TL_updateChat update = (TL_update.TL_updateChat) baseUpdate;
                         TLRPC.Chat chat = getChat(update.chat_id);
+                        org.telegram.messenger.spark.SparkJoinRequests.checkAccepted(currentAccount, chat); // Sparkgram
                         if (chat != null && (chat instanceof TLRPC.TL_chatForbidden || chat.kicked)) {
                             ChatObject.Call call = getGroupCall(chat.id, false);
                             if (call != null) {
