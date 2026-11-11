@@ -117,6 +117,7 @@ public class SparkConfig {
     public static final String LEAVE_BACKUP = "leaveBackup";
     public static final String JOIN_REQUESTS = "joinRequests";
     public static final String JOIN_NOTIFY = "joinNotify";
+    public static final String HIDE_GIFT_BUTTON = "hideGiftButton";
     // Sortierung: ungelesene Chats oben
     public static final String UNREAD_FIRST = "unreadFirst";
 
@@ -286,6 +287,7 @@ public class SparkConfig {
             case KICK_NOTIFY:
             case JOIN_REQUESTS:
             case JOIN_NOTIFY:
+            case HIDE_GIFT_BUTTON:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:

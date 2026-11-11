@@ -150,6 +150,7 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_JOIN_INAPP = 118;
     private static final int ID_JOIN_STICKY = 119;
     private static final int ID_JOIN_SYSTEM = 120;
+    private static final int ID_HIDE_GIFT = 121;
     private static final String[] PAGE_NAMES = {"", "Profil & Personen", "Nachrichten", "Gruppen", "Medien & Bot", "Privatsphäre", "Organisation", "Übersetzen", "Darstellung"};
     private static final String[] PAGE_INFO = {"", "Profil-Werkzeuge, Personen, Notizen", "Werkzeuge, gelöschte Nachrichten, Vor dem Senden fragen, Schlagwort-Alarm",
         "Admins, Admin-Vorlagen, gelöschte & verlassene Chats", "Medien, Bot", "Ghost-Modus, Zwischenablage, Ausblenden", "Lesezeichen, Vorlagen, Statistiken, Duplikate, Auto-Ordner …",
@@ -443,6 +444,7 @@ public class SparkSettingsActivity extends UniversalFragment {
         items.add(check(ID_HIDE_STARS, R.string.SparkHideStars, SparkConfig.HIDE_STARS));
         items.add(check(ID_HIDE_BUSINESS, R.string.SparkHideBusiness, SparkConfig.HIDE_BUSINESS));
         items.add(check(ID_HIDE_WALLET, R.string.SparkHideWallet, SparkConfig.HIDE_WALLET));
+        items.add(UItem.asCheck(ID_HIDE_GIFT, "Geschenk-Knopf unten in Kanälen und Gruppen").setChecked(SparkConfig.getRaw(SparkConfig.HIDE_GIFT_BUTTON)));
         items.add(UItem.asShadow(getString(R.string.SparkHideInfo)));
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderLook)));
@@ -655,6 +657,7 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_ADMIN_TOOLS: expand(SparkConfig.ADMIN_TOOLS); break;
             case ID_LEAVE_BACKUP: toggle(SparkConfig.LEAVE_BACKUP); break;
             case ID_JOIN_REQUESTS: toggle(SparkConfig.JOIN_REQUESTS); break;
+            case ID_HIDE_GIFT: toggle(SparkConfig.HIDE_GIFT_BUTTON); break;
             case ID_JOIN_NOTIFY: toggle(SparkConfig.JOIN_NOTIFY); break;
             case ID_JOIN_INAPP:
             case ID_JOIN_STICKY:

@@ -28649,6 +28649,9 @@ public class ChatActivity extends BaseFragment implements
         bottomChannelButtonsLayout.updateWrappingVisible(animated);
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_SEARCH, showSearchButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_DIRECT, showSuggestButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
+        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.HIDE_GIFT_BUTTON)) {
+            showGiftButton = false; // Sparkgram: Geschenk-Knopf unten ausblenden
+        }
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_GIFT, showGiftButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
         // Sparkgram: Aktualisieren-Knopf bei Gruppen, in denen man nicht (mehr) Mitglied ist
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_SPARK_REFRESH,
