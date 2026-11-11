@@ -40,7 +40,8 @@ public class ChatActivityChannelButtonsLayout extends FrameLayout implements Fac
     public static final int BUTTON_DIRECT = 2;
     public static final int BUTTON_GIGA_GROUP_INFO = 3;
     public static final int BUTTON_RECENT_ACTIONS_INFO = 4;
-    private static final int BUTTONS_COUNT = 5;
+    public static final int BUTTON_SPARK_REFRESH = 5; // Sparkgram: Stand der Gruppe neu abfragen
+    private static final int BUTTONS_COUNT = 6;
 
     private final ButtonHolder[] buttonHolders = new ButtonHolder[BUTTONS_COUNT];
     private final OnClickListener[] onClickListeners = new OnClickListener[BUTTONS_COUNT];
@@ -55,7 +56,8 @@ public class ChatActivityChannelButtonsLayout extends FrameLayout implements Fac
         R.drawable.input_gift_s,
         R.drawable.input_message,
         R.drawable.msg_help,
-        R.drawable.msg_help
+        R.drawable.msg_help,
+        R.drawable.msg_retry
     };
     private static final int[] buttonsOrderLeft = new int[] {
         BUTTON_SEARCH
@@ -64,7 +66,8 @@ public class ChatActivityChannelButtonsLayout extends FrameLayout implements Fac
         BUTTON_GIFT,
         BUTTON_DIRECT,
         BUTTON_GIGA_GROUP_INFO,
-        BUTTON_RECENT_ACTIONS_INFO
+        BUTTON_RECENT_ACTIONS_INFO,
+        BUTTON_SPARK_REFRESH
     };
 
     private final Theme.ResourcesProvider resourcesProvider;

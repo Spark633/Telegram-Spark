@@ -8500,6 +8500,15 @@ public class ChatActivity extends BaseFragment implements
             createUndoView();
             undoView.showWithAction(dialog_id, UndoView.ACTION_TEXT_INFO, LocaleController.getString(R.string.BroadcastGroupInfo));
         });
+        bottomChannelButtonsLayout.setButtonOnClickListener(ChatActivityChannelButtonsLayout.BUTTON_SPARK_REFRESH, v -> {
+            // Sparkgram: sofort bei Telegram nachfragen (Beitreten moeglich? Anfrage angenommen?)
+            if (currentChat == null) return;
+            org.telegram.messenger.spark.SparkRejoin.refresh(currentAccount, currentChat, 0);
+            getMessagesController().loadFullChat(currentChat.id, 0, true);
+            MessagesController.getNotificationsSettings(currentAccount).edit().remove("dialog_join_requested_time_" + dialog_id).apply();
+            BulletinFactory.of(this).createSimpleBulletin(R.raw.contact_check, "✦ Stand wird abgefragt …").show();
+            AndroidUtilities.runOnUIThread(this::updateBottomOverlay, 1500);
+        });
         bottomChannelButtonsLayout.setButtonOnClickListener(ChatActivityChannelButtonsLayout.BUTTON_GIFT, v -> {
             HintsController.Hint.ChannelGiftHint.doNotShowAgain();
             showDialog(new GiftSheet(getContext(), currentAccount, getDialogId(), null, null));
@@ -28641,6 +28650,10 @@ public class ChatActivity extends BaseFragment implements
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_SEARCH, showSearchButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_DIRECT, showSuggestButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_GIFT, showGiftButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
+        // Sparkgram: Aktualisieren-Knopf bei Gruppen, in denen man nicht (mehr) Mitglied ist
+        bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_SPARK_REFRESH,
+            currentChat != null && ChatObject.isNotInChat(currentChat) && !isThreadChat() && MessagesController.sparkKeepLeftOn()
+                && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE && !showGiftButton, animated);
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_GIGA_GROUP_INFO, showGigaGroupButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
 
         checkRaiseSensors();
