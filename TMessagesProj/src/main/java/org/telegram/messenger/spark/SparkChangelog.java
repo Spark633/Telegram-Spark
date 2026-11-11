@@ -19,6 +19,9 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.27", "11.11.2026",
+            "Abgelehnte oder entfernte Beitrittsanfrage: in der Gruppe gibt es wieder den Knopf „Beitrittsanfrage stellen“ (über den gemerkten Einladungslink) statt „Gruppe löschen“"
+        ),
         new Release("0.26", "11.11.2026",
             "Neuer Knopf in der Chatliste (neben dem Download-Knopf): Beitrittsanfragen – zeigt deine gestellten Anfragen mit Stand (offen / angenommen / Link abgelaufen)",
             "Meldung, wenn eine Beitrittsanfrage angenommen wird: Einblendung oben und/oder Android-Benachrichtigung, wie bei „entfernt“ (Gruppen → Einstellungen)"

@@ -67,8 +67,35 @@ public class SparkJoinRequests {
         prefs(account).edit().putString("items", a.toString()).apply();
     }
 
+    /** Einladungslink einer Gruppe, ueber den schon einmal eine Anfrage gestellt wurde (bleibt auch nach Entfernen aus der Liste). */
+    public static String hashFor(int account, long chatId) {
+        return chatId == 0 ? null : prefs(account).getString("hash_" + chatId, null);
+    }
+
+    public static void rememberHash(int account, long chatId, String hash) {
+        if (chatId != 0 && !TextUtils.isEmpty(hash)) prefs(account).edit().putString("hash_" + chatId, hash).apply();
+    }
+
+    /** Gruppe ueber den Namen finden (Einladungslinks verraten die Gruppe oft nicht): verlassene Gruppen bevorzugt. */
+    private static long guessChatId(int account, String title) {
+        if (TextUtils.isEmpty(title)) return 0;
+        org.telegram.messenger.MessagesController mc = org.telegram.messenger.MessagesController.getInstance(account);
+        long found = 0;
+        for (org.telegram.tgnet.TLRPC.Dialog d : mc.getAllDialogs()) {
+            if (d.id >= 0) continue;
+            org.telegram.tgnet.TLRPC.Chat c = mc.getChat(-d.id);
+            if (c != null && title.equals(c.title)) {
+                if (org.telegram.messenger.ChatObject.isNotInChat(c)) return c.id;
+                if (found == 0) found = c.id;
+            }
+        }
+        return found;
+    }
+
     /** Neue Anfrage merken (doppelte werden ersetzt). */
     public static void add(int account, long chatId, String title, String hash) {
+        if (chatId == 0) chatId = guessChatId(account, title);
+        rememberHash(account, chatId, hash);
         ArrayList<Item> list = list(account);
         for (int i = list.size() - 1; i >= 0; i--) {
             Item it = list.get(i);

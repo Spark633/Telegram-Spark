@@ -2745,6 +2745,37 @@ public class ChatActivity extends BaseFragment implements
     private NotificationCenter.ObserversGroup observersGroup;
 
     private boolean sparkNoRejoin; // Sparkgram
+    private String sparkRequestHash; // Sparkgram
+
+    /** Sparkgram: Beitrittsanfrage ueber den gemerkten Einladungslink erneut stellen. */
+    private void sparkSendJoinRequest() {
+        final String hash = sparkRequestHash;
+        final TLRPC.Chat chat = currentChat;
+        if (hash == null || chat == null) return;
+        showBottomOverlayProgress(true, true);
+        TLRPC.TL_messages_importChatInvite req = new TLRPC.TL_messages_importChatInvite();
+        req.hash = hash;
+        getConnectionsManager().sendRequest(req, (response, error) -> {
+            if (response instanceof TLRPC.Updates) {
+                getMessagesController().processUpdates((TLRPC.Updates) response, false);
+            } else if (response instanceof TLRPC.TL_chatInviteJoinResultOk) {
+                getMessagesController().processUpdates(((TLRPC.TL_chatInviteJoinResultOk) response).updates, false);
+            }
+            AndroidUtilities.runOnUIThread(() -> {
+                showBottomOverlayProgress(false, true);
+                if (error == null) {
+                    updateBottomOverlay();
+                } else if ("INVITE_REQUEST_SENT".equals(error.text)) {
+                    org.telegram.messenger.spark.SparkJoinRequests.add(currentAccount, chat.id, chat.title, hash);
+                    JoinGroupAlert.showBulletin(getContext(), this, ChatObject.isChannel(chat) && !chat.megagroup);
+                } else if ("INVITE_HASH_EXPIRED".equals(error.text) || "INVITE_HASH_INVALID".equals(error.text)) {
+                    BulletinFactory.of(this).createErrorBulletin("Der Einladungslink ist abgelaufen – du brauchst einen neuen").show();
+                } else {
+                    BulletinFactory.of(this).createErrorBulletin("Fehler: " + error.text).show();
+                }
+            });
+        });
+    }
 
     /** Sparkgram: verlassene kleine Gruppe wurde zu einer oeffentlichen Supergruppe -> diese, sonst null. */
     private TLRPC.Chat sparkJoinTarget() {
@@ -8656,7 +8687,9 @@ public class ChatActivity extends BaseFragment implements
                 botUser = null;
                 updateBottomOverlay();
             } else {
-                if (!sparkNoRejoin && ChatObject.isChannel(currentChat) && !(currentChat instanceof TLRPC.TL_channelForbidden)) {
+                if (sparkRequestHash != null) {
+                    sparkSendJoinRequest(); // Sparkgram
+                } else if (!sparkNoRejoin && ChatObject.isChannel(currentChat) && !(currentChat instanceof TLRPC.TL_channelForbidden)) {
                     if (ChatObject.isNotInChat(currentChat)) {
                         if (currentChat.join_request) {
 //                            showDialog(new JoinGroupAlert(context, currentChat, null, this));
@@ -28302,7 +28335,15 @@ public class ChatActivity extends BaseFragment implements
             long requestedTime = MessagesController.getNotificationsSettings(currentAccount).getLong("dialog_join_requested_time_" + dialog_id, -1);
             boolean shouldApply = false;
             sparkNoRejoin = org.telegram.messenger.spark.SparkRejoin.cantRejoin(currentChat) && !isThreadChat();
-            if (sparkNoRejoin) {
+            // Sparkgram: schon einmal per Einladungslink angefragt (abgelehnt/entfernt) -> erneut anfragen moeglich
+            sparkRequestHash = ChatObject.isNotInChat(currentChat) && !(currentChat instanceof TLRPC.TL_channelForbidden) && !currentChat.kicked && !isThreadChat()
+                ? org.telegram.messenger.spark.SparkJoinRequests.hashFor(currentAccount, currentChat.id) : null;
+            if (sparkRequestHash != null) {
+                bottomOverlayChatText.setText(LocaleController.getString(R.string.GroupJoinRequestNoCaps));
+                bottomOverlayChatText.setEnabled(true);
+                accentTextButton = true;
+                showBottomOverlayProgress(false, false);
+            } else if (sparkNoRejoin) {
                 // Sparkgram: verlassene private/gesperrte Gruppe – Beitreten geht nicht, daher "Gruppe löschen"
                 String sparkLabel = LocaleController.getString(R.string.DeleteThisGroup);
                 if ((currentChat instanceof TLRPC.TL_channelForbidden || currentChat.kicked)
