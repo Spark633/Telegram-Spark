@@ -59,8 +59,16 @@ jobs:
             -out TMessagesProj/config/release.keystore \
             -pass env:SPARK_KEYSTORE_PASSWORD
 
+      - name: ccache direkt von GitHub laden (Ubuntu-Paketquellen waren nicht erreichbar)
+        run: |
+          curl -fsSL --retry 3 https://github.com/ccache/ccache/releases/download/v4.10.2/ccache-4.10.2-linux-x86_64.tar.xz -o /tmp/ccache.tar.xz
+          tar -xf /tmp/ccache.tar.xz -C /tmp
+          sudo install -m 755 /tmp/ccache-4.10.2-linux-x86_64/ccache /usr/local/bin/ccache
+          ccache --version
+
       - name: ccache (Zwischenspeicher fuer nativen Code)
         uses: hendrikmuhs/ccache-action@v1.2
+        continue-on-error: true
         with:
           key: native-arm64
           max-size: 3G
