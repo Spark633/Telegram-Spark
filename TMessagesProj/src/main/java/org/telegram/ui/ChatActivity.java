@@ -28653,7 +28653,7 @@ public class ChatActivity extends BaseFragment implements
         // Sparkgram: Aktualisieren-Knopf bei Gruppen, in denen man nicht (mehr) Mitglied ist
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_SPARK_REFRESH,
             currentChat != null && ChatObject.isNotInChat(currentChat) && !isThreadChat() && MessagesController.sparkKeepLeftOn()
-                && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE && !showGiftButton, animated);
+                && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_GIGA_GROUP_INFO, showGigaGroupButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
 
         checkRaiseSensors();
