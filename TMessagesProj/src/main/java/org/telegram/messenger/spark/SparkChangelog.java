@@ -21,7 +21,8 @@ public class SparkChangelog {
     public static final Release[] RELEASES = {
         new Release("0.28", "16.11.2026",
             "Währungen umrechnen: „✦ Umrechnen“ im Nachrichten-Menü bei Nachrichten mit Beträgen (z. B. 20 $, £15, 100 USD, 5k ₹) – Tageskurse der Europäischen Zentralbank",
-            "Optional: Umrechnung automatisch als graue Zeile unter der Nachricht (Nachrichten → Nachrichten-Werkzeuge, standardmäßig aus); Zielwährung wählbar"
+            "Optional: Umrechnung automatisch als graue Zeile unter der Nachricht (Nachrichten → Nachrichten-Werkzeuge, standardmäßig aus); Zielwährung wählbar",
+            "Bei „kr“ fragt „✦ Umrechnen“, welche Krone gemeint ist; über „Andere Währung …“ lässt sich die Währung jedes Betrags selbst wählen (z. B. $ als kanadische Dollar)"
         ),
         new Release("0.27", "11.11.2026",
             "Abgelehnte oder entfernte Beitrittsanfrage: in der Gruppe gibt es wieder den Knopf „Beitrittsanfrage stellen“ (über den gemerkten Einladungslink) statt „Gruppe löschen“",

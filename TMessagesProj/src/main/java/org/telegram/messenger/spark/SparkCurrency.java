@@ -64,14 +64,20 @@ public class SparkCurrency {
         }
         String num = "(\\d{1,3}(?:[.,\\u00a0 ]\\d{3})+(?:[.,]\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?)";
         String suf = "([kKmM](?![a-zA-Z]))?";
-        String cur = "(" + sym + "|\\b(?:" + CODES + ")\\b)";
+        // "kr" ist mehrdeutig (SEK/NOK/DKK/ISK) – wird erkannt, aber erst nach Rueckfrage umgerechnet
+        String cur = "(" + sym + "|(?<![A-Za-z])kr\\.?(?![A-Za-z])|\\b(?:" + CODES + ")\\b)";
         // Waehrung vor der Zahl (Gruppen 1-3) oder nach der Zahl (Gruppen 4-6)
         pattern = Pattern.compile(cur + "\\s?" + num + "\\s?" + suf + "|(?<![\\w.,])" + num + "\\s?" + suf + "\\s?" + cur);
         return pattern;
     }
 
+    /** Mehrdeutige Waehrungszeichen und ihre moeglichen Waehrungen. */
+    public static final String AMBIGUOUS_KR = "?KR";
+    public static final String[] KR_CHOICES = {"SEK", "NOK", "DKK", "ISK"};
+
     private static String codeFor(String token) {
         if (token == null) return null;
+        if (token.equals("kr") || token.equals("kr.")) return AMBIGUOUS_KR;
         for (String[] s : SYMBOLS) if (s[0].equals(token)) return s[1];
         String up = token.toUpperCase(Locale.ROOT);
         return CODES.contains(up) ? up : null;
@@ -130,6 +136,12 @@ public class SparkCurrency {
 
     public static void setTarget(String code) {
         SparkConfig.prefs().edit().putString("currencyTarget", code).apply();
+    }
+
+    /** Enthaelt der Text einen Betrag, dessen Waehrung erst gewaehlt werden muss (z. B. "kr")? */
+    public static boolean needsChoice(CharSequence text) {
+        for (Hit h : find(text)) if (h.code.startsWith("?")) return true;
+        return false;
     }
 
     public static String[] allCodes() {
@@ -226,7 +238,7 @@ public class SparkCurrency {
         ArrayList<Hit> hits = find(text);
         StringBuilder sb = new StringBuilder();
         for (Hit h : hits) {
-            if (h.code.equals(to)) continue;
+            if (h.code.equals(to) || h.code.startsWith("?")) continue;
             double v = convert(h.amount, h.code, to);
             if (Double.isNaN(v)) continue;
             if (sb.length() > 0) sb.append(" · ");
@@ -237,12 +249,18 @@ public class SparkCurrency {
 
     /** Ausfuehrliche Umrechnung fuer das Fenster aus dem Nachrichten-Menue. */
     public static String details(CharSequence text) {
+        return details(text, null);
+    }
+
+    /** Wie details, aber alle Betraege als Waehrung "from" behandeln (z. B. nach Auswahl bei "kr" oder "$"). */
+    public static String details(CharSequence text, String from) {
         String to = target();
         ArrayList<Hit> hits = find(text);
         if (hits.isEmpty()) return null;
         StringBuilder sb = new StringBuilder();
         for (Hit h : hits) {
-            if (h.code.equals(to)) continue;
+            if (from != null) h.code = from;
+            if (h.code.equals(to) || h.code.startsWith("?")) continue;
             double v = convert(h.amount, h.code, to);
             if (Double.isNaN(v)) continue;
             double one = convert(1, h.code, to);

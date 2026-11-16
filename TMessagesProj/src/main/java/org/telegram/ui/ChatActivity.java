@@ -2746,6 +2746,23 @@ public class ChatActivity extends BaseFragment implements
     private NotificationCenter.ObserversGroup observersGroup;
 
     private boolean sparkNoRejoin; // Sparkgram
+
+    /** Sparkgram: Umrechnung anzeigen; "Andere Währung …" erlaubt, die Ausgangswaehrung selbst zu waehlen. */
+    private void sparkShowConversion(String text, String from) {
+        String det = org.telegram.messenger.spark.SparkCurrency.details(text, from);
+        AlertDialog.Builder cb = new AlertDialog.Builder(getParentActivity(), themeDelegate);
+        cb.setTitle(org.telegram.ui.spark.SparkUi.mark("Umrechnen"));
+        cb.setMessage(det != null ? det : "Kein umrechenbarer Betrag gefunden (oder schon in " + org.telegram.messenger.spark.SparkCurrency.target() + ").");
+        cb.setPositiveButton("OK", null);
+        cb.setNeutralButton("Andere Währung …", (d, w) -> {
+            final String[] codes = org.telegram.messenger.spark.SparkCurrency.allCodes();
+            AlertDialog.Builder pb = new AlertDialog.Builder(getParentActivity(), themeDelegate);
+            pb.setTitle(org.telegram.ui.spark.SparkUi.mark("Betrag ist in …"));
+            pb.setItems(codes, (d2, w2) -> sparkShowConversion(text, codes[w2]));
+            showDialog(pb.create());
+        });
+        showDialog(cb.create());
+    }
     private String sparkRequestHash; // Sparkgram
 
     /** Sparkgram: Beitrittsanfrage ueber den gemerkten Einladungslink erneut stellen. */
@@ -34012,12 +34029,18 @@ public class ChatActivity extends BaseFragment implements
                     break;
                 }
                 org.telegram.messenger.spark.SparkCurrency.refreshIfNeeded();
-                String det = org.telegram.messenger.spark.SparkCurrency.details(selectedObject.messageOwner.message);
-                AlertDialog.Builder cb = new AlertDialog.Builder(getParentActivity(), themeDelegate);
-                cb.setTitle(org.telegram.ui.spark.SparkUi.mark("Umrechnen"));
-                cb.setMessage(det != null ? det : "Kein umrechenbarer Betrag gefunden (oder schon in " + org.telegram.messenger.spark.SparkCurrency.target() + ").");
-                cb.setPositiveButton("OK", null);
-                showDialog(cb.create());
+                final String convText = selectedObject.messageOwner.message;
+                if (org.telegram.messenger.spark.SparkCurrency.needsChoice(convText)) {
+                    // "kr" ist mehrdeutig: erst fragen, welche Krone gemeint ist
+                    final String[] kr = org.telegram.messenger.spark.SparkCurrency.KR_CHOICES;
+                    String[] names = {"Schwedische Krone (SEK)", "Norwegische Krone (NOK)", "Dänische Krone (DKK)", "Isländische Krone (ISK)"};
+                    AlertDialog.Builder kb = new AlertDialog.Builder(getParentActivity(), themeDelegate);
+                    kb.setTitle(org.telegram.ui.spark.SparkUi.mark("Welche Krone?"));
+                    kb.setItems(names, (d, w) -> sparkShowConversion(convText, kr[w]));
+                    showDialog(kb.create());
+                } else {
+                    sparkShowConversion(convText, null);
+                }
                 break;
             }
             case OPTION_SPARK_ADMIN: {
