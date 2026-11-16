@@ -50,8 +50,16 @@ public class SparkCurrency {
         {"US$", "USD"}, {"$", "USD"}, {"€", "EUR"}, {"£", "GBP"}, {"¥", "JPY"}, {"₹", "INR"}, {"₩", "KRW"}, {"₺", "TRY"},
         {"zł", "PLN"}, {"Kč", "CZK"}, {"Fr.", "CHF"}, {"R$", "BRL"}, {"A$", "AUD"}, {"C$", "CAD"}, {"HK$", "HKD"},
         {"NZ$", "NZD"}, {"S$", "SGD"}, {"₪", "ILS"}, {"฿", "THB"}, {"₱", "PHP"}, {"Ft", "HUF"},
+        {"₽", "RUB"}, {"₴", "UAH"}, {"₸", "KZT"},
     };
-    private static final String CODES = "USD|EUR|GBP|JPY|CHF|PLN|CZK|DKK|SEK|NOK|HUF|RON|BGN|ISK|TRY|AUD|BRL|CAD|CNY|HKD|IDR|ILS|INR|KRW|MXN|MYR|NZD|PHP|SGD|THB|ZAR";
+    private static final String CODES = "USD|EUR|GBP|JPY|CHF|PLN|CZK|DKK|SEK|NOK|HUF|RON|BGN|ISK|TRY|AUD|BRL|CAD|CNY|HKD|IDR|ILS|INR|KRW|MXN|MYR|NZD|PHP|SGD|THB|ZAR"
+        + "|RUB|UAH|KZT|BYN|GEL|AMD|AED|SAR|RSD|UZS|ARS|CLP|COP|EGP|TWD|VND";
+    /** Haeufige Waehrungen zuerst (fuer die Auswahl). */
+    private static final String[] TOP = {"RUB", "USD", "EUR", "UAH", "GBP", "KZT", "BYN", "PLN", "TRY", "CHF", "JPY", "CNY"};
+    /** Woerter, die auf einen Preis hindeuten (auch ohne Waehrung). */
+    private static final Pattern PRICE_WORD = Pattern.compile("(?iu)(цен[аыуе]|стоимост|прайс|руб|\\bр\\.|грн|preis|kostet|kosten|price|cost|€|\\$|₽)");
+    /** Zahl ohne Waehrung (mind. 2 Stellen oder mit k/m), nicht Teil von Massen, Prozent o. Ae. */
+    private static final Pattern BARE = Pattern.compile("(?<![\\w.,×xх/:-])(\\d{1,3}(?:[.,\\u00a0 ]\\d{3})+(?:[.,]\\d{1,2})?|\\d{2,}(?:[.,]\\d{1,2})?|\\d(?:[.,]\\d)?(?=\\s?[kKmMкК]))\\s?([kKmMкК](?![\\p{L}]))?(?![\\p{L}\\d%°×x/:-]|[.,]\\d)");
 
     private static Pattern pattern;
 
@@ -65,7 +73,7 @@ public class SparkCurrency {
         String num = "(\\d{1,3}(?:[.,\\u00a0 ]\\d{3})+(?:[.,]\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?)";
         String suf = "([kKmM](?![a-zA-Z]))?";
         // "kr" ist mehrdeutig (SEK/NOK/DKK/ISK) – wird erkannt, aber erst nach Rueckfrage umgerechnet
-        String cur = "(" + sym + "|(?<![A-Za-z])kr\\.?(?![A-Za-z])|\\b(?:" + CODES + ")\\b)";
+        String cur = "(" + sym + "|(?<![A-Za-z])kr\\.?(?![A-Za-z])|(?<![\\p{L}])(?:руб(?:лей|ля|\\.)?|р\\.|грн\\.?)(?![\\p{L}])|\\b(?:" + CODES + ")\\b)";
         // Waehrung vor der Zahl (Gruppen 1-3) oder nach der Zahl (Gruppen 4-6)
         pattern = Pattern.compile(cur + "\\s?" + num + "\\s?" + suf + "|(?<![\\w.,])" + num + "\\s?" + suf + "\\s?" + cur);
         return pattern;
@@ -78,6 +86,8 @@ public class SparkCurrency {
     private static String codeFor(String token) {
         if (token == null) return null;
         if (token.equals("kr") || token.equals("kr.")) return AMBIGUOUS_KR;
+        if (token.startsWith("руб") || token.equals("р.")) return "RUB";
+        if (token.startsWith("грн")) return "UAH";
         for (String[] s : SYMBOLS) if (s[0].equals(token)) return s[1];
         String up = token.toUpperCase(Locale.ROOT);
         return CODES.contains(up) ? up : null;
@@ -95,7 +105,7 @@ public class SparkCurrency {
         }
         double v = Double.parseDouble(s);
         if (suffix != null) {
-            if (suffix.equalsIgnoreCase("k")) v *= 1000;
+            if (suffix.equalsIgnoreCase("k") || suffix.equalsIgnoreCase("к")) v *= 1000;
             else if (suffix.equalsIgnoreCase("m")) v *= 1_000_000;
         }
         return v;
@@ -138,6 +148,71 @@ public class SparkCurrency {
         SparkConfig.prefs().edit().putString("currencyTarget", code).apply();
     }
 
+    /** Zahlen ohne Waehrungsangabe (fuer Preise wie "5000"). */
+    public static ArrayList<Hit> findBare(CharSequence text) {
+        ArrayList<Hit> hits = new ArrayList<>();
+        if (TextUtils.isEmpty(text)) return hits;
+        try {
+            Matcher m = BARE.matcher(text);
+            while (m.find() && hits.size() < 5) {
+                double v = parseNumber(m.group(1), m.group(2));
+                if (v >= 1900 && v <= 2100 && m.group(2) == null && !m.group(1).contains(".") && !m.group(1).contains(",")) continue; // Jahreszahl
+                Hit h = new Hit();
+                h.amount = v;
+                h.text = m.group().trim();
+                h.code = null;
+                hits.add(h);
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+        return hits;
+    }
+
+    /** Sieht der Text nach einem Preis ohne Waehrung aus (Preiswort + Zahl)? */
+    public static boolean looksLikePrice(CharSequence text) {
+        return !TextUtils.isEmpty(text) && PRICE_WORD.matcher(text).find() && !findBare(text).isEmpty();
+    }
+
+    public static String chatCurrency(int account, long dialogId) {
+        return SparkConfig.prefs().getString("currencyChat_" + account + "_" + dialogId, null);
+    }
+
+    public static void setChatCurrency(int account, long dialogId, String code) {
+        if (code == null) SparkConfig.prefs().edit().remove("currencyChat_" + account + "_" + dialogId).apply();
+        else SparkConfig.prefs().edit().putString("currencyChat_" + account + "_" + dialogId, code).apply();
+    }
+
+    /** Soll "Umrechnen" im Menue erscheinen? */
+    public static boolean canConvert(int account, long dialogId, CharSequence text) {
+        if (!find(text).isEmpty()) return true;
+        if (findBare(text).isEmpty()) return false;
+        return chatCurrency(account, dialogId) != null || looksLikePrice(text);
+    }
+
+    /** Umrechnung von Zahlen ohne Waehrung, als "from" behandelt. */
+    public static String detailsBare(CharSequence text, String from) {
+        String to = target();
+        StringBuilder sb = new StringBuilder();
+        for (Hit h : findBare(text)) {
+            double v = convert(h.amount, from, to);
+            if (Double.isNaN(v)) continue;
+            sb.append(h.text).append(" ").append(from).append("  ≈  ").append(format(v, to)).append("\n");
+        }
+        if (sb.length() == 0) return null;
+        sb.append("   (1 ").append(from).append(" = ").append(format(convert(1, from, to), to)).append(")\n");
+        String d = ratesDate();
+        sb.append("\nKurse").append(d != null ? ", Stand " + d : "");
+        return sb.toString();
+    }
+
+    /** Auswahl-Liste: haeufige zuerst, dann alle uebrigen. */
+    public static String[] choiceCodes() {
+        java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>(java.util.Arrays.asList(TOP));
+        java.util.Collections.addAll(set, allCodes());
+        return set.toArray(new String[0]);
+    }
+
     /** Enthaelt der Text einen Betrag, dessen Waehrung erst gewaehlt werden muss (z. B. "kr")? */
     public static boolean needsChoice(CharSequence text) {
         for (Hit h : find(text)) if (h.code.startsWith("?")) return true;
@@ -178,6 +253,11 @@ public class SparkCurrency {
         loading = true;
         Utilities.globalQueue.postRunnable(() -> {
             try {
+                if (fetchOpenEr()) return;
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+            try {
                 HttpURLConnection c = (HttpURLConnection) new URL(ECB).openConnection();
                 c.setConnectTimeout(10000);
                 c.setReadTimeout(15000);
@@ -208,6 +288,40 @@ public class SparkCurrency {
                 loading = false;
             }
         });
+    }
+
+    /** Kurse von open.er-api.com (kostenlos, ohne Konto, mit RUB/UAH …). true = geklappt. */
+    private static boolean fetchOpenEr() throws Exception {
+        HttpURLConnection c = (HttpURLConnection) new URL("https://open.er-api.com/v6/latest/EUR").openConnection();
+        c.setConnectTimeout(10000);
+        c.setReadTimeout(15000);
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader r = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = r.readLine()) != null) sb.append(line);
+        } finally {
+            loading = false;
+        }
+        org.json.JSONObject o = new org.json.JSONObject(sb.toString());
+        if (!"success".equals(o.optString("result"))) return false;
+        org.json.JSONObject rs = o.getJSONObject("rates");
+        StringBuilder out = new StringBuilder();
+        java.util.Iterator<String> it = rs.keys();
+        while (it.hasNext()) {
+            String k = it.next();
+            if (out.length() > 0) out.append(';');
+            out.append(k).append('=').append(rs.getDouble(k));
+        }
+        String date = o.optString("time_last_update_utc", null);
+        if (date != null && date.length() > 16) date = date.substring(5, 16);
+        SparkConfig.prefs().edit()
+            .putString("currencyRates", out.toString())
+            .putString("currencyRatesDate", date)
+            .putLong("currencyRatesFetched", System.currentTimeMillis()).apply();
+        synchronized (SparkCurrency.class) {
+            rates = null;
+        }
+        return true;
     }
 
     public static synchronized boolean ratesReady() {
@@ -269,7 +383,7 @@ public class SparkCurrency {
         }
         if (sb.length() == 0) return null;
         String d = ratesDate();
-        sb.append("\nKurse: Europäische Zentralbank").append(d != null ? ", Stand " + d : "");
+        sb.append("\nKurse").append(d != null ? ", Stand " + d : "");
         return sb.toString();
     }
 

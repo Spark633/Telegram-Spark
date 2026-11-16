@@ -20,9 +20,10 @@ public class SparkChangelog {
 
     public static final Release[] RELEASES = {
         new Release("0.28", "16.11.2026",
-            "Währungen umrechnen: „✦ Umrechnen“ im Nachrichten-Menü bei Nachrichten mit Beträgen (z. B. 20 $, £15, 100 USD, 5k ₹) – Tageskurse der Europäischen Zentralbank",
+            "Währungen umrechnen: „✦ Umrechnen“ im Nachrichten-Menü bei Nachrichten mit Beträgen (z. B. 20 $, £15, 100 USD, 5k ₹) – Tageskurse (open.er-api.com, sonst Europäische Zentralbank), auch Rubel (₽, руб, р.), Hrywnja und viele mehr",
             "Optional: Umrechnung automatisch als graue Zeile unter der Nachricht (Nachrichten → Nachrichten-Werkzeuge, standardmäßig aus); Zielwährung wählbar",
-            "Bei „kr“ fragt „✦ Umrechnen“, welche Krone gemeint ist; über „Andere Währung …“ lässt sich die Währung jedes Betrags selbst wählen (z. B. $ als kanadische Dollar)"
+            "Bei „kr“ fragt „✦ Umrechnen“, welche Krone gemeint ist; über „Andere Währung …“ lässt sich die Währung jedes Betrags selbst wählen (z. B. $ als kanadische Dollar)",
+            "Preise ohne Währung (z. B. „Цена: 5000“): „✦ Umrechnen“ fragt die Währung und kann sie für den Chat merken („Für diesen Chat merken“)"
         ),
         new Release("0.27", "11.11.2026",
             "Abgelehnte oder entfernte Beitrittsanfrage: in der Gruppe gibt es wieder den Knopf „Beitrittsanfrage stellen“ (über den gemerkten Einladungslink) statt „Gruppe löschen“",

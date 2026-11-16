@@ -670,7 +670,7 @@ public class SparkSettingsActivity extends UniversalFragment {
                 org.telegram.messenger.spark.SparkCurrency.refreshIfNeeded();
                 break;
             case ID_CURRENCY_TARGET: {
-                final String[] codes = org.telegram.messenger.spark.SparkCurrency.allCodes();
+                final String[] codes = org.telegram.messenger.spark.SparkCurrency.choiceCodes();
                 AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
                 b.setTitle(SparkUi.mark("Zielwährung"));
                 b.setItems(codes, (d, w) -> {

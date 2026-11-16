@@ -2747,6 +2747,38 @@ public class ChatActivity extends BaseFragment implements
 
     private boolean sparkNoRejoin; // Sparkgram
 
+    /** Sparkgram: Waehrung auswaehlen (haeufige zuerst). */
+    private void sparkChooseCurrency(org.telegram.messenger.Utilities.Callback<String> done) {
+        final String[] codes = org.telegram.messenger.spark.SparkCurrency.choiceCodes();
+        AlertDialog.Builder pb = new AlertDialog.Builder(getParentActivity(), themeDelegate);
+        pb.setTitle(org.telegram.ui.spark.SparkUi.mark("In welcher Währung ist der Preis?"));
+        pb.setItems(codes, (d, w) -> done.run(codes[w]));
+        showDialog(pb.create());
+    }
+
+    /** Sparkgram: Preis ohne Waehrungsangabe umrechnen, Waehrung fuer den Chat merken oder vergessen. */
+    private void sparkShowBareConversion(String text, String from) {
+        String det = org.telegram.messenger.spark.SparkCurrency.detailsBare(text, from);
+        final boolean remembered = from.equals(org.telegram.messenger.spark.SparkCurrency.chatCurrency(currentAccount, dialog_id));
+        AlertDialog.Builder cb = new AlertDialog.Builder(getParentActivity(), themeDelegate);
+        cb.setTitle(org.telegram.ui.spark.SparkUi.mark("Umrechnen"));
+        cb.setMessage((det != null ? det : "Für " + from + " gibt es keinen Kurs.") + (remembered ? "\n\nIn diesem Chat gilt: Preise ohne Währung = " + from : ""));
+        cb.setPositiveButton("OK", null);
+        cb.setNeutralButton("Andere Währung …", (d, w) -> sparkChooseCurrency(code -> sparkShowBareConversion(text, code)));
+        if (remembered) {
+            cb.setNegativeButton("Chat-Währung vergessen", (d, w) -> {
+                org.telegram.messenger.spark.SparkCurrency.setChatCurrency(currentAccount, dialog_id, null);
+                BulletinFactory.of(this).createSimpleBulletin(R.raw.info, "✦ Chat-Währung vergessen").show();
+            });
+        } else {
+            cb.setNegativeButton("Für diesen Chat merken", (d, w) -> {
+                org.telegram.messenger.spark.SparkCurrency.setChatCurrency(currentAccount, dialog_id, from);
+                BulletinFactory.of(this).createSimpleBulletin(R.raw.contact_check, "✦ Preise ohne Währung gelten hier als " + from).show();
+            });
+        }
+        showDialog(cb.create());
+    }
+
     /** Sparkgram: Umrechnung anzeigen; "Andere Währung …" erlaubt, die Ausgangswaehrung selbst zu waehlen. */
     private void sparkShowConversion(String text, String from) {
         String det = org.telegram.messenger.spark.SparkCurrency.details(text, from);
@@ -2755,7 +2787,7 @@ public class ChatActivity extends BaseFragment implements
         cb.setMessage(det != null ? det : "Kein umrechenbarer Betrag gefunden (oder schon in " + org.telegram.messenger.spark.SparkCurrency.target() + ").");
         cb.setPositiveButton("OK", null);
         cb.setNeutralButton("Andere Währung …", (d, w) -> {
-            final String[] codes = org.telegram.messenger.spark.SparkCurrency.allCodes();
+            final String[] codes = org.telegram.messenger.spark.SparkCurrency.choiceCodes();
             AlertDialog.Builder pb = new AlertDialog.Builder(getParentActivity(), themeDelegate);
             pb.setTitle(org.telegram.ui.spark.SparkUi.mark("Betrag ist in …"));
             pb.setItems(codes, (d2, w2) -> sparkShowConversion(text, codes[w2]));
@@ -31651,7 +31683,7 @@ public class ChatActivity extends BaseFragment implements
                     icons.add(R.drawable.msg_search);
                 }
                 if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CURRENCY_MENU)
-                        && !org.telegram.messenger.spark.SparkCurrency.find(selectedObject.messageOwner.message).isEmpty()) {
+                        && org.telegram.messenger.spark.SparkCurrency.canConvert(currentAccount, dialog_id, selectedObject.messageOwner.message)) {
                     items.add(org.telegram.ui.spark.SparkUi.mark("Umrechnen"));
                     options.add(OPTION_SPARK_CONVERT);
                     icons.add(R.drawable.msg_stats);
@@ -34030,7 +34062,15 @@ public class ChatActivity extends BaseFragment implements
                 }
                 org.telegram.messenger.spark.SparkCurrency.refreshIfNeeded();
                 final String convText = selectedObject.messageOwner.message;
-                if (org.telegram.messenger.spark.SparkCurrency.needsChoice(convText)) {
+                if (org.telegram.messenger.spark.SparkCurrency.find(convText).isEmpty()) {
+                    // Preis ohne Waehrung: gemerkte Chat-Waehrung oder fragen
+                    String chatCur = org.telegram.messenger.spark.SparkCurrency.chatCurrency(currentAccount, dialog_id);
+                    if (chatCur != null) {
+                        sparkShowBareConversion(convText, chatCur);
+                    } else {
+                        sparkChooseCurrency(code -> sparkShowBareConversion(convText, code));
+                    }
+                } else if (org.telegram.messenger.spark.SparkCurrency.needsChoice(convText)) {
                     // "kr" ist mehrdeutig: erst fragen, welche Krone gemeint ist
                     final String[] kr = org.telegram.messenger.spark.SparkCurrency.KR_CHOICES;
                     String[] names = {"Schwedische Krone (SEK)", "Norwegische Krone (NOK)", "Dänische Krone (DKK)", "Isländische Krone (ISK)"};
