@@ -118,6 +118,8 @@ public class SparkConfig {
     public static final String JOIN_REQUESTS = "joinRequests";
     public static final String JOIN_NOTIFY = "joinNotify";
     public static final String HIDE_GIFT_BUTTON = "hideGiftButton";
+    public static final String CURRENCY_MENU = "currencyMenu";
+    public static final String CURRENCY_AUTO = "currencyAuto";
     // Sortierung: ungelesene Chats oben
     public static final String UNREAD_FIRST = "unreadFirst";
 
@@ -288,6 +290,7 @@ public class SparkConfig {
             case JOIN_REQUESTS:
             case JOIN_NOTIFY:
             case HIDE_GIFT_BUTTON:
+            case CURRENCY_MENU:
             case TEMPLATES:
             case GHOST_READ:
             case GHOST_TYPING:

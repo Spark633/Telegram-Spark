@@ -151,6 +151,9 @@ public class SparkSettingsActivity extends UniversalFragment {
     private static final int ID_JOIN_STICKY = 119;
     private static final int ID_JOIN_SYSTEM = 120;
     private static final int ID_HIDE_GIFT = 121;
+    private static final int ID_CURRENCY_MENU = 122;
+    private static final int ID_CURRENCY_AUTO = 123;
+    private static final int ID_CURRENCY_TARGET = 124;
     private static final String[] PAGE_NAMES = {"", "Profil & Personen", "Nachrichten", "Gruppen", "Medien & Bot", "Privatsphäre", "Organisation", "Übersetzen", "Darstellung"};
     private static final String[] PAGE_INFO = {"", "Profil-Werkzeuge, Personen, Notizen", "Werkzeuge, gelöschte Nachrichten, Vor dem Senden fragen, Schlagwort-Alarm",
         "Admins, Admin-Vorlagen, gelöschte & verlassene Chats", "Medien, Bot", "Ghost-Modus, Zwischenablage, Ausblenden", "Lesezeichen, Vorlagen, Statistiken, Duplikate, Auto-Ordner …",
@@ -289,6 +292,9 @@ public class SparkSettingsActivity extends UniversalFragment {
 
         items.add(UItem.asHeader(getString(R.string.SparkHeaderMsgTools)));
         items.add(check(ID_MSG_DETAILS, R.string.SparkMsgDetailsToggle, SparkConfig.MSG_DETAILS));
+        items.add(UItem.asCheck(ID_CURRENCY_MENU, SparkUi.mark("Währungen umrechnen (Nachrichten-Menü)")).setChecked(SparkConfig.getRaw(SparkConfig.CURRENCY_MENU)));
+        items.add(UItem.asCheck(ID_CURRENCY_AUTO, "      Umrechnung automatisch unter Nachrichten").setChecked(SparkConfig.getRaw(SparkConfig.CURRENCY_AUTO)));
+        items.add(UItem.asButton(ID_CURRENCY_TARGET, "      Zielwährung", org.telegram.messenger.spark.SparkCurrency.target()));
         items.add(check(ID_MSG_REPEAT, R.string.SparkMsgRepeatToggle, SparkConfig.MSG_REPEAT));
         items.add(check(ID_FORWARD_TIME, R.string.SparkForwardTimeToggle, SparkConfig.FORWARD_TIME));
         items.add(check(ID_FORWARD_NO_SENDER, R.string.SparkForwardNoSenderToggle, SparkConfig.FORWARD_NO_SENDER));
@@ -658,6 +664,22 @@ public class SparkSettingsActivity extends UniversalFragment {
             case ID_LEAVE_BACKUP: toggle(SparkConfig.LEAVE_BACKUP); break;
             case ID_JOIN_REQUESTS: toggle(SparkConfig.JOIN_REQUESTS); break;
             case ID_HIDE_GIFT: toggle(SparkConfig.HIDE_GIFT_BUTTON); break;
+            case ID_CURRENCY_MENU: toggle(SparkConfig.CURRENCY_MENU); break;
+            case ID_CURRENCY_AUTO:
+                toggle(SparkConfig.CURRENCY_AUTO);
+                org.telegram.messenger.spark.SparkCurrency.refreshIfNeeded();
+                break;
+            case ID_CURRENCY_TARGET: {
+                final String[] codes = org.telegram.messenger.spark.SparkCurrency.allCodes();
+                AlertDialog.Builder b = new AlertDialog.Builder(getParentActivity());
+                b.setTitle(SparkUi.mark("Zielwährung"));
+                b.setItems(codes, (d, w) -> {
+                    org.telegram.messenger.spark.SparkCurrency.setTarget(codes[w]);
+                    listView.adapter.update(true);
+                });
+                showDialog(b.create());
+                break;
+            }
             case ID_JOIN_NOTIFY: toggle(SparkConfig.JOIN_NOTIFY); break;
             case ID_JOIN_INAPP:
             case ID_JOIN_STICKY:

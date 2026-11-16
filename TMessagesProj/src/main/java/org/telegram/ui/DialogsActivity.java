@@ -7065,6 +7065,10 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     @Override
     public void onResume() {
         super.onResume();
+        if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CURRENCY_MENU)
+                || org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CURRENCY_AUTO)) {
+            org.telegram.messenger.spark.SparkCurrency.refreshIfNeeded(); // Sparkgram: Wechselkurse
+        }
         if (sparkRequestsItem != null) {
             sparkRequestsItem.setVisibility(org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.JOIN_REQUESTS) ? View.VISIBLE : View.GONE);
         }

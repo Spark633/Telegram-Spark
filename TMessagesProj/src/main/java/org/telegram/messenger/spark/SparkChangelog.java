@@ -19,6 +19,10 @@ public class SparkChangelog {
     }
 
     public static final Release[] RELEASES = {
+        new Release("0.28", "16.11.2026",
+            "Währungen umrechnen: „✦ Umrechnen“ im Nachrichten-Menü bei Nachrichten mit Beträgen (z. B. 20 $, £15, 100 USD, 5k ₹) – Tageskurse der Europäischen Zentralbank",
+            "Optional: Umrechnung automatisch als graue Zeile unter der Nachricht (Nachrichten → Nachrichten-Werkzeuge, standardmäßig aus); Zielwährung wählbar"
+        ),
         new Release("0.27", "11.11.2026",
             "Abgelehnte oder entfernte Beitrittsanfrage: in der Gruppe gibt es wieder den Knopf „Beitrittsanfrage stellen“ (über den gemerkten Einladungslink) statt „Gruppe löschen“",
             "Neuer runder Aktualisieren-Knopf unten neben dem Gruppen-Knopf (bei Gruppen, in denen du nicht Mitglied bist): fragt sofort den Stand bei Telegram ab",

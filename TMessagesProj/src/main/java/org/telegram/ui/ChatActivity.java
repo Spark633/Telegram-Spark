@@ -1273,6 +1273,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_SPARK_BOOKMARK = 906; // Sparkgram
     public final static int OPTION_SPARK_USER_MSGS = 907; // Sparkgram
     public final static int OPTION_SPARK_ADMIN = 908; // Sparkgram
+    public final static int OPTION_SPARK_CONVERT = 909; // Sparkgram
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -31632,6 +31633,12 @@ public class ChatActivity extends BaseFragment implements
                     options.add(OPTION_SPARK_USER_MSGS);
                     icons.add(R.drawable.msg_search);
                 }
+                if (org.telegram.messenger.spark.SparkConfig.get(org.telegram.messenger.spark.SparkConfig.CURRENCY_MENU)
+                        && !org.telegram.messenger.spark.SparkCurrency.find(selectedObject.messageOwner.message).isEmpty()) {
+                    items.add(org.telegram.ui.spark.SparkUi.mark("Umrechnen"));
+                    options.add(OPTION_SPARK_CONVERT);
+                    icons.add(R.drawable.msg_stats);
+                }
                 if (org.telegram.ui.spark.SparkAdminActivity.canShow(currentAccount, selectedObject)) {
                     items.add(org.telegram.ui.spark.SparkUi.mark("Admin"));
                     options.add(OPTION_SPARK_ADMIN);
@@ -33996,6 +34003,21 @@ public class ChatActivity extends BaseFragment implements
             }
             case OPTION_SPARK_BOOKMARK: {
                 sparkBookmark(selectedObject);
+                break;
+            }
+            case OPTION_SPARK_CONVERT: {
+                if (!org.telegram.messenger.spark.SparkCurrency.ratesReady()) {
+                    org.telegram.messenger.spark.SparkCurrency.refreshIfNeeded();
+                    BulletinFactory.of(this).createSimpleBulletin(R.raw.info, "✦ Wechselkurse werden geladen – gleich noch einmal versuchen").show();
+                    break;
+                }
+                org.telegram.messenger.spark.SparkCurrency.refreshIfNeeded();
+                String det = org.telegram.messenger.spark.SparkCurrency.details(selectedObject.messageOwner.message);
+                AlertDialog.Builder cb = new AlertDialog.Builder(getParentActivity(), themeDelegate);
+                cb.setTitle(org.telegram.ui.spark.SparkUi.mark("Umrechnen"));
+                cb.setMessage(det != null ? det : "Kein umrechenbarer Betrag gefunden (oder schon in " + org.telegram.messenger.spark.SparkCurrency.target() + ").");
+                cb.setPositiveButton("OK", null);
+                showDialog(cb.create());
                 break;
             }
             case OPTION_SPARK_ADMIN: {

@@ -8731,6 +8731,8 @@ public class MessageObject {
         hasSingleQuote = false;
         hasSingleCode = false;
         messageText = FormattedDateSpan.applyFormatedDateEntities(messageText);
+        // Sparkgram: Waehrungsbetraege automatisch umrechnen (graue Zeile unter dem Text)
+        messageText = org.telegram.messenger.spark.SparkCurrency.appendAuto(messageText, Theme.getColor(isOutOwner() ? Theme.key_chat_outTimeText : Theme.key_chat_inTimeText));
 
         if (messageText instanceof Spanned) {
             Spanned spanned = (Spanned) messageText;
